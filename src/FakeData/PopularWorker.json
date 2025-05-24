@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "name": "Rafiq Ahmed",
+    "role": "Electrician",
+    "rating": 4.9,
+    "jobs": 120,
+    "location": "Dhaka",
+    "image": "https://randomuser.me/api/portraits/men/32.jpg",
+    "price": 300
+  },
+  {
+    "id": 2,
+    "name": "Shahinur Rahman",
+    "role": "Plumber",
+    "rating": 4.7,
+    "jobs": 95,
+    "location": "Chattogram",
+    "image": "https://randomuser.me/api/portraits/men/45.jpg",
+    "price": 250
+  },
+  {
+    "id": 3,
+    "name": "Taslima Begum",
+    "role": "Technician",
+    "rating": 4.8,
+    "jobs": 88,
+    "location": "Rajshahi",
+    "image": "https://randomuser.me/api/portraits/women/55.jpg",
+    "price": 350
+  },
+  {
+    "id": 4,
+    "name": "Jahangir Kabir",
+    "role": "Car Mechanic",
+    "rating": 4.6,
+    "jobs": 103,
+    "location": "Khulna",
+    "image": "https://randomuser.me/api/portraits/men/64.jpg",
+    "price": 400
+  },
+  {
+    "id": 5,
+    "name": "Nasima Akter",
+    "role": "Electrician",
+    "rating": 4.5,
+    "jobs": 76,
+    "location": "Barisal",
+    "image": "https://randomuser.me/api/portraits/women/44.jpg",
+    "price": 280
+  },
+  {
+    "id": 6,
+    "name": "Masud Rana",
+    "role": "Plumber",
+    "rating": 4.9,
+    "jobs": 134,
+    "location": "Sylhet",
+    "image": "https://randomuser.me/api/portraits/men/77.jpg",
+    "price": 270
+  },
+  {
+    "id": 7,
+    "name": "Shakib Hossain",
+    "role": "AC Technician",
+    "rating": 5.0,
+    "jobs": 142,
+    "location": "Dhaka",
+    "image": "https://randomuser.me/api/portraits/men/22.jpg",
+    "price": 450
+  },
+  {
+    "id": 8,
+    "name": "Rehana Sultana",
+    "role": "House Cleaner",
+    "rating": 4.6,
+    "jobs": 90,
+    "location": "Narayanganj",
+    "image": "https://randomuser.me/api/portraits/women/31.jpg",
+    "price": 220
+  },
+  {
+    "id": 9,
+    "name": "Kamal Uddin",
+    "role": "Mechanic",
+    "rating": 4.8,
+    "jobs": 119,
+    "location": "Comilla",
+    "image": "https://randomuser.me/api/portraits/men/19.jpg",
+    "price": 330
+  },
+  {
+    "id": 10,
+    "name": "Fatema Khatun",
+    "role": "Electrician",
+    "rating": 4.7,
+    "jobs": 102,
+    "location": "Gazipur",
+    "image": "https://randomuser.me/api/portraits/women/28.jpg",
+    "price": 310
+  }
+]
