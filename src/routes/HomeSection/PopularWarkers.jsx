@@ -1,9 +1,12 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import workers from '../../FakeData/PopularWorker.json';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const PopularWarkers = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="mt-16 px-4 md:px-8 lg:px-0 max-w-7xl mx-auto">
       <h1 className="text-center text-2xl md:text-3xl font-bold mb-8">
@@ -12,35 +15,54 @@ const PopularWarkers = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {workers.map((worker) => (
-          <div
+          <Link
+            to={`/worker/${worker.id}`}
             key={worker.id}
-            className="card bg-base-100 shadow-md hover:shadow-lg cursor-pointer transition-all"
-            onClick={() => navigate(`/worker/${worker.id}`)}
+           className="card bg-base-100 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:ring-2 hover:ring-violet-300 no-underline text-inherit"
           >
-            <figure>
-              <img
-                src={worker.image}
-                alt={worker.name}
-                className="h-52 w-full object-cover"
-              />
-            </figure>
+            {/* ✅ Gig Image Slider */}
+            <div className="h-52 w-full overflow-hidden">
+              <Swiper
+                modules={[Navigation, Pagination]}
+                navigation
+                pagination={{ clickable: true }}
+                className="h-full"
+              >
+                {(worker.gigs || [worker.image]).map((img, idx) => (
+                  <SwiperSlide key={idx}>
+                    <img
+                      src={img}
+                      alt={`Gig ${idx + 1}`}
+                      className="h-52 w-full object-cover"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
             <div className="card-body">
               <h2 className="card-title text-lg md:text-xl">
                 {worker.name}
                 <div className="badge badge-success">⭐ {worker.rating}</div>
               </h2>
-              <p className="text-sm text-gray-600">
-                {worker.role} • {worker.jobs}+ jobs • {worker.location}
+
+              <p className="text-sm text-gray-600 capitalize">
+                {(worker.roles || [worker.role]).join(', ')} • {worker.jobs}+ jobs • {worker.location}
               </p>
+
               <p className="font-semibold text-gray-800 mt-2">
                 Starts from ৳{worker.price}
               </p>
+
               <div className="card-actions justify-end mt-3 flex-wrap gap-2">
-                <div className="badge badge-outline">{worker.role}</div>
-                <div className="badge badge-outline">View</div>
+                {(worker.roles || [worker.role]).map((role, idx) => (
+                  <div key={idx} className="badge badge-outline capitalize">
+                    {role}
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
