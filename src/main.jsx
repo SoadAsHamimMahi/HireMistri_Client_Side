@@ -12,6 +12,10 @@ import Dashboard from './routes/Dashboard';
 import Applications from './routes/Applications';
 import WorkerProfile from './routes/WorkerProfile';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import PostedJobs from './routes/PostedJobs';
+import PostJobWizard from './routes/PosteJobForm/PostJobWizard';
+
+
 
 const router = createBrowserRouter([
   {
@@ -26,6 +30,8 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'applications', element: <Applications /> },
       { path: 'worker/:workerId', element: <WorkerProfile /> },
+      {path: 'My-Posted-Jobs', element: <PostedJobs />},
+       { path: 'post-job', element: <PostJobWizard /> },
     ],
   },
 ]);

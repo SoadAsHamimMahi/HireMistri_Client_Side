@@ -62,6 +62,7 @@ export default function Navbar() {
             <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-40 text-black">
               <li><Link to="/dashboard">Dashboard</Link></li>
               <li><Link to="/post-job">Post Job</Link></li>
+              <li> <Link to="/My-Posted-Jobs">My Posted Jobs</Link> </li>
               <li><a href="#">Logout</a></li>
             </ul>
           </div>
