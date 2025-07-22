@@ -22,13 +22,12 @@ const Banner = () => {
 
         {/* Text Section - Always Right */}
         <div className="w-full lg:w-1/2 text-white text-center lg:text-right px-4 sm:px-6 lg:px-16 py-8 flex flex-col justify-center items-center lg:items-end order-2">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">Box Office News!</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4">Empower Your Work with Hire<span className='text-green-400'>Mistri!</span></h1>
           <p className="mb-6 text-base sm:text-lg max-w-md leading-relaxed">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi.
-            In deleniti eaque aut repudiandae et a id nisi.
+           Find skilled workers fast with real-time hiring.
           </p>
-          <button className="btn bg-violet-600 text-white font-bold hover:bg-violet-700 border-none shadow-md text-sm px-5">
-            Get Started
+          <button className="btn bg-green-500 text-white font-bold hover:bg-green-900 border-none shadow-md text-xl px-5 py-3">
+            Post Job
           </button>
         </div>
       </div>

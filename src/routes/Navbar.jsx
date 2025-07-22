@@ -24,28 +24,32 @@ export default function Navbar() {
   return (
     <div className="w-full">
       {/* Top Navbar */}
-      <div className="navbar bg-black text-white px-4 md:px-6 shadow-sm justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-white">
-          hire<span className="text-green-500">mistri</span>
-        </Link>
+      <div className="navbar bg-black  text-white px-4 md:px-6 shadow-sm justify-between items-center">
 
-        {/* Desktop Search Bar */}
-        <div className="hidden lg:flex">
-          <input
-            type="text"
-            placeholder="Find Workers"
-            className="input input-bordered w-[400px] xl:w-[500px] rounded-l-full text-gray-600"
-          />
-          <button className="btn rounded-r-full bg-gray-800 hover:bg-gray-700 border-none text-white">
-            <i className="fas fa-search"></i>
-          </button>
+        <div className='flex gap-7'>
+          <Link to="/" className="text-4xl font-bold text-white">
+            Hire<span className="text-green-500">Mistri</span>
+          </Link>
+
+          {/* Desktop Search Bar */}
+          <div className="hidden lg:flex">
+            <input
+              type="text"
+              placeholder="Find Workers"
+              className="input input-bordered w-[400px] xl:w-[500px] rounded-l-full text-gray-600"
+            />
+            <button className="btn rounded-r-full bg-green-500 hover:bg-gray-700 border-none text-white">
+              <i className="fas fa-search"></i>
+            </button>
+          </div>
         </div>
+
+
 
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center gap-4 text-sm">
           <a href="#">Orders</a>
-          <a href="#" className="text-pink-500 font-semibold">Try HireMistri Go</a>
-          <a href="#" className="text-green-600 font-semibold">Switch to Selling</a>
+
           <button className="btn btn-ghost btn-circle text-lg">
             <i className="far fa-bell"></i>
           </button>
@@ -157,7 +161,7 @@ export default function Navbar() {
       )}
 
       {/* Desktop Category Bar */}
-      <div className="bg-gray-100 border-t border-gray-300 text-sm px-4 py-2 hidden lg:flex gap-4 overflow-x-auto whitespace-nowrap">
+      <div className="bg-gray-100 border-t text-xl border-gray-300 px-4 py-2 hidden lg:flex gap-4 overflow-x-auto whitespace-nowrap">
         {categories.map((cat, idx) => (
           <NavLink
             key={idx}
