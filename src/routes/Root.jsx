@@ -16,7 +16,7 @@ export default function Root() {
   return (
     <div className=''>
     <Navbar />
-      <main className="p-4">
+      <main className="p-2">
         <Outlet />
       </main>
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import BannerImage from '../../Images/BannerImage.png';
 import BannerBg from '../../Images/BannerBg.png';
+import { Link } from 'react-router-dom';
 
 const Banner = () => {
   return (
@@ -27,7 +28,7 @@ const Banner = () => {
            Find skilled workers fast with real-time hiring.
           </p>
           <button className="btn bg-green-500 text-white font-bold hover:bg-green-900 border-none shadow-md text-xl px-5 py-3">
-            Post Job
+        <Link to="/post-job">Post Job</Link>
           </button>
         </div>
       </div>

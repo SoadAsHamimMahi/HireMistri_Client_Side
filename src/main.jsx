@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './index.css';
 
-// ✅ Only import once
 import Root, { loader as rootLoader, action as rootAction } from './routes/Root';
 import ErrorPage from './routes/ErrorPage';
 import Home from './routes/HomeSection/Home';
@@ -11,11 +10,15 @@ import PostJob from './routes/PostJob';
 import Dashboard from './routes/Dashboard';
 import Applications from './routes/Applications';
 import WorkerProfile from './routes/WorkerProfile';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import PostedJobs from './routes/PostedJobs';
 import PostJobWizard from './routes/PosteJobForm/PostJobWizard';
+import Register from './Authentication/Register';
+import Login from './Authentication/Login';
+import ProtectedRoute from './Authentication/ProtectedRoute';
 
-
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import AuthProvider from './Authentication/AuthProvider';
+import PublicRoute from './Authentication/PublicRoute';
 
 const router = createBrowserRouter([
   {
@@ -26,18 +29,76 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: '', element: <Home /> },
-      { path: 'post-job', element: <PostJob /> },
-      { path: 'dashboard', element: <Dashboard /> },
-      { path: 'applications', element: <Applications /> },
-      { path: 'worker/:workerId', element: <WorkerProfile /> },
-      {path: 'My-Posted-Jobs', element: <PostedJobs />},
-       { path: 'post-job', element: <PostJobWizard /> },
+    { path: 'registration', element: (
+    <PublicRoute>
+      <Register />
+    </PublicRoute>
+  ) 
+},
+{ path: 'login', element: (
+    <PublicRoute>
+      <Login />
+    </PublicRoute>
+  ) 
+},
+
+      // ✅ Protected pages
+      { 
+        path: 'dashboard', 
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'post-job', 
+        element: (
+          <ProtectedRoute>
+            <PostJob />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'applications', 
+        element: (
+          <ProtectedRoute>
+            <Applications />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'worker/:workerId', 
+        element: (
+          <ProtectedRoute>
+            <WorkerProfile />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'My-Posted-Jobs', 
+        element: (
+          <ProtectedRoute>
+            <PostedJobs />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'post-job-wizard', 
+        element: (
+          <ProtectedRoute>
+            <PostJobWizard />
+          </ProtectedRoute>
+        ) 
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );
