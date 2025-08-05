@@ -1,10 +1,9 @@
-// src/routes/PostJobForm/StepImagesReview.jsx
 import { useContext } from 'react';
-import { AuthContext } from '../../Authentication/AuthProvider';
 import axios from 'axios';
+import { AuthContext } from '../../Authentication/AuthProvider';
 
 export default function StepImagesReview({ form, setForm, prevStep }) {
-  const { user } = useContext(AuthContext); // ✅ Get logged-in user
+  const { user } = useContext(AuthContext); 
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -18,31 +17,39 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
     }
 
     try {
-    const formData = new FormData();
-    formData.append("clientId", user.uid);
-    formData.append("title", form.title);
-    formData.append("category", form.category);
-    formData.append("skills", JSON.stringify(form.skills));
-    formData.append("description", form.description);
-    formData.append("location", form.location);
-    formData.append("budget", form.budget);
-    formData.append("date", form.date);
-    formData.append("time", form.time);
+      // ✅ First: Upload images
+      const formData = new FormData();
+      form.images.forEach((file) => {
+        formData.append("images", file);
+      });
 
-    // ✅ Add images to FormData
-    form.images.forEach((file) => {
-      formData.append("images", file);
-    });
+      const uploadRes = await axios.post(
+        "http://localhost:5000/api/browse-jobs/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-    await axios.post("http://localhost:5000/api/browse-jobs/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const imageUrls = uploadRes.data.imageUrls; // ✅ Get image URLs from backend
 
-    alert('✅ Job successfully posted with image upload!');
-  } catch (err) {
-    console.error("❌ Failed to post job:", err);
-    alert('❌ Failed to post job. Please try again.');
-  }
+      // ✅ Second: Save job data with image URLs
+      await axios.post("http://localhost:5000/api/browse-jobs", {
+        clientId: user.uid,
+        title: form.title,
+        category: form.category,
+        skills: form.skills,
+        description: form.description,
+        location: form.location,
+        budget: form.budget,
+        date: form.date,
+        time: form.time,
+        images: imageUrls, // ✅ store URLs
+      });
+
+      alert("✅ Job successfully posted with image upload!");
+    } catch (err) {
+      console.error("❌ Failed to post job:", err);
+      alert("❌ Failed to post job. Please try again.");
+    }
   };
 
   return (
