@@ -19,6 +19,7 @@ import ProtectedRoute from './Authentication/ProtectedRoute';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import AuthProvider from './Authentication/AuthProvider';
 import PublicRoute from './Authentication/PublicRoute';
+import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
 
 const router = createBrowserRouter([
   {
@@ -29,67 +30,77 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: '', element: <Home /> },
-    { path: 'registration', element: (
-    <PublicRoute>
-      <Register />
-    </PublicRoute>
-  ) 
-},
-{ path: 'login', element: (
-    <PublicRoute>
-      <Login />
-    </PublicRoute>
-  ) 
-},
+      {
+        path: 'registration', element: (
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        )
+      },
+      {
+        path: 'login', element: (
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        )
+      },
 
       // ✅ Protected pages
-      { 
-        path: 'dashboard', 
+      {
+        path: 'dashboard',
         element: (
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
-        ) 
+        )
       },
-      { 
-        path: 'post-job', 
+      {
+        path: 'post-job',
         element: (
           <ProtectedRoute>
             <PostJob />
           </ProtectedRoute>
-        ) 
+        )
       },
-      { 
-        path: 'applications', 
+      {
+        path: 'applications',
         element: (
           <ProtectedRoute>
             <Applications />
           </ProtectedRoute>
-        ) 
+        )
       },
-      { 
-        path: 'worker/:workerId', 
+      {
+        path: 'worker/:workerId',
         element: (
           <ProtectedRoute>
             <WorkerProfile />
           </ProtectedRoute>
-        ) 
+        )
       },
-      { 
-        path: 'My-Posted-Jobs', 
+      {
+        path: 'My-Posted-Jobs',
         element: (
           <ProtectedRoute>
             <PostedJobs />
           </ProtectedRoute>
-        ) 
+        )
       },
-      { 
-        path: 'post-job-wizard', 
+      {
+        path: 'My-Posted-Job-Details/:id',   // <-- must include :id
+        element: (
+          <ProtectedRoute>
+            <PostedJobDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'post-job-wizard',
         element: (
           <ProtectedRoute>
             <PostJobWizard />
           </ProtectedRoute>
-        ) 
+        )
       },
     ],
   },
