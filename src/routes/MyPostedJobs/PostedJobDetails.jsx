@@ -120,39 +120,39 @@ export default function PostedJobDetails() {
   };
 
   // Accept / Reject
-  const decide = async (app, nextStatus) => {
-    if (!app) return;
-    try {
-      setDeciding(true);
-      // IMPORTANT: include proposalText so the server route doesn't blank it out
-      const body = {
-        jobId: String(app.jobId),
-        workerId: String(app.workerId),
-        clientId: String(app.clientId || job?.clientId || ''),
-        proposalText: app.proposalText || '',
-        status: nextStatus,
-      };
-      const res = await fetch(`${base}/api/applications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Failed to update status (${res.status})`);
-      // update local list
-      setApps((prev) =>
-        prev.map((x) =>
-          x.jobId === app.jobId && x.workerId === app.workerId
-            ? { ...x, status: nextStatus }
-            : x
-        )
-      );
-      setSelected((s) => s && { ...s, status: nextStatus });
-    } catch (e) {
-      alert(e.message || 'Failed to update application');
-    } finally {
-      setDeciding(false);
+ // Accept / Reject
+const decide = async (app, nextStatus) => {
+  if (!app || !app._id) {
+    alert('Missing application id'); 
+    return;
+  }
+  try {
+    setDeciding(true);
+
+    // ✅ use the status endpoint
+    const res = await fetch(`${base}/api/applications/${app._id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: nextStatus }),
+    });
+
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({}));
+      throw new Error(error || `Failed to update status (${res.status})`);
     }
-  };
+
+    // update local UI
+    setApps(prev =>
+      prev.map(x => x._id === app._id ? { ...x, status: nextStatus } : x)
+    );
+    setSelected(s => s && { ...s, status: nextStatus });
+  } catch (e) {
+    alert(e.message || 'Failed to update application');
+  } finally {
+    setDeciding(false);
+  }
+};
+
 
   const openModal = (app) => {
     setSelected(app);

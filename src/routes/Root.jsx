@@ -1,6 +1,7 @@
 // src/routes/Root.jsx
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import Footer from '../Footer';
 
 
 // Optional loader and action functions
@@ -15,10 +16,11 @@ export function action() {
 export default function Root() {
   return (
     <div className=''>
-    <Navbar />
+      <Navbar />
       <main className="p-2">
         <Outlet />
       </main>
+      <Footer></Footer>
     </div>
   );
 }

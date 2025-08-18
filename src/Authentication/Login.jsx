@@ -22,7 +22,7 @@ const Login = () => {
       await signIn(form.email, form.password);
       alert("Login successful!");
       // ✅ Redirect back to last attempted page or default to dashboard
-      const redirectPath = location.state?.from?.pathname || '/dashboard';
+      const redirectPath = location.state?.from?.pathname || '/';
       navigate(redirectPath, { replace: true });
     } catch (error) {
       console.error("Login error:", error.message);
