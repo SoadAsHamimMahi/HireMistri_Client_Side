@@ -6,7 +6,7 @@ import GoogleImage from '../Images/Google.png';
 import { AuthContext } from './AuthProvider';
 
 const Register = () => {
-  const { createUser } = useContext(AuthContext); // make sure AuthProvider exports this
+  const { createUser, signInWithGoogle } = useContext(AuthContext); // make sure AuthProvider exports this
   const navigate = useNavigate();
 
   const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
@@ -26,6 +26,38 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const handleGoogleSignUp = async () => {
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+
+      // 1) Sign in with Google (Firebase)
+      const result = await signInWithGoogle();
+      const user = result?.user;
+      if (!user) throw new Error('Google signup succeeded but no user returned');
+
+      // 2) Save the user profile to your backend (Mongo)
+      await axios.post(`${base}/api/users`, {
+        uid: user.uid,
+        firstName: user.displayName?.split(' ')[0] || 'Google',
+        lastName: user.displayName?.split(' ').slice(1).join(' ') || 'User',
+        phone: user.phoneNumber || '',
+        email: user.email,
+        role: 'client',
+        createdAt: new Date().toISOString(),
+      });
+
+      alert('Registration successful!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google signup error:', error);
+      alert(error?.message || 'Google registration failed');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -88,9 +120,14 @@ const Register = () => {
             </p>
 
             <div className="space-y-3">
-              <button type="button" className="w-full py-2 border mt-3 rounded flex items-center justify-center gap-2">
+              <button 
+                type="button" 
+                onClick={handleGoogleSignUp}
+                disabled={submitting}
+                className="w-full py-2 border mt-3 rounded flex items-center justify-center gap-2 hover:bg-gray-50 transition disabled:opacity-60"
+              >
                 <img src={GoogleImage} alt="Google" className="w-5 h-5" />
-                Continue with Google
+                {submitting ? 'Signing up...' : 'Continue with Google'}
               </button>
             </div>
 

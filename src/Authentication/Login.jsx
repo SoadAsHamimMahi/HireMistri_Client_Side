@@ -5,20 +5,42 @@ import GoogleImage from '../Images/Google.png';
 import { AuthContext } from '../Authentication/AuthProvider';
 
 const Login = () => {
-  const { signIn } = useContext(AuthContext);
+  const { signIn, signInWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   const [form, setForm] = useState({ email: '', password: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  const handleGoogleSignIn = async () => {
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+      await signInWithGoogle();
+      alert("Login successful!");
+      // ✅ Redirect back to last attempted page or default to dashboard
+      const redirectPath = location.state?.from?.pathname || '/';
+      navigate(redirectPath, { replace: true });
+    } catch (error) {
+      console.error("Google login error:", error.message);
+      alert(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+
     try {
+      setSubmitting(true);
       await signIn(form.email, form.password);
       alert("Login successful!");
       // ✅ Redirect back to last attempted page or default to dashboard
@@ -27,6 +49,8 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error.message);
       alert(error.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -49,10 +73,15 @@ const Login = () => {
               </Link>
             </p>
 
-            <div className="space-y-3 text-white">
-              <button className="w-full py-2 border mt-3 rounded flex items-center justify-center gap-2">
+            <div className="space-y-3">
+              <button 
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={submitting}
+                className="w-full py-2 border mt-3 rounded flex items-center justify-center gap-2 hover:bg-gray-50 transition disabled:opacity-60"
+              >
                 <img src={GoogleImage} alt="Google" className="w-5 h-5" />
-                Continue with Google
+                {submitting ? 'Signing in...' : 'Continue with Google'}
               </button>
             </div>
 
@@ -89,9 +118,10 @@ const Login = () => {
               <div>
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-full px-6 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-400 transition"
+                  disabled={submitting}
+                  className="flex items-center justify-center w-full px-6 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-400 transition disabled:opacity-60"
                 >
-                  Log In
+                  {submitting ? 'Signing in...' : 'Log In'}
                 </button>
               </div>
             </form>
