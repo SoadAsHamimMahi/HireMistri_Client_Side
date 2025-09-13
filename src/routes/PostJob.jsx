@@ -61,11 +61,6 @@ export default function PostJob() {
     form={form}
     setForm={setForm}
     prevStep={() => setStep(4)}
-    handleSubmit={() => {
-      console.log('Final Submitted Data:', form);
-      alert('✅ Job successfully posted!');
-      // Later: connect API here
-    }}
   />
 )}
 

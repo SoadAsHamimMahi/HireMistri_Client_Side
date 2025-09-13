@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }) {
   const { isDarkMode } = useTheme();
+  
   // 🌍 Auto-detect location on mount
   useEffect(() => {
     if (!form.location && 'geolocation' in navigator) {
@@ -21,6 +22,18 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // Get current time in HH:MM format
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0, 5);
   };
 
   return (
@@ -40,13 +53,13 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
         <div className="space-y-6">
           {/* Budget */}
           <div>
-            <label className="block font-medium text-gray-700 mb-1">Estimated Budget (৳)</label>
+            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estimated Budget (৳)</label>
             <div className="relative">
               <span className="absolute top-3 left-3 text-gray-400"><FaMoneyBillWave /></span>
               <input
                 name="budget"
                 type="number"
-                className="input input-bordered w-full pl-10"
+                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 placeholder="e.g. 1000"
                 value={form.budget}
                 onChange={handleChange}
@@ -56,13 +69,13 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
 
           {/* Location */}
           <div>
-            <label className="block font-medium text-gray-700 mb-1">Location</label>
+            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Location</label>
             <div className="relative">
               <span className="absolute top-3 left-3 text-gray-400"><FaMapMarkerAlt /></span>
               <input
                 name="location"
                 type="text"
-                className="input input-bordered w-full pl-10"
+                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 value={form.location}
                 onChange={handleChange}
               />
@@ -71,32 +84,50 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
 
           {/* Date */}
           <div>
-            <label className="block font-medium text-gray-700 mb-1">Preferred Date</label>
+            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Date</label>
             <div className="relative">
               <span className="absolute top-3 left-3 text-gray-400"><FaCalendarAlt /></span>
               <input
                 name="date"
                 type="date"
-                className="input input-bordered w-full pl-10"
+                min={getTodayDate()}
+                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 value={form.date}
                 onChange={handleChange}
+                style={{
+                  colorScheme: isDarkMode ? 'dark' : 'light',
+                  backgroundColor: isDarkMode ? '#374151' : 'white',
+                  color: isDarkMode ? 'white' : 'black'
+                }}
               />
             </div>
+            <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Only future dates can be selected
+            </p>
           </div>
 
           {/* Time */}
           <div>
-            <label className="block font-medium text-gray-700 mb-1">Preferred Time</label>
+            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Time</label>
             <div className="relative">
               <span className="absolute top-3 left-3 text-gray-400"><FaClock /></span>
               <input
                 name="time"
                 type="time"
-                className="input input-bordered w-full pl-10"
+                min={form.date === getTodayDate() ? getCurrentTime() : '00:00'}
+                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 value={form.time}
                 onChange={handleChange}
+                style={{
+                  colorScheme: isDarkMode ? 'dark' : 'light',
+                  backgroundColor: isDarkMode ? '#374151' : 'white',
+                  color: isDarkMode ? 'white' : 'black'
+                }}
               />
             </div>
+            <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {form.date === getTodayDate() ? 'Only future times can be selected for today' : 'Select any time for future dates'}
+            </p>
           </div>
 
           <button

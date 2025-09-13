@@ -1,11 +1,13 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../Authentication/AuthProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export default function StepImagesReview({ form, setForm, prevStep }) {
   const { isDarkMode } = useTheme();
-  const { user } = useContext(AuthContext); 
+  const { user } = useContext(AuthContext);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -17,6 +19,8 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
       alert("You must be logged in to post a job!");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       // ✅ First: Upload images
@@ -47,11 +51,20 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
         images: imageUrls, // ✅ store URLs
       });
 
-      alert("✅ Job successfully posted with image upload!");
+      // Show success modal
+      setShowSuccessModal(true);
     } catch (err) {
       console.error("❌ Failed to post job:", err);
       alert("❌ Failed to post job. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+    // Reset form or redirect to dashboard
+    window.location.href = '/dashboard';
   };
 
   return (
@@ -97,12 +110,60 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
 
           <button
             onClick={handleSubmit}
-            className="btn bg-green-600 hover:bg-green-700 text-white w-full mt-6"
+            disabled={isSubmitting}
+            className="btn bg-green-600 hover:bg-green-700 text-white w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ✅ Submit Job
+            {isSubmitting ? (
+              <>
+                <span className="loading loading-spinner loading-sm mr-2"></span>
+                Posting Job...
+              </>
+            ) : (
+              '✅ Submit Job'
+            )}
           </button>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`rounded-xl shadow-2xl p-8 max-w-md mx-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="text-center">
+              {/* Success Icon */}
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              
+              {/* Success Message */}
+              <h3 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Job Posted Successfully!
+              </h3>
+              <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Your job has been posted and is now visible to workers. You can manage it from your dashboard.
+              </p>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={closeSuccessModal}
+                  className="btn bg-green-600 hover:bg-green-700 text-white px-6"
+                >
+                  Go to Dashboard
+                </button>
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className={`btn btn-outline ${isDarkMode ? 'text-white border-white hover:bg-white hover:text-gray-900' : ''}`}
+                >
+                  Stay Here
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
