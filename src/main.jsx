@@ -65,7 +65,7 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: 'applications',
+        path: 'applications/:jobId',
         element: (
           <ProtectedRoute>
             <Applications />
@@ -109,6 +109,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MyProfile />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'applications',
+        element: (
+          <ProtectedRoute>
+            <Applications />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'applications/:jobId',
+        element: (
+          <ProtectedRoute>
+            <Applications />
           </ProtectedRoute>
         )
       },
