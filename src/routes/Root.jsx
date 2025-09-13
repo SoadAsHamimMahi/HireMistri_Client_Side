@@ -2,6 +2,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from '../Footer';
+import { useTheme } from '../contexts/ThemeContext';
 
 
 // Optional loader and action functions
@@ -14,10 +15,12 @@ export function action() {
 }
 
 export default function Root() {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <div className=''>
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Navbar />
-      <main className="p-2">
+      <main className="">
         <Outlet />
       </main>
       <Footer></Footer>

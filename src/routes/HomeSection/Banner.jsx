@@ -23,13 +23,25 @@ const Banner = () => {
 
         {/* Text Section - Always Right */}
         <div className="w-full lg:w-1/2 text-white text-center lg:text-right px-4 sm:px-6 lg:px-16 py-8 flex flex-col justify-center items-center lg:items-end order-2">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">Empower Your Work with Hire<span className='text-green-400'>Mistri!</span></h1>
-          <p className="mb-6 text-base sm:text-lg max-w-md leading-relaxed">
-           Find skilled workers fast with real-time hiring.
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            Find the Perfect <span className='text-green-400'>Worker</span> for Your Project
+          </h1>
+          <p className="mb-8 text-lg sm:text-xl max-w-lg leading-relaxed text-gray-200">
+            Connect with skilled professionals in your area. Post your job and get matched with the best workers instantly.
           </p>
-          <button className="btn bg-green-500 text-white font-bold hover:bg-green-900 border-none shadow-md text-xl px-5 py-3">
-        <Link to="/post-job">Post Job</Link>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link 
+              to="/post-job" 
+              className="btn bg-green-500 hover:bg-green-600 text-white font-bold border-none shadow-lg text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            >
+              <i className="fas fa-plus mr-2"></i>
+              Post a Job
+            </Link>
+            <button className="btn bg-transparent border-2 border-white hover:bg-white hover:text-gray-900 text-white font-bold shadow-lg text-lg px-8 py-4 rounded-xl transition-all duration-300">
+              <i className="fas fa-search mr-2"></i>
+              Browse Workers
+            </button>
+          </div>
         </div>
       </div>
     </div>

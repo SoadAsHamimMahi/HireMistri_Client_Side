@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
+import { useTheme } from '../contexts/ThemeContext';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -8,6 +9,7 @@ import 'swiper/css/pagination';
 import { Link } from 'react-router-dom';
 
 export default function PostedJobs() {
+  const { isDarkMode } = useTheme();
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -73,30 +75,36 @@ export default function PostedJobs() {
   const getStatusColor = (status) => {
     switch (String(status).toLowerCase()) {
       case 'active':
-        return 'bg-green-100 text-green-700';
+        return isDarkMode ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700';
       case 'in-progress':
-        return 'bg-yellow-100 text-yellow-700';
+        return isDarkMode ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700';
       case 'completed':
-        return 'bg-blue-100 text-blue-700';
+        return isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return isDarkMode ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700';
     }
   };
 
-  if (loading) return <div className="py-10 text-center">Loading…</div>;
+  if (loading) return <div className={`py-10 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Loading…</div>;
   if (err) return <div className="py-10 text-center text-red-600">{err}</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-center mb-8 text-primary">📋 My Posted Jobs</h1>
+    <div className={`max-w-7xl mx-auto px-4 py-10 transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <h1 className={`text-3xl font-bold text-center mb-8 ${isDarkMode ? 'text-white' : 'text-primary'}`}>📋 My Posted Jobs</h1>
 
       {/* Filter Tabs */}
-      <div className="tabs tabs-boxed justify-center mb-8">
+      <div className={`tabs tabs-boxed justify-center mb-8 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
         {['all', 'active', 'in-progress', 'completed'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
-            className={`tab ${filter === status ? 'tab-active' : ''} capitalize`}
+            className={`tab capitalize transition-colors duration-300 ${
+              filter === status 
+                ? 'tab-active bg-green-500 !text-white' 
+                : isDarkMode 
+                  ? '!text-white hover:!bg-gray-700 hover:!text-white' 
+                  : '!text-gray-800 hover:!bg-gray-200 hover:!text-gray-800'
+            }`}
           >
             {status}
           </button>
@@ -108,7 +116,7 @@ export default function PostedJobs() {
         {filteredJobs.map((job) => (
           <div
             key={job.id}
-            className="bg-white shadow-lg border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300"
+            className={`shadow-lg border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
           >
             {/* Image Slider */}
             <div className="h-48">
@@ -124,8 +132,8 @@ export default function PostedJobs() {
             {/* Job Info */}
             <div className="p-5 flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-semibold text-gray-800 mb-2">{job.title}</h3>
-                <p className="text-gray-600 mb-3">{job.category}</p>
+                <h3 className={`text-2xl font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{job.title}</h3>
+                <p className={`mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{job.category}</p>
 
                 {/* Status */}
                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}>
@@ -133,27 +141,27 @@ export default function PostedJobs() {
                 </span>
 
                 {/* Details */}
-                <div className="text-gray-700 mt-3 space-y-1 text-sm">
+                <div className={`mt-3 space-y-1 text-sm ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
                   <p>📍 {job.location}</p>
                   <p>
-                    💰 <span className="text-green-600 font-semibold">{job.budget} ৳</span>
+                    💰 <span className={`font-semibold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>{job.budget} ৳</span>
                   </p>
                   <p>🗓️ {job.date}</p>
                 </div>
 
                 {/* Applicants */}
                 <div className="mt-4">
-                  <p className="font-semibold text-sm mb-1">
-                    👷 Applicants: <span className="font-bold text-blue-600">{job.applicants?.length || 0}</span>
+                  <p className={`font-semibold text-sm mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    👷 Applicants: <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{job.applicants?.length || 0}</span>
                   </p>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="mt-5 flex justify-between">
-                <button className="btn btn-sm btn-outline">Edit</button>
-                <button className="btn btn-sm btn-error text-white">Delete</button>
-                <Link to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} className="btn bg-green-500 text-white text-xl">
+                <button className={`btn btn-sm ${isDarkMode ? 'btn-outline text-white border-white hover:bg-white hover:text-gray-900' : 'btn-outline'}`}>Edit</button>
+                <button className={`btn btn-sm ${isDarkMode ? 'btn-error text-white' : 'btn-error text-white'}`}>Delete</button>
+                <Link to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} className={`btn text-xl ${isDarkMode ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-green-500 text-white hover:bg-green-600'}`}>
                   View
                 </Link>
               </div>

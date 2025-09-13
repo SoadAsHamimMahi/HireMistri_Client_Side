@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import StepTitle from './PosteJobForm/StepTitle';
 import StepSkills from './PosteJobForm/StepSkills';
 import StepScope from './PosteJobForm/StepScope';
@@ -7,6 +8,7 @@ import StepImagesReview from './PosteJobForm/StepImagesReview';
 
 
 export default function PostJob() {
+  const { isDarkMode } = useTheme();
   const [form, setForm] = useState({
     title: '',
     category: '',
@@ -25,7 +27,7 @@ export default function PostJob() {
   const prevStep = () => setStep((prev) => prev - 1);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className={`max-w-6xl mx-auto px-6 py-10 transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {step === 1 && (
         <StepTitle form={form} setForm={setForm} nextStep={nextStep} />
       )}

@@ -2,8 +2,10 @@
 
 import { useEffect } from 'react';
 import { FaMapMarkerAlt, FaMoneyBillWave, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }) {
+  const { isDarkMode } = useTheme();
   // 🌍 Auto-detect location on mount
   useEffect(() => {
     if (!form.location && 'geolocation' in navigator) {
@@ -26,12 +28,12 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Section */}
         <div className="space-y-6">
-          <p className="text-sm text-gray-500 font-medium">4/5 Job post</p>
-          <h2 className="text-3xl font-bold leading-snug text-gray-900">Set your Budget and Location</h2>
-          <p className="text-gray-600">
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>4/5 Job post</p>
+          <h2 className={`text-3xl font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Set your Budget and Location</h2>
+          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
             Help workers know how much you can pay and where the work is located.
           </p>
-          <button onClick={prevStep} className="btn btn-outline w-28">Back</button>
+          <button onClick={prevStep} className={`btn btn-outline w-28 ${isDarkMode ? 'text-white border-white hover:bg-white hover:text-gray-900' : ''}`}>Back</button>
         </div>
 
         {/* Right Section */}

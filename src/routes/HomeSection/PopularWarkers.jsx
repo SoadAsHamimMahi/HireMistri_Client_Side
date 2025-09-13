@@ -2,14 +2,17 @@ import { Link } from 'react-router-dom';
 import workers from '../../FakeData/PopularWorker.json';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
+import { useTheme } from '../../contexts/ThemeContext';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const PopularWarkers = () => {
+  const { isDarkMode } = useTheme();
+  
   return (
     <div className="mt-16 px-4 md:px-8 lg:px-0 max-w-7xl mx-auto">
-      <h1 className="text-center text-2xl md:text-3xl font-bold mb-8">
+      <h1 className={`text-center text-2xl md:text-3xl font-bold mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         Most Popular Workers
       </h1>
 
@@ -18,7 +21,7 @@ const PopularWarkers = () => {
           <Link
             to={`/worker/${worker.id}`}
             key={worker.id}
-           className="card bg-base-100 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:ring-2 hover:ring-violet-300 no-underline text-inherit"
+           className={`card transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:ring-2 hover:ring-violet-300 no-underline text-inherit ${isDarkMode ? 'bg-gray-800' : 'bg-base-100'}`}
           >
             {/* ✅ Gig Image Slider */}
             <div className="h-52 w-full overflow-hidden">
@@ -46,11 +49,11 @@ const PopularWarkers = () => {
                 <div className="badge badge-success">⭐ {worker.rating}</div>
               </h2>
 
-              <p className="text-sm text-gray-600 capitalize">
+              <p className={`text-sm capitalize ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                 {(worker.roles || [worker.role]).join(', ')} • {worker.jobs}+ jobs • {worker.location}
               </p>
 
-              <p className="font-semibold text-gray-800 mt-2">
+              <p className={`font-semibold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                 Starts from ৳{worker.price}
               </p>
 

@@ -19,7 +19,9 @@ import ProtectedRoute from './Authentication/ProtectedRoute';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import AuthProvider from './Authentication/AuthProvider';
 import PublicRoute from './Authentication/PublicRoute';
+import ThemeProvider from './contexts/ThemeContext';
 import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
+import MyProfile from './routes/MyProfile';
 
 const router = createBrowserRouter([
   {
@@ -102,14 +104,24 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         )
       },
+      {
+        path: 'my-profile',
+        element: (
+          <ProtectedRoute>
+            <MyProfile />
+          </ProtectedRoute>
+        )
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

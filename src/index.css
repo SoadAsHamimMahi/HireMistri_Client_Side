@@ -32,3 +32,8 @@
   animation: fadeSlideIn 0.4s ease-out forwards;
 }
 
+/* Ensure dark mode works properly */
+.dark {
+  color-scheme: dark;
+}
+
