@@ -20,8 +20,10 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import AuthProvider from './Authentication/AuthProvider';
 import PublicRoute from './Authentication/PublicRoute';
 import ThemeProvider from './contexts/ThemeContext';
+import { MessagesProvider } from './contexts/MessagesContext';
 import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
 import MyProfile from './routes/MyProfile';
+import EditJob from './routes/EditJob';
 
 const router = createBrowserRouter([
   {
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
         )
       },
       {
+        path: 'applications',
+        element: (
+          <ProtectedRoute>
+            <Applications />
+          </ProtectedRoute>
+        )
+      },
+      {
         path: 'worker/:workerId',
         element: (
           <ProtectedRoute>
@@ -97,6 +107,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'edit-job/:id',
+        element: (
+          <ProtectedRoute>
+            <EditJob />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'post-job-wizard',
         element: (
           <ProtectedRoute>
@@ -112,22 +130,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         )
       },
-      {
-        path: 'applications',
-        element: (
-          <ProtectedRoute>
-            <Applications />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'applications/:jobId',
-        element: (
-          <ProtectedRoute>
-            <Applications />
-          </ProtectedRoute>
-        )
-      },
     ],
   },
 ]);
@@ -136,7 +138,9 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <MessagesProvider>
+          <RouterProvider router={router} />
+        </MessagesProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>

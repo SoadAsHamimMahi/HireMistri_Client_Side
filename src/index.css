@@ -37,3 +37,8 @@
   color-scheme: dark;
 }
 
+/* Body color transitions */
+body {
+  @apply bg-base-100 text-base-content transition-colors duration-300;
+}
+

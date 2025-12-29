@@ -6,7 +6,80 @@ import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// Delete Job Button Component
+function DeleteJobButton({ jobId, jobTitle, onDelete }) {
+  const [showModal, setShowModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await axios.delete(`${base}/api/browse-jobs/${jobId}`);
+      setShowModal(false);
+      if (onDelete) {
+        onDelete();
+      } else {
+        navigate('/My-Posted-Jobs');
+      }
+    } catch (err) {
+      console.error('Failed to delete job:', err);
+      alert(err.response?.data?.error || 'Failed to delete job. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <button 
+        className="btn btn-sm btn-error"
+        onClick={() => setShowModal(true)}
+      >
+        🗑️
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <div className="relative bg-base-200 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-base-300">
+            <h3 className="text-xl font-bold mb-4 text-base-content">Delete Job</h3>
+            <p className="text-base-content opacity-70 mb-6">
+              Are you sure you want to delete "{jobTitle}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowModal(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error text-white"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function PostedJobs() {
   const { isDarkMode } = useTheme();
@@ -44,13 +117,28 @@ export default function PostedJobs() {
         const data = await res.json();
         if (ignore) return;
 
-        const normalized = (Array.isArray(data) ? data : []).map((j) => ({
-          ...j,
-          id: j.id ?? (typeof j._id === 'string' ? j._id : j._id?.$oid) ?? String(j._id || ''),
-          images: j.images || [],
-          applicants: j.applicants || [],
-          status: j.status || 'active',
-        }));
+        const normalized = (Array.isArray(data) ? data : []).map((j) => {
+          // Extract MongoDB _id properly
+          let mongoId = null;
+          if (j._id) {
+            if (typeof j._id === 'string') {
+              mongoId = j._id;
+            } else if (j._id.$oid) {
+              mongoId = j._id.$oid;
+            } else if (j._id.toString) {
+              mongoId = j._id.toString();
+            }
+          }
+          
+          return {
+            ...j,
+            id: j.id ?? mongoId ?? String(j._id || ''),
+            mongoId: mongoId || j.id || String(j._id || ''),
+            images: j.images || [],
+            applicants: j.applicants || [],
+            status: j.status || 'active',
+          };
+        });
 
         setJobs(normalized);
       } catch (e) {
@@ -90,32 +178,32 @@ export default function PostedJobs() {
   const getStatusColor = (status) => {
     switch (String(status).toLowerCase()) {
       case 'active':
-        return isDarkMode ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700';
+        return 'badge-success';
       case 'in-progress':
-        return isDarkMode ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700';
+        return 'badge-warning';
       case 'completed':
-        return isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700';
+        return 'badge-info';
       default:
-        return isDarkMode ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700';
+        return 'badge-neutral';
     }
   };
 
   if (loading) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen bg-base-100 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="text-center mb-8">
-            <div className={`h-12 w-64 mx-auto rounded-lg mb-4 ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
-            <div className={`h-6 w-96 mx-auto rounded ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
+            <div className="h-12 w-64 mx-auto rounded-lg mb-4 bg-base-300 animate-pulse"></div>
+            <div className="h-6 w-96 mx-auto rounded bg-base-300 animate-pulse"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                <div className={`h-48 ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
+              <div key={i} className="rounded-2xl overflow-hidden bg-base-200">
+                <div className="h-48 bg-base-300 animate-pulse"></div>
                 <div className="p-6">
-                  <div className={`h-6 w-3/4 rounded mb-2 ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
-                  <div className={`h-4 w-1/2 rounded mb-4 ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
-                  <div className={`h-8 w-full rounded ${isDarkMode ? 'bg-gray-700 animate-pulse' : 'bg-gray-200 animate-pulse'}`}></div>
+                  <div className="h-6 w-3/4 rounded mb-2 bg-base-300 animate-pulse"></div>
+                  <div className="h-4 w-1/2 rounded mb-4 bg-base-300 animate-pulse"></div>
+                  <div className="h-8 w-full rounded bg-base-300 animate-pulse"></div>
                 </div>
               </div>
             ))}
@@ -127,48 +215,48 @@ export default function PostedJobs() {
 
   if (err) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
         <div className="text-center">
           <div className="text-6xl mb-4">😞</div>
-          <h2 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Oops! Something went wrong</h2>
-          <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{err}</p>
+          <h2 className="text-2xl font-bold mb-2 text-base-content">Oops! Something went wrong</h2>
+          <p className="text-lg opacity-70">{err}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="min-h-screen bg-base-100 transition-colors duration-300">
       {/* Enhanced Header Section */}
-      <div className={`relative overflow-hidden ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-green-50 to-blue-50'}`}>
+      <div className="relative overflow-hidden bg-base-200">
         <div className="max-w-7xl mx-auto px-4 py-12">
           {/* Header Title */}
           <div className="text-center mb-8">
-            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-base-content">
               📋 My Posted Jobs
             </h1>
-            <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <p className="text-lg opacity-70">
               Manage your job postings and track applications
             </p>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className={`rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700' : 'bg-white/70 backdrop-blur-sm border border-gray-200'}`}>
-              <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{totalJobs}</div>
-              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Jobs</div>
+            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
+              <div className="text-2xl font-bold text-base-content">{totalJobs}</div>
+              <div className="text-sm opacity-70">Total Jobs</div>
             </div>
-            <div className={`rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700' : 'bg-white/70 backdrop-blur-sm border border-gray-200'}`}>
-              <div className={`text-2xl font-bold text-green-500`}>{activeJobs}</div>
-              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Active</div>
+            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
+              <div className="text-2xl font-bold text-primary">{activeJobs}</div>
+              <div className="text-sm opacity-70">Active</div>
             </div>
-            <div className={`rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700' : 'bg-white/70 backdrop-blur-sm border border-gray-200'}`}>
-              <div className={`text-2xl font-bold text-yellow-500`}>{inProgressJobs}</div>
-              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>In Progress</div>
+            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
+              <div className="text-2xl font-bold text-warning">{inProgressJobs}</div>
+              <div className="text-sm opacity-70">In Progress</div>
             </div>
-            <div className={`rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700' : 'bg-white/70 backdrop-blur-sm border border-gray-200'}`}>
-              <div className={`text-2xl font-bold text-blue-500`}>{totalApplicants}</div>
-              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Applicants</div>
+            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
+              <div className="text-2xl font-bold text-info">{totalApplicants}</div>
+              <div className="text-sm opacity-70">Total Applicants</div>
             </div>
           </div>
 
@@ -176,7 +264,7 @@ export default function PostedJobs() {
           <div className="text-center">
             <Link 
               to="/post-job" 
-              className={`inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-500/25' : 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/25'}`}
+              className="btn btn-primary btn-lg gap-2"
             >
               <span className="text-xl">➕</span>
               Post New Job
@@ -195,27 +283,11 @@ export default function PostedJobs() {
               <button
                 key={option.key}
                 onClick={() => setFilter(option.key)}
-                className={`group relative px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
-                  filter === option.key
-                    ? isDarkMode
-                      ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
-                      : 'bg-green-500 text-white shadow-lg shadow-green-500/25'
-                    : isDarkMode
-                      ? 'bg-gray-800/50 backdrop-blur-sm text-white border border-gray-700 hover:bg-gray-700/50 hover:border-gray-600'
-                      : 'bg-white/70 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:border-gray-300'
-                }`}
+                className={`btn ${filter === option.key ? 'btn-primary' : 'btn-outline'} gap-2`}
               >
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">{option.icon}</span>
-                  <span>{option.label}</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    filter === option.key
-                      ? isDarkMode ? 'bg-green-500 text-white' : 'bg-green-400 text-white'
-                      : isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {option.count}
-                  </span>
-                </span>
+                <span className="text-lg">{option.icon}</span>
+                <span>{option.label}</span>
+                <span className="badge badge-sm">{option.count}</span>
               </button>
             ))}
           </div>
@@ -225,10 +297,10 @@ export default function PostedJobs() {
         {filteredJobs.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-8xl mb-6">📋</div>
-            <h3 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h3 className="text-2xl font-bold mb-4 text-base-content">
               {filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs found`}
             </h3>
-            <p className={`text-lg mb-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className="text-lg mb-8 opacity-70">
               {filter === 'all' 
                 ? 'Start by posting your first job to find skilled workers' 
                 : `Try switching to a different filter or post a new job`
@@ -237,7 +309,7 @@ export default function PostedJobs() {
             {filter === 'all' && (
               <Link 
                 to="/post-job" 
-                className={`inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-500/25' : 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/25'}`}
+                className="btn btn-primary btn-lg gap-2"
               >
                 <span className="text-xl">➕</span>
                 Post Your First Job
@@ -249,17 +321,13 @@ export default function PostedJobs() {
             {filteredJobs.map((job) => (
             <div
               key={job.id}
-              className={`group relative overflow-hidden rounded-2xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-2 ${
-                isDarkMode 
-                  ? 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 shadow-2xl shadow-gray-900/50' 
-                  : 'bg-white/70 backdrop-blur-sm border border-gray-200/50 shadow-2xl shadow-gray-200/50'
-              }`}
+              className="card bg-base-200 border border-base-300 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-2"
             >
               {/* Enhanced Image Section */}
               <div className="relative h-48 overflow-hidden">
                 {/* Status Badge Overlay */}
                 <div className="absolute top-4 left-4 z-10">
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm ${getStatusColor(job.status)}`}>
+                  <span className={`badge ${getStatusColor(job.status)} gap-1`}>
                     <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
                     {job.status}
                   </span>
@@ -268,7 +336,7 @@ export default function PostedJobs() {
                 {/* Urgency Badge */}
                 {job.applicants?.length > 5 && (
                   <div className="absolute top-4 right-4 z-10">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-orange-500 text-white backdrop-blur-sm">
+                    <span className="badge badge-warning gap-1">
                       🔥 Hot Job
                     </span>
                   </div>
@@ -287,53 +355,53 @@ export default function PostedJobs() {
               </div>
 
               {/* Enhanced Job Content */}
-              <div className="p-6 flex flex-col justify-between h-full">
+              <div className="card-body">
                 <div>
-                  <h3 className={`text-xl font-bold mb-2 line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h3 className="card-title line-clamp-2">
                     {job.title}
                   </h3>
-                  <p className={`text-sm font-medium mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <p className="text-sm opacity-70 mb-4">
                     {job.category}
                   </p>
 
                   {/* Enhanced Details Grid */}
                   <div className="grid grid-cols-1 gap-3 mb-4">
-                    <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <div className="flex items-center gap-2 text-sm opacity-80">
                       <span className="text-lg">📍</span>
                       <span className="truncate">{job.location}</span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <div className="flex items-center gap-2 text-sm opacity-80">
                       <span className="text-lg">💰</span>
-                      <span className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                      <span className="font-bold text-primary">
                         {job.budget} ৳
                       </span>
                     </div>
-                    <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <div className="flex items-center gap-2 text-sm opacity-80">
                       <span className="text-lg">🗓️</span>
                       <span>{job.date}</span>
                     </div>
                   </div>
 
                   {/* Enhanced Applicants Section */}
-                  <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <div className="card bg-base-300 p-3 mb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">👷</span>
-                        <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <span className="text-sm font-medium opacity-80">
                           Applicants
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-lg font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                        <span className="text-lg font-bold text-info">
                           {job.applicants?.length || 0}
                         </span>
                         {job.applicants?.length > 0 && (
                           <div className="flex -space-x-2">
                             {job.applicants.slice(0, 3).map((applicant, idx) => (
-                              <div key={idx} className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 border-2 border-white"></div>
+                              <div key={idx} className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-secondary border-2 border-base-100"></div>
                             ))}
                             {job.applicants.length > 3 && (
-                              <div className={`w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold ${isDarkMode ? 'bg-gray-600 text-white' : 'bg-gray-300 text-gray-700'}`}>
+                              <div className="w-6 h-6 rounded-full border-2 border-base-100 bg-base-300 flex items-center justify-center text-xs font-bold">
                                 +{job.applicants.length - 3}
                               </div>
                             )}
@@ -345,28 +413,24 @@ export default function PostedJobs() {
                 </div>
 
                 {/* Enhanced Action Buttons */}
-                <div className="flex gap-2">
-                  <button className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    isDarkMode 
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white border border-gray-600' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-300'
-                  }`}>
+                <div className="card-actions justify-end gap-2">
+                  <Link 
+                    to={`/edit-job/${job.mongoId || job.id}`}
+                    className="btn btn-sm btn-ghost"
+                  >
                     ✏️ Edit
-                  </button>
-                  <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    isDarkMode 
-                      ? 'bg-red-600 text-white hover:bg-red-700' 
-                      : 'bg-red-500 text-white hover:bg-red-600'
-                  }`}>
-                    🗑️
-                  </button>
+                  </Link>
+                  <DeleteJobButton 
+                    jobId={job.mongoId || job.id} 
+                    jobTitle={job.title}
+                    onDelete={() => {
+                      // Remove the deleted job from the list
+                      setJobs(prevJobs => prevJobs.filter(j => (j.mongoId || j.id) !== (job.mongoId || job.id)));
+                    }}
+                  />
                   <Link 
                     to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} 
-                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium text-center transition-all duration-300 ${
-                      isDarkMode 
-                        ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-500/25' 
-                        : 'bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/25'
-                    }`}
+                    className="btn btn-sm btn-primary"
                   >
                     👁️ View Details
                   </Link>

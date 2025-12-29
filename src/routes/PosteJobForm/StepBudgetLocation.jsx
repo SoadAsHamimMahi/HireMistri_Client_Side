@@ -1,22 +1,28 @@
-// src/routes/PostJobForm/StepBudgetLocation.jsx
-
 import { useEffect } from 'react';
-import { FaMapMarkerAlt, FaMoneyBillWave, FaCalendarAlt, FaClock } from 'react-icons/fa';
-import { useTheme } from '../../contexts/ThemeContext';
+import { FaMapMarkerAlt, FaMoneyBillWave, FaCalendarAlt, FaClock, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
 export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }) {
-  const { isDarkMode } = useTheme();
-  
-  // 🌍 Auto-detect location on mount
+  // Auto-detect location on mount
   useEffect(() => {
     if (!form.location && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-        const data = await res.json();
-        const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
-        setForm(prev => ({ ...prev, location: address }));
-      });
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await res.json();
+            const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
+            setForm((prev) => ({ ...prev, location: address }));
+          } catch (error) {
+            console.error('Error fetching location:', error);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+        }
+      );
     }
   }, []);
 
@@ -37,105 +43,153 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Section */}
-        <div className="space-y-6">
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>4/5 Job post</p>
-          <h2 className={`text-3xl font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Set your Budget and Location</h2>
-          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-            Help workers know how much you can pay and where the work is located.
-          </p>
-          <button onClick={prevStep} className={`btn btn-outline w-28 ${isDarkMode ? 'text-white border-white hover:bg-white hover:text-gray-900' : ''}`}>Back</button>
-        </div>
-
-        {/* Right Section */}
-        <div className="space-y-6">
-          {/* Budget */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left Section - Instructions */}
+      <div className="card bg-base-200 shadow-sm border border-base-300">
+        <div className="card-body p-6 lg:p-8 space-y-6">
           <div>
-            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estimated Budget (৳)</label>
-            <div className="relative">
-              <span className="absolute top-3 left-3 text-gray-400"><FaMoneyBillWave /></span>
-              <input
-                name="budget"
-                type="number"
-                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                placeholder="e.g. 1000"
-                value={form.budget}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Location</label>
-            <div className="relative">
-              <span className="absolute top-3 left-3 text-gray-400"><FaMapMarkerAlt /></span>
-              <input
-                name="location"
-                type="text"
-                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                value={form.location}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Date</label>
-            <div className="relative">
-              <span className="absolute top-3 left-3 text-gray-400"><FaCalendarAlt /></span>
-              <input
-                name="date"
-                type="date"
-                min={getTodayDate()}
-                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                value={form.date}
-                onChange={handleChange}
-                style={{
-                  colorScheme: isDarkMode ? 'dark' : 'light',
-                  backgroundColor: isDarkMode ? '#374151' : 'white',
-                  color: isDarkMode ? 'white' : 'black'
-                }}
-              />
-            </div>
-            <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Only future dates can be selected
+            <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 4 of 5</p>
+            <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
+              Set your Budget and Location
+            </h2>
+            <p className="text-base-content opacity-70 leading-relaxed">
+              Help workers know how much you can pay and where the work is located.
             </p>
           </div>
 
-          {/* Time */}
-          <div>
-            <label className={`block font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Time</label>
-            <div className="relative">
-              <span className="absolute top-3 left-3 text-gray-400"><FaClock /></span>
-              <input
-                name="time"
-                type="time"
-                min={form.date === getTodayDate() ? getCurrentTime() : '00:00'}
-                className={`input input-bordered w-full pl-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                value={form.time}
-                onChange={handleChange}
-                style={{
-                  colorScheme: isDarkMode ? 'dark' : 'light',
-                  backgroundColor: isDarkMode ? '#374151' : 'white',
-                  color: isDarkMode ? 'white' : 'black'
-                }}
-              />
-            </div>
-            <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {form.date === getTodayDate() ? 'Only future times can be selected for today' : 'Select any time for future dates'}
-            </p>
+          {/* Tips Section */}
+          <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+            <p className="text-sm font-semibold text-base-content mb-2">💡 Budget & Location tips:</p>
+            <ul className="text-sm text-base-content opacity-70 space-y-1 list-disc list-inside">
+              <li>Set a realistic budget range</li>
+              <li>Be specific about location</li>
+              <li>Choose preferred date and time</li>
+            </ul>
           </div>
 
-          <button
-            onClick={nextStep}
-            className="btn bg-green-600 hover:bg-green-700 text-white w-32 mt-4"
-          >
-            Next: Images
+          <button className="btn btn-outline w-32" onClick={prevStep}>
+            <FaArrowLeft className="mr-2" />
+            Back
           </button>
+        </div>
+      </div>
+
+      {/* Right Section - Form */}
+      <div className="card bg-base-200 shadow-sm border border-base-300">
+        <div className="card-body p-6 lg:p-8 space-y-6">
+          {/* Budget and Location Group */}
+          <div className="bg-base-100 rounded-lg p-4 border border-base-300 space-y-4">
+            <h3 className="font-semibold text-base-content opacity-80 text-sm">Payment & Location</h3>
+            
+            {/* Budget */}
+            <div className="space-y-2">
+              <label className="block font-semibold text-base-content opacity-80">
+                Estimated Budget (৳)
+              </label>
+              <div className="relative">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                  <FaMoneyBillWave />
+                </span>
+                <input
+                  name="budget"
+                  type="number"
+                  min="0"
+                  step="100"
+                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. 5000, 10000"
+                  value={form.budget || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-base-content opacity-60">
+                Enter your estimated budget in Bangladeshi Taka (৳)
+              </p>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <label className="block font-semibold text-base-content opacity-80">
+                Location
+              </label>
+              <div className="relative">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                  <FaMapMarkerAlt />
+                </span>
+                <input
+                  name="location"
+                  type="text"
+                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. Dhanmondi, Dhaka or Full address"
+                  value={form.location || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-base-content opacity-60">
+                We'll try to auto-detect your location, or enter it manually
+              </p>
+            </div>
+          </div>
+
+          {/* Date and Time Group */}
+          <div className="bg-base-100 rounded-lg p-4 border border-base-300 space-y-4">
+            <h3 className="font-semibold text-base-content opacity-80 text-sm">Preferred Schedule</h3>
+            
+            {/* Date */}
+            <div className="space-y-2">
+              <label className="block font-semibold text-base-content opacity-80">
+                Preferred Date
+              </label>
+              <div className="relative">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                  <FaCalendarAlt />
+                </span>
+                <input
+                  name="date"
+                  type="date"
+                  min={getTodayDate()}
+                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary text-base-content"
+                  value={form.date || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-base-content opacity-60">
+                Only future dates can be selected
+              </p>
+            </div>
+
+            {/* Time */}
+            <div className="space-y-2">
+              <label className="block font-semibold text-base-content opacity-80">
+                Preferred Time
+              </label>
+              <div className="relative">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                  <FaClock />
+                </span>
+                <input
+                  name="time"
+                  type="time"
+                  min={form.date === getTodayDate() ? getCurrentTime() : '00:00'}
+                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary text-base-content"
+                  value={form.time || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-base-content opacity-60">
+                {form.date === getTodayDate()
+                  ? 'Only future times can be selected for today'
+                  : 'Select any time for future dates'}
+              </p>
+            </div>
+          </div>
+
+          {/* Navigation Button */}
+          <div className="flex justify-end pt-4 border-t border-base-300">
+            <button onClick={nextStep} className="btn btn-primary btn-lg">
+              Next: Images
+              <FaArrowRight className="ml-2" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

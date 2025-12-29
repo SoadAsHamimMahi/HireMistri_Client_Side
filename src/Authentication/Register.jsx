@@ -108,11 +108,11 @@ const Register = () => {
         />
         <div className="flex items-center w-full max-w-3xl p-8 mx-auto lg:px-12 lg:w-3/5">
           <div className="w-full">
-            <h1 className="text-2xl font-semibold tracking-wider text-gray-800 dark:text-white">
+            <h1 className="text-2xl font-semibold tracking-wider text-base-content">
               Create a new account
             </h1>
 
-            <p className="text-sm text-gray-500 mt-6">
+            <p className="text-sm text-base-content opacity-60 mt-6">
               Already have an account?{' '}
               <Link to="/login" className="text-blue-500 hover:underline">
                 Log in
@@ -133,91 +133,91 @@ const Register = () => {
 
             <div className="mt-6">
               <div className="mt-3 md:flex md:items-center md:-mx-2">
-                <h3 className="justify-center px-6 py-3 mt-4 text-green-500 border">Client</h3>
+                <h3 className="justify-center px-6 py-3 mt-4 text-primary border">Client</h3>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-2">
               {/* First Name */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">First Name</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">First Name</label>
                 <input
                   type="text"
                   name="firstName"
                   value={form.firstName}
                   onChange={handleChange}
                   placeholder="First Name"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               {/* Last Name */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Last Name</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Last Name</label>
                 <input
                   type="text"
                   name="lastName"
                   value={form.lastName}
                   onChange={handleChange}
                   placeholder="Last Name"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Phone</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Phone</label>
                 <input
                   type="tel"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="01XXXXXXXXX"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Email</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={form.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               {/* Password */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Password</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Password</label>
                 <input
                   type="password"
                   name="password"
                   value={form.password}
                   onChange={handleChange}
                   placeholder="Password"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Confirm Password</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Confirm Password</label>
                 <input
                   type="password"
                   name="confirmPassword"
                   value={form.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm Password"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>

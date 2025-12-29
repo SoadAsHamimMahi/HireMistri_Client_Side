@@ -12,12 +12,13 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check localStorage first, then system preference
+    // Check localStorage first, then default to dark (dark-first approach)
     const saved = localStorage.getItem('theme');
     if (saved) {
       return saved === 'dark';
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Default to dark mode (dark-first)
+    return true;
   });
 
   useEffect(() => {
@@ -30,25 +31,24 @@ export const ThemeProvider = ({ children }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Update data-theme attribute for DaisyUI
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
   // Set initial theme on mount
   useEffect(() => {
     const saved = localStorage.getItem('theme');
-    if (saved) {
-      if (saved === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+    const themeToApply = saved || 'dark'; // Default to dark mode (dark-first)
+    
+    if (themeToApply === 'dark') {
+      document.documentElement.classList.add('dark');
     } else {
-      // Use system preference
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      document.documentElement.classList.remove('dark');
     }
+    
+    // Set data-theme attribute for DaisyUI
+    document.documentElement.setAttribute('data-theme', themeToApply);
   }, []);
 
   const toggleTheme = () => {

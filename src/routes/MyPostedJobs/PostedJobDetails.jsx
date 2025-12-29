@@ -1,10 +1,79 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import axios from 'axios';
+
+// Delete Job Button Component
+function DeleteJobButton({ jobId, jobTitle }) {
+  const [showModal, setShowModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await axios.delete(`${base}/api/browse-jobs/${jobId}`);
+      setShowModal(false);
+      navigate('/My-Posted-Jobs');
+    } catch (err) {
+      console.error('Failed to delete job:', err);
+      alert(err.response?.data?.error || 'Failed to delete job. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <button 
+        className="btn btn-error text-white"
+        onClick={() => setShowModal(true)}
+      >
+        Delete
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <div className="relative bg-base-200 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-base-300">
+            <h3 className="text-xl font-bold mb-4 text-base-content">Delete Job</h3>
+            <p className="text-base-content opacity-70 mb-6">
+              Are you sure you want to delete "{jobTitle}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowModal(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error text-white"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function PostedJobDetails() {
   const { id } = useParams();
@@ -96,21 +165,21 @@ export default function PostedJobDetails() {
     <div className="flex items-start gap-3">
       <span className="text-xl leading-6">{icon}</span>
       <div className="text-sm">
-        <p className="text-gray-500">{label}</p>
-        <p className="font-medium text-gray-800">{value}</p>
+        <p className="text-base-content opacity-60">{label}</p>
+        <p className="font-medium text-base-content">{value}</p>
       </div>
     </div>
   );
 
   const Badge = ({ text, tone = 'default' }) => {
     const tones = {
-      default: 'bg-gray-100 text-gray-700',
-      active: 'bg-green-100 text-green-700',
-      'in-progress': 'bg-yellow-100 text-yellow-700',
-      completed: 'bg-blue-100 text-blue-700',
-      pending: 'bg-gray-100 text-gray-700',
-      accepted: 'bg-green-100 text-green-700',
-      rejected: 'bg-rose-100 text-rose-700',
+      default: 'badge-neutral',
+      active: 'badge-success',
+      'in-progress': 'badge-warning',
+      completed: 'badge-info',
+      pending: 'badge-neutral',
+      accepted: 'badge-success',
+      rejected: 'badge-error',
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tones[tone] || tones.default}`}>
@@ -180,7 +249,7 @@ const decide = async (app, nextStatus) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left: slider */}
-        <div className="self-start bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+        <div className="self-start bg-base-200 border border-base-300 rounded-xl overflow-hidden shadow-sm transition-colors duration-300">
           <Swiper
             modules={[Navigation, Pagination, Autoplay]}
             navigation
@@ -202,7 +271,7 @@ const decide = async (app, nextStatus) => {
         </div>
 
         {/* Right: details + applicants */}
-        <div className="bg-white border rounded-xl p-5 md:p-6 shadow-sm flex flex-col gap-5">
+        <div className="bg-base-200 border border-base-300 rounded-xl p-5 md:p-6 shadow-sm flex flex-col gap-5 transition-colors duration-300">
           {/* top row */}
           <div className="flex justify-between items-center flex-wrap gap-3">
             <div className="flex items-center gap-2 flex-wrap">
@@ -212,7 +281,7 @@ const decide = async (app, nextStatus) => {
                   {job.skills.map((s, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-0.5 text-xs bg-indigo-50 text-indigo-700 rounded-full border border-indigo-100"
+                      className="px-2.5 py-0.5 text-xs bg-base-300 text-base-content rounded-full border border-base-300"
                     >
                       {s}
                     </span>
@@ -235,8 +304,8 @@ const decide = async (app, nextStatus) => {
 
           {/* description */}
           <div>
-            <p className="text-gray-500 text-sm mb-1">Description</p>
-            <p className="leading-relaxed text-gray-800 bg-base-100 p-4 rounded-lg">
+            <p className="text-base-content opacity-60 text-sm mb-1">Description</p>
+            <p className="leading-relaxed text-base-content bg-base-100 p-4 rounded-lg">
               {job.description || 'No description provided.'}
             </p>
           </div>
@@ -244,8 +313,8 @@ const decide = async (app, nextStatus) => {
           {/* actions */}
           <div className="pt-2 flex gap-3">
             <Link to="/My-Posted-Jobs" className="btn btn-outline">Back to list</Link>
-            <button className="btn">Edit</button>
-            <button className="btn btn-error text-white">Delete</button>
+            <Link to={`/edit-job/${id}`} className="btn btn-primary">Edit</Link>
+            <DeleteJobButton jobId={id} jobTitle={job.title} />
           </div>
 
           {/* Applicants */}
@@ -256,7 +325,7 @@ const decide = async (app, nextStatus) => {
             </div>
 
             {appsLoading ? (
-              <div className="p-4 border rounded-lg text-sm text-gray-600 bg-base-100">Loading applications…</div>
+              <div className="p-4 border rounded-lg text-sm text-base-content opacity-70 bg-base-100">Loading applications…</div>
             ) : appsErr ? (
               <div className="p-4 border rounded-lg text-sm text-rose-600 bg-rose-50">❌ {appsErr}</div>
             ) : Array.isArray(apps) && apps.length > 0 ? (
@@ -289,7 +358,7 @@ const decide = async (app, nextStatus) => {
                 </table>
               </div>
             ) : (
-              <div className="p-4 border rounded-lg text-sm text-gray-600 bg-base-100">
+              <div className="p-4 border rounded-lg text-sm text-base-content opacity-70 bg-base-100">
                 No applicants yet.
               </div>
             )}
@@ -301,30 +370,30 @@ const decide = async (app, nextStatus) => {
       {open && selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
-          <div className="relative bg-white w-full max-w-lg rounded-xl shadow-lg p-5">
+          <div className="relative bg-base-200 border border-base-300 w-full max-w-lg rounded-xl shadow-lg p-5 transition-colors duration-300">
             <h3 className="text-lg font-semibold mb-3">Application</h3>
 
             <div className="space-y-2 text-sm mb-3">
               <div className="flex justify-between gap-3">
-                <span className="text-gray-500 w-28">Name</span>
+                <span className="text-base-content opacity-60 w-28">Name</span>
                 <span className="font-medium">{selected.workerName || '—'}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-gray-500 w-28">Email</span>
+                <span className="text-base-content opacity-60 w-28">Email</span>
                 <span className="font-medium break-all">{selected.workerEmail || selected.postedByEmail || '—'}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-gray-500 w-28">Phone</span>
+                <span className="text-base-content opacity-60 w-28">Phone</span>
                 <span className="font-medium">{selected.workerPhone || '—'}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-gray-500 w-28">Status</span>
+                <span className="text-base-content opacity-60 w-28">Status</span>
                 <span><Badge text={selected.status || 'pending'} tone={(selected.status || 'pending').toLowerCase()} /></span>
               </div>
             </div>
 
             <div>
-              <p className="text-gray-500 text-sm mb-1">Proposal</p>
+              <p className="text-base-content opacity-60 text-sm mb-1">Proposal</p>
               <div className="p-3 border rounded-lg bg-base-100 whitespace-pre-wrap">
                 {selected.proposalText || '—'}
               </div>

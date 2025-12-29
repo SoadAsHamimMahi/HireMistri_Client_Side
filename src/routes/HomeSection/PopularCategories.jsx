@@ -32,22 +32,22 @@ const PopularCategories = () => {
   return (
     <div className="relative z-30 mt-8 md:-mt-20 w-11/12 md:w-4/5 mx-auto">
       <div className="text-center mb-8">
-        <h2 className={`text-3xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Popular Categories</h2>
-        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Find skilled professionals in your area</p>
+        <h2 className="text-3xl font-bold mb-4 text-base-content">Popular Categories</h2>
+        <p className="text-base-content opacity-70">Find skilled professionals in your area</p>
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {categories.map((cat, i) => (
           <div 
             key={i} 
-            className={`group rounded-xl shadow-sm border p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} ${getColorClasses(cat.color)}`}
+            className={`group card bg-base-200 shadow-sm border border-base-300 p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${getColorClasses(cat.color)}`}
           >
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 bg-base-300">
               <img className="w-10 h-10 object-contain" src={cat.img} alt={cat.label} />
             </div>
-            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{cat.label}</h3>
-            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{cat.count}</p>
-            <button className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
+            <h3 className="text-lg font-semibold mb-2 text-base-content">{cat.label}</h3>
+            <p className="text-sm mb-4 text-base-content opacity-60">{cat.count}</p>
+            <button className="btn btn-primary w-full">
               Find Experts
             </button>
           </div>

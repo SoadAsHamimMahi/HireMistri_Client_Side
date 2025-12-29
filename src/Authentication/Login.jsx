@@ -63,10 +63,10 @@ const Login = () => {
         />
         <div className="flex items-center w-full max-w-3xl p-8 mx-auto lg:px-12 lg:w-3/5">
           <div className="w-full">
-            <h1 className="text-2xl font-semibold tracking-wider text-gray-800 dark:text-white">
+            <h1 className="text-2xl font-semibold tracking-wider text-base-content">
               Log in to your account
             </h1>
-            <p className="text-sm text-gray-500 mt-6">
+            <p className="text-sm text-base-content opacity-60 mt-6">
               Don’t have an account?{' '}
               <Link to="/registration" className="text-blue-500 hover:underline">
                 Register
@@ -90,27 +90,27 @@ const Login = () => {
               className="grid grid-cols-1 gap-6 mt-8"
             >
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Email</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={form.email}
                   onChange={handleChange}
                   placeholder="example@email.com"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm text-gray-600 dark:text-gray-200">Password</label>
+                <label className="block mb-2 text-sm text-base-content opacity-80">Password</label>
                 <input
                   type="password"
                   name="password"
                   value={form.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className="block w-full px-5 py-3 mt-2 border rounded-lg dark:bg-gray-900 dark:text-gray-300"
+                  className="input input-bordered w-full"
                   required
                 />
               </div>

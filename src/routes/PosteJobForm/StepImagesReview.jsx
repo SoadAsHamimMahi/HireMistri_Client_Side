@@ -1,61 +1,101 @@
 import { useContext, useState } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../Authentication/AuthProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { FaImage, FaArrowLeft, FaCheckCircle, FaFileImage, FaTimes } from 'react-icons/fa';
 
-export default function StepImagesReview({ form, setForm, prevStep }) {
-  const { isDarkMode } = useTheme();
+export default function StepImagesReview({ form, setForm, prevStep, isEditMode = false, onSubmit, jobId, onSuccess }) {
   const { user } = useContext(AuthContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setForm({ ...form, images: files });
+    // In edit mode, images might be URLs, so we need to handle both
+    const existingImages = (form.images || []).filter(img => typeof img === 'string');
+    const newFiles = files;
+    setForm({ ...form, images: [...existingImages, ...newFiles] });
+  };
+
+  const removeImage = (index) => {
+    const newImages = (form.images || []).filter((_, i) => i !== index);
+    setForm({ ...form, images: newImages });
   };
 
   const handleSubmit = async () => {
     if (!user) {
-      alert("You must be logged in to post a job!");
+      alert("You must be logged in to " + (isEditMode ? "edit" : "post") + " a job!");
       return;
     }
 
+    // If custom onSubmit is provided (for edit mode), use it
+    if (isEditMode && onSubmit) {
+      setIsSubmitting(true);
+      try {
+        await onSubmit(form);
+        setShowSuccessModal(true);
+      } catch (err) {
+        // Error handling is done in parent component
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Original submit logic for creating new jobs
     setIsSubmitting(true);
 
     try {
-      // ✅ First: Upload images
-      const formData = new FormData();
-      form.images.forEach((file) => {
-        formData.append("images", file);
-      });
+      // First: Upload images if any
+      let imageUrls = [];
+      if (form.images && form.images.length > 0) {
+        // Filter out URLs (existing images) and only upload new files
+        const newImageFiles = form.images.filter(img => img instanceof File);
+        const existingImageUrls = form.images.filter(img => typeof img === 'string');
+        
+        if (newImageFiles.length > 0) {
+          const formData = new FormData();
+          newImageFiles.forEach((file) => {
+            formData.append("images", file);
+          });
 
-      const uploadRes = await axios.post(
-        "http://localhost:5000/api/browse-jobs/upload",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+          const uploadRes = await axios.post(
+            "http://localhost:5000/api/browse-jobs/upload",
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
 
-      const imageUrls = uploadRes.data.imageUrls; // ✅ Get image URLs from backend
+          imageUrls = [...existingImageUrls, ...uploadRes.data.imageUrls];
+        } else {
+          imageUrls = existingImageUrls;
+        }
+      }
 
-      // ✅ Second: Save job data with image URLs
+      // Second: Save job data with image URLs
       await axios.post("http://localhost:5000/api/browse-jobs", {
         clientId: user.uid,
         title: form.title,
         category: form.category,
-        skills: form.skills,
+        skills: form.skills || [],
         description: form.description,
         location: form.location,
         budget: form.budget,
         date: form.date,
         time: form.time,
-        images: imageUrls, // ✅ store URLs
+        duration: form.duration,
+        workersNeeded: form.workersNeeded,
+        urgency: form.urgency,
+        images: imageUrls,
       });
 
       // Show success modal
       setShowSuccessModal(true);
+      // Clear draft on success
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
-      console.error("❌ Failed to post job:", err);
-      alert("❌ Failed to post job. Please try again.");
+      console.error("Failed to post job:", err);
+      alert("Failed to post job. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -63,99 +103,225 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
-    // Reset form or redirect to dashboard
-    window.location.href = '/dashboard';
+    if (isEditMode) {
+      // For edit mode, navigate will be handled by parent
+      window.location.href = `/My-Posted-Job-Details/${jobId}`;
+    } else {
+      window.location.href = '/dashboard';
+    }
+  };
+
+  const images = form.images || [];
+  
+  // Helper to check if image is a URL or File
+  const getImageSrc = (img) => {
+    if (typeof img === 'string') return img; // URL
+    if (img instanceof File) return URL.createObjectURL(img); // File
+    return '';
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Left Section */}
-        <div className="space-y-6">
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>5/5 Final Review</p>
-          <h2 className={`text-3xl font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Upload Images & Review
-          </h2>
-          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-            Upload any reference images and confirm the details before posting.
-          </p>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Section - Image Upload */}
+        <div className="card bg-base-200 shadow-sm border border-base-300">
+          <div className="card-body p-6 lg:p-8 space-y-6">
+            <div>
+              <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 5 of 5</p>
+              <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
+                Upload Images & Review
+              </h2>
+              <p className="text-base-content opacity-70 leading-relaxed">
+                Upload any reference images and confirm the details before posting.
+              </p>
+            </div>
 
-          {/* Image Upload */}
-          <div>
-            <label className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Upload Reference Images</label>
-            <input
-              type="file"
-              multiple
-              className={`file-input file-input-bordered w-full mt-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-              onChange={handleImageChange}
-            />
+            {/* Image Upload Area */}
+            <div className="space-y-4">
+              <label className="block font-semibold text-base-content opacity-80">
+                Upload Reference Images (Optional)
+              </label>
+              <div className="border-2 border-dashed border-base-300 rounded-lg p-6 bg-base-100 hover:border-primary transition-colors">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <FaImage className="text-4xl text-base-content opacity-50 mb-3" />
+                  <p className="text-sm text-base-content opacity-70 mb-2">
+                    Drag and drop images here, or click to browse
+                  </p>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="file-input file-input-bordered file-input-primary w-full max-w-xs"
+                    onChange={handleImageChange}
+                  />
+                  <p className="text-xs text-base-content opacity-60 mt-2">
+                    PNG, JPG, GIF up to 10MB each
+                  </p>
+                </div>
+              </div>
+
+              {/* Image Preview */}
+              {images.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-base-content opacity-80">
+                    {isEditMode ? 'Current Images' : 'Selected Images'} ({images.length})
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {images.map((img, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={getImageSrc(img)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border border-base-300"
+                        />
+                        <button
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Remove image"
+                        >
+                          <FaTimes />
+                        </button>
+                        {typeof img === 'string' && (
+                          <span className="absolute bottom-1 left-1 text-xs bg-black/50 text-white px-1 rounded">
+                            Existing
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button className="btn btn-outline w-32" onClick={prevStep}>
+              <FaArrowLeft className="mr-2" />
+              Back
+            </button>
           </div>
-
-          <button onClick={prevStep} className={`btn btn-outline mt-4 ${isDarkMode ? 'text-white border-white hover:bg-white hover:text-gray-900' : ''}`}>Back</button>
         </div>
 
-        {/* Right Section: Preview */}
-        <div className={`rounded-xl shadow p-6 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
-          <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>📝 Job Summary</h3>
-          <ul className={`space-y-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            <li><strong>Title:</strong> {form.title}</li>
-            <li><strong>Category:</strong> {form.category}</li>
-            <li><strong>Skills:</strong> {form.skills.join(', ')}</li>
-            <li><strong>Description:</strong> {form.description}</li>
-            <li><strong>Location:</strong> {form.location}</li>
-            <li><strong>Budget:</strong> ৳{form.budget}</li>
-            <li><strong>Date & Time:</strong> {form.date} at {form.time}</li>
-            <li><strong>Images:</strong> {form.images.length} file(s)</li>
-          </ul>
+        {/* Right Section - Job Summary */}
+        <div className="card bg-base-200 shadow-sm border border-base-300">
+          <div className="card-body p-6 lg:p-8 space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <FaFileImage className="text-primary" />
+              <h3 className="text-xl font-semibold text-base-content">Job Summary</h3>
+            </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="btn bg-green-600 hover:bg-green-700 text-white w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <span className="loading loading-spinner loading-sm mr-2"></span>
-                Posting Job...
-              </>
-            ) : (
-              '✅ Submit Job'
-            )}
-          </button>
+            <div className="bg-base-100 rounded-lg p-4 border border-base-300 space-y-3">
+              <div className="space-y-2">
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Title</span>
+                  <p className="text-sm text-base-content">{form.title || 'Not provided'}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Category</span>
+                  <p className="text-sm text-base-content">{form.category || 'Not provided'}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Skills</span>
+                  <p className="text-sm text-base-content">
+                    {(form.skills || []).length > 0 ? form.skills.join(', ') : 'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Description</span>
+                  <p className="text-sm text-base-content line-clamp-3">
+                    {form.description || 'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Location</span>
+                  <p className="text-sm text-base-content">{form.location || 'Not provided'}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Budget</span>
+                  <p className="text-sm text-base-content font-semibold text-primary">
+                    {form.budget ? `৳${form.budget}` : 'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Date & Time</span>
+                  <p className="text-sm text-base-content">
+                    {form.date && form.time
+                      ? `${form.date} at ${form.time}`
+                      : 'Not provided'}
+                  </p>
+                </div>
+                {form.duration && (
+                  <div>
+                    <span className="text-xs font-semibold text-base-content opacity-60">Duration</span>
+                    <p className="text-sm text-base-content">{form.duration}</p>
+                  </div>
+                )}
+                {form.workersNeeded && (
+                  <div>
+                    <span className="text-xs font-semibold text-base-content opacity-60">Workers Needed</span>
+                    <p className="text-sm text-base-content">{form.workersNeeded}</p>
+                  </div>
+                )}
+                {form.urgency && (
+                  <div>
+                    <span className="text-xs font-semibold text-base-content opacity-60">Urgency</span>
+                    <p className="text-sm text-base-content">{form.urgency}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-xs font-semibold text-base-content opacity-60">Images</span>
+                  <p className="text-sm text-base-content">{images.length} file(s)</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="btn btn-primary btn-lg w-full"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="loading loading-spinner loading-sm mr-2"></span>
+                  {isEditMode ? 'Updating Job...' : 'Posting Job...'}
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle className="mr-2" />
+                  {isEditMode ? 'Update Job' : 'Submit Job'}
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`rounded-xl shadow-2xl p-8 max-w-md mx-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="text-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="card bg-base-200 shadow-2xl max-w-md w-full border border-base-300">
+            <div className="card-body text-center p-8">
               {/* Success Icon */}
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-primary/20 mb-4">
+                <FaCheckCircle className="h-10 w-10 text-primary" />
               </div>
-              
+
               {/* Success Message */}
-              <h3 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                Job Posted Successfully!
+              <h3 className="text-2xl font-bold mb-2 text-base-content">
+                {isEditMode ? 'Job Updated Successfully!' : 'Job Posted Successfully!'}
               </h3>
-              <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Your job has been posted and is now visible to workers. You can manage it from your dashboard.
+              <p className="mb-6 text-base-content opacity-70">
+                {isEditMode 
+                  ? 'Your job has been updated and changes are now visible to workers.'
+                  : 'Your job has been posted and is now visible to workers. You can manage it from your dashboard.'}
               </p>
-              
+
               {/* Action Buttons */}
               <div className="flex gap-3 justify-center">
-                <button
-                  onClick={closeSuccessModal}
-                  className="btn bg-green-600 hover:bg-green-700 text-white px-6"
-                >
+                <button onClick={closeSuccessModal} className="btn btn-primary">
                   Go to Dashboard
                 </button>
                 <button
                   onClick={() => setShowSuccessModal(false)}
-                  className={`btn btn-outline ${isDarkMode ? 'text-white border-white hover:bg-white hover:text-gray-900' : ''}`}
+                  className="btn btn-outline"
                 >
                   Stay Here
                 </button>
@@ -164,6 +330,6 @@ export default function StepImagesReview({ form, setForm, prevStep }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

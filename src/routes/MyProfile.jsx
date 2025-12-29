@@ -239,12 +239,12 @@ export default function MyProfile() {
     <div className="space-y-6">
       {/* About Section */}
       <div>
-        <h3 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>About</h3>
+        <h3 className="text-lg font-semibold mb-3 text-base-content">About</h3>
         <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           {clientData.bio ? (
-            <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{clientData.bio}</p>
+            <p className="text-base-content opacity-80">{clientData.bio}</p>
           ) : (
-            <p className={`italic ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p className="italic text-base-content opacity-60">
               This client hasn't written an about section yet. Add a short intro in Edit Profile.
             </p>
           )}
@@ -253,7 +253,7 @@ export default function MyProfile() {
 
       {/* Profile Details */}
       <div>
-        <h3 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Profile Details</h3>
+        <h3 className="text-lg font-semibold mb-3 text-base-content">Profile Details</h3>
         <div className="space-y-3">
           {[
             { label: 'Full Name', value: `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || '—' },
@@ -266,8 +266,8 @@ export default function MyProfile() {
             { label: 'Field of Interest', value: 'Client Services' }
           ].map((item, index) => (
             <div key={index} className={`flex justify-between items-center py-2 border-b last:border-b-0 ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-              <span className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{item.label}:</span>
-              <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>{item.value}</span>
+              <span className="font-medium text-base-content opacity-80">{item.label}:</span>
+              <span className="text-base-content">{item.value}</span>
             </div>
           ))}
         </div>
@@ -279,66 +279,66 @@ export default function MyProfile() {
     <div className="space-y-6">
       {/* Account Section */}
       <div>
-        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Account</h3>
+        <h3 className="text-lg font-semibold mb-4 text-base-content">Account</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>First Name</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">First Name</label>
             <input
               type="text"
               name="firstName"
               value={editForm.firstName}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Last Name</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Last Name</label>
             <input
               type="text"
               name="lastName"
               value={editForm.lastName}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Display Name</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Display Name</label>
             <input
               type="text"
               name="displayName"
               value={editForm.displayName}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Work Experience (years)</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Work Experience (years)</label>
             <input
               type="text"
               name="workExperience"
               value={editForm.workExperience}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phone Number</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Phone Number</label>
             <input
               type="tel"
               name="phone"
               value={editForm.phone}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Email</label>
             <input
               type="email"
               name="email"
               value={editForm.email}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
         </div>
@@ -346,38 +346,38 @@ export default function MyProfile() {
 
       {/* Headline */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Headline (optional)</label>
+        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Headline (optional)</label>
         <input
           type="text"
           name="headline"
           value={editForm.headline}
           onChange={handleEditChange}
           placeholder="e.g., Professional Client | 5+ years"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
       {/* Bio */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Bio (optional)</label>
+        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Bio (optional)</label>
         <textarea
           name="bio"
           value={editForm.bio}
           onChange={handleEditChange}
           rows={4}
           placeholder="Tell workers about your experience and specialties..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
       {/* Skills */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Skills (optional)</label>
+        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Skills (optional)</label>
         <div className="flex gap-2 mb-2">
           <input
             type="text"
             placeholder="e.g., Project Management, Quality Control"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 addSkill(e.target.value);
@@ -392,7 +392,7 @@ export default function MyProfile() {
               addSkill(input.value);
               input.value = '';
             }}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            className="btn btn-primary"
           >
             Add
           </button>
@@ -401,12 +401,12 @@ export default function MyProfile() {
           {editForm.skills.map((skill, index) => (
             <span
               key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-base-200 text-base-content rounded-full text-sm"
             >
               {skill}
               <button
                 onClick={() => removeSkill(skill)}
-                className="text-gray-500 hover:text-red-500"
+                className="text-base-content opacity-60 hover:text-error"
               >
                 ×
               </button>
@@ -417,56 +417,56 @@ export default function MyProfile() {
 
       {/* Address */}
       <div>
-        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Address</h3>
+        <h3 className="text-lg font-semibold mb-4 text-base-content">Address</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Address Line 1</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Address Line 1</label>
             <input
               type="text"
               name="address1"
               value={editForm.address1 || ''}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Address Line 2</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Address Line 2</label>
             <input
               type="text"
               name="address2"
               value={editForm.address2 || ''}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>City</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">City</label>
             <input
               type="text"
               name="city"
               value={editForm.city || ''}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Country</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Country</label>
             <input
               type="text"
               name="country"
               value={editForm.country || ''}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>ZIP Code</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">ZIP Code</label>
             <input
               type="text"
               name="zip"
               value={editForm.zip || ''}
               onChange={handleEditChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
         </div>
@@ -476,14 +476,14 @@ export default function MyProfile() {
       <div className="flex justify-end gap-3">
         <button
           onClick={() => setIsEditing(false)}
-          className={`px-6 py-2 border rounded-lg transition-colors ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+          className="btn btn-ghost"
         >
           Cancel
         </button>
         <button
           onClick={handleSaveProfile}
           disabled={saving}
-          className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {saving && <i className="fas fa-spinner fa-spin"></i>}
           {saving ? 'Saving...' : 'Save Changes'}
@@ -495,36 +495,36 @@ export default function MyProfile() {
   const renderChangePassword = () => (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Change Password</h3>
+        <h3 className="text-lg font-semibold mb-4 text-base-content">Change Password</h3>
         <div className="space-y-4 max-w-md">
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Current Password</label>
             <input
               type="password"
               name="currentPassword"
               value={passwordForm.currentPassword}
               onChange={handlePasswordChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">New Password</label>
             <input
               type="password"
               name="newPassword"
               value={passwordForm.newPassword}
               onChange={handlePasswordChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Confirm New Password</label>
             <input
               type="password"
               name="confirmPassword"
               value={passwordForm.confirmPassword}
               onChange={handlePasswordChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'}`}
+              className="input input-bordered w-full"
             />
           </div>
         </div>
@@ -546,8 +546,8 @@ export default function MyProfile() {
     return (
       <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-green-500 mb-4"></i>
-          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Loading profile...</p>
+          <i className="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+          <p className="text-base-content opacity-70">Loading profile...</p>
         </div>
       </div>
     );
@@ -559,8 +559,8 @@ export default function MyProfile() {
       <div className={`shadow-sm border-b transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center">
-            <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Profile</h1>
-            <p className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <h1 className="text-3xl font-bold text-base-content">My Profile</h1>
+            <p className="mt-2 text-base-content opacity-70">
               Manage your professional information and showcase your skills to potential workers.
             </p>
           </div>
@@ -580,7 +580,7 @@ export default function MyProfile() {
                     alt="Profile"
                     className="w-24 h-24 rounded-full object-cover border-4 border-green-100"
                   />
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                     <i className="fas fa-check text-white text-sm"></i>
                   </div>
                   {/* Upload Button */}
@@ -596,20 +596,20 @@ export default function MyProfile() {
                 </div>
 
                 {/* Name and Phone */}
-                <h2 className={`text-xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className="text-xl font-bold mb-1 text-base-content">
                   {clientData.displayName || `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || 'Client'}
                 </h2>
-                <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{clientData.phone || 'No phone number'}</p>
+                <p className="mb-6 text-base-content opacity-70">{clientData.phone || 'No phone number'}</p>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className={`rounded-lg p-3 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <p className="text-2xl font-bold text-green-600">{clientData.averageRating}</p>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Rating</p>
+                    <p className="text-2xl font-bold text-primary">{clientData.averageRating}</p>
+                    <p className="text-sm text-base-content opacity-70">Rating</p>
                   </div>
-                  <div className={`rounded-lg p-3 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{clientData.totalJobsPosted}</p>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Jobs Posted</p>
+                  <div className="rounded-lg p-3 transition-colors duration-300 bg-base-200">
+                    <p className="text-2xl font-bold text-base-content">{clientData.totalJobsPosted}</p>
+                    <p className="text-sm text-base-content opacity-70">Jobs Posted</p>
                   </div>
                 </div>
 
@@ -627,8 +627,8 @@ export default function MyProfile() {
                     onClick={() => setActiveTab('overview')}
                     className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                       activeTab === 'overview'
-                        ? `border-green-500 text-green-600 ${isDarkMode ? 'bg-green-900/20' : 'bg-green-50'}`
-                        : `border-transparent ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                        ? `border-primary text-primary bg-primary/20`
+                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
                     }`}
                   >
                     <i className="fas fa-eye"></i>
@@ -638,8 +638,8 @@ export default function MyProfile() {
                     onClick={() => setActiveTab('edit')}
                     className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                       activeTab === 'edit'
-                        ? `border-green-500 text-green-600 ${isDarkMode ? 'bg-green-900/20' : 'bg-green-50'}`
-                        : `border-transparent ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                        ? `border-primary text-primary bg-primary/20`
+                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
                     }`}
                   >
                     <i className="fas fa-edit"></i>
@@ -649,8 +649,8 @@ export default function MyProfile() {
                     onClick={() => setActiveTab('password')}
                     className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                       activeTab === 'password'
-                        ? `border-green-500 text-green-600 ${isDarkMode ? 'bg-green-900/20' : 'bg-green-50'}`
-                        : `border-transparent ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                        ? `border-primary text-primary bg-primary/20`
+                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
                     }`}
                   >
                     <i className="fas fa-key"></i>
