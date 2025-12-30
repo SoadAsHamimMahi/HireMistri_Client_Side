@@ -45,6 +45,7 @@ export default function PostJob() {
     duration: '',
     workersNeeded: '',
     urgency: '',
+    expiresAt: '',
   });
 
   const [step, setStep] = useState(initialDraft?.step || 1);

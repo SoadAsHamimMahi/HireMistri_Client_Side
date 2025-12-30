@@ -3,6 +3,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useParams } from 'react-router-dom';
 import Messages from './Messages';
+import ApplicationNotes from '../components/ApplicationNotes';
 
 export default function Applications() {
   const { isDarkMode } = useTheme();
@@ -89,58 +90,90 @@ export default function Applications() {
   };
 
   // Fetch applications - either for specific job or all user's applications
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        
-        const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-        let response;
-        
-        if (jobId) {
-          // Fetch applications for specific job
-          response = await fetch(`${base}/api/job-applications/${jobId}`, {
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
-          });
-        } else {
-          // Fetch all applications for jobs posted by the current client
-          const url = `${base}/api/client-applications/${user?.uid}`;
-          response = await fetch(url, {
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
-          });
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        setApplications(data || []);
-        
-        // Fetch worker details for each application if not already provided
-        if (data && data.length > 0) {
-          const workerIds = [...new Set(data.map(app => app.workerId).filter(Boolean))];
-          await Promise.all(workerIds.map(workerId => fetchWorkerDetails(workerId)));
-        }
-      } catch (err) {
-        console.error('Failed to fetch applications:', err);
-        setError(err.message || 'Failed to load applications');
-      } finally {
-        setLoading(false);
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+      let response;
+      
+      if (jobId) {
+        // Fetch applications for specific job
+        response = await fetch(`${base}/api/job-applications/${jobId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+      } else {
+        // Fetch all applications for jobs posted by the current client
+        const url = `${base}/api/client-applications/${user?.uid}`;
+        response = await fetch(url, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
       }
-    };
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setApplications(data || []);
+      
+      // Fetch worker details for each application if not already provided
+      if (data && data.length > 0) {
+        const workerIds = [...new Set(data.map(app => app.workerId).filter(Boolean))];
+        await Promise.all(workerIds.map(workerId => fetchWorkerDetails(workerId)));
+      }
+    } catch (err) {
+      console.error('Failed to fetch applications:', err);
+      setError(err.message || 'Failed to load applications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (user?.uid) {
       fetchApplications();
     }
   }, [jobId, user?.uid]);
+
+  // Poll for new notifications and refresh applications if needed
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const checkNotifications = async () => {
+      try {
+        const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+        const response = await fetch(`${base}/api/notifications/${user.uid}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const withdrawnNotifications = (data.notifications || []).filter(
+            n => n.type === 'application_withdrawn' && !n.read
+          );
+          
+          // If there are new withdrawal notifications, refresh applications
+          if (withdrawnNotifications.length > 0) {
+            fetchApplications();
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check notifications:', err);
+      }
+    };
+
+    // Check every 10 seconds
+    const interval = setInterval(checkNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [user?.uid, jobId]);
 
   const filteredApplicants = applications.filter(applicant => {
     const workerInfo = getWorkerInfo(applicant);
@@ -405,6 +438,13 @@ export default function Applications() {
                             {applicant.proposalText || 'No proposal text provided.'}
                           </p>
                         </div>
+
+                        {/* Application Notes */}
+                        <ApplicationNotes
+                          applicationId={applicant._id}
+                          userId={user?.uid}
+                          userName={user?.displayName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User'}
+                        />
                       </div>
                     </div>
 

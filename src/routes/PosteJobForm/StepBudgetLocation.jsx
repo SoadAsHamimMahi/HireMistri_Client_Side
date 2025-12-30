@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { FaMapMarkerAlt, FaMoneyBillWave, FaCalendarAlt, FaClock, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import LocationAutocomplete from '../../components/LocationAutocomplete';
 
 export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }) {
   // Auto-detect location on mount
@@ -112,20 +113,18 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
                 Location
               </label>
               <div className="relative">
-                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50 z-10">
                   <FaMapMarkerAlt />
                 </span>
-                <input
-                  name="location"
-                  type="text"
-                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary"
-                  placeholder="e.g. Dhanmondi, Dhaka or Full address"
+                <LocationAutocomplete
                   value={form.location || ''}
-                  onChange={handleChange}
+                  onChange={(value) => setForm({ ...form, location: value })}
+                  placeholder="e.g. Dhanmondi, Dhaka or Full address"
+                  className="pl-10"
                 />
               </div>
               <p className="text-xs text-base-content opacity-60">
-                We'll try to auto-detect your location, or enter it manually
+                Start typing to see location suggestions, or we'll try to auto-detect your location
               </p>
             </div>
           </div>
@@ -179,6 +178,29 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
                 {form.date === getTodayDate()
                   ? 'Only future times can be selected for today'
                   : 'Select any time for future dates'}
+              </p>
+            </div>
+
+            {/* Expiration Date (Optional) */}
+            <div className="space-y-2">
+              <label className="block font-semibold text-base-content opacity-80">
+                Expiration Date <span className="text-xs opacity-60">(Optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute top-3.5 left-3 text-base-content opacity-50">
+                  <FaCalendarAlt />
+                </span>
+                <input
+                  name="expiresAt"
+                  type="date"
+                  min={getTodayDate()}
+                  className="input input-bordered w-full pl-10 bg-base-100 border-base-300 focus:ring-2 focus:ring-primary text-base-content"
+                  value={form.expiresAt || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-base-content opacity-60">
+                Job will be automatically closed on this date. Leave empty for no expiration.
               </p>
             </div>
           </div>

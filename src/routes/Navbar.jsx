@@ -5,13 +5,16 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useMessages } from '../contexts/MessagesContext';
 import axios from 'axios';
 import Messages from './Messages';
+import Notifications from '../components/Notifications';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const { user, logOut } = useContext(AuthContext); // ✅ access user state
@@ -36,6 +39,30 @@ export default function Navbar() {
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? 'hidden' : 'auto';
   }, [isMenuOpen]);
+
+  // Fetch notification count
+  const fetchNotificationCount = async () => {
+    if (!user?.uid) {
+      setNotificationCount(0);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE}/api/notifications/${user.uid}`);
+      setNotificationCount(response.data.unreadCount || 0);
+    } catch (err) {
+      console.error('Failed to fetch notification count:', err);
+    }
+  };
+
+  // Poll for notifications
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    fetchNotificationCount();
+    const interval = setInterval(fetchNotificationCount, 10000); // Poll every 10 seconds
+    return () => clearInterval(interval);
+  }, [user?.uid]);
 
   // Fetch conversations for the user
   useEffect(() => {
@@ -187,11 +214,16 @@ export default function Navbar() {
               
               {/* Notifications */}
               <div className="relative">
-                <button className="btn btn-ghost btn-circle relative">
+                <button 
+                  className="btn btn-ghost btn-circle relative"
+                  onClick={() => setShowNotifications(true)}
+                >
                   <i className="far fa-bell text-lg text-base-content"></i>
-                  <span className="absolute -top-1 -right-1 bg-error text-error-content text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    2
-                  </span>
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-error text-error-content text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {notificationCount > 9 ? '9+' : notificationCount}
+                    </span>
+                  )}
                 </button>
               </div>
               
@@ -398,6 +430,16 @@ export default function Navbar() {
             )}
           </div>
         </>
+      )}
+
+      {/* Notifications Modal */}
+      {showNotifications && (
+        <Notifications 
+          onClose={() => {
+            setShowNotifications(false);
+            fetchNotificationCount(); // Refresh count when closing
+          }} 
+        />
       )}
 
       {/* Messages Modal */}

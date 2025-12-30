@@ -85,6 +85,7 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
         workersNeeded: form.workersNeeded,
         urgency: form.urgency,
         images: imageUrls,
+        expiresAt: form.expiresAt || null,
       });
 
       // Show success modal

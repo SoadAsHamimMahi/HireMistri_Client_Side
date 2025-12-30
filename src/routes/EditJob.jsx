@@ -29,6 +29,7 @@ export default function EditJob() {
     duration: '',
     workersNeeded: '',
     urgency: '',
+    expiresAt: '',
   });
 
   const [step, setStep] = useState(1);
@@ -57,6 +58,13 @@ export default function EditJob() {
 
         // Convert image URLs to File objects for editing (or keep as URLs)
         // For now, we'll keep them as URLs and handle them in StepImagesReview
+        // Format expiresAt if it exists
+        let expiresAtFormatted = '';
+        if (job.expiresAt) {
+          const expDate = new Date(job.expiresAt);
+          expiresAtFormatted = expDate.toISOString().split('T')[0];
+        }
+
         setForm({
           title: job.title || '',
           category: job.category || '',
@@ -70,6 +78,7 @@ export default function EditJob() {
           duration: job.duration || '',
           workersNeeded: job.workersNeeded || '',
           urgency: job.urgency || '',
+          expiresAt: expiresAtFormatted,
         });
       } catch (err) {
         console.error('Failed to load job:', err);
@@ -132,6 +141,7 @@ export default function EditJob() {
         workersNeeded: updatedForm.workersNeeded,
         urgency: updatedForm.urgency,
         images: imageUrls,
+        expiresAt: updatedForm.expiresAt || null,
       };
 
       await axios.patch(`${base}/api/browse-jobs/${id}`, updateData);

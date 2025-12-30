@@ -6,6 +6,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import axios from 'axios';
+import ShareButton from '../../components/ShareButton';
 
 // Delete Job Button Component
 function DeleteJobButton({ jobId, jobTitle }) {
@@ -121,26 +122,35 @@ export default function PostedJobDetails() {
   }, [id, base]);
 
   // load applications for this job
+  const fetchApplications = async () => {
+    if (!id) return;
+    try {
+      setAppsLoading(true);
+      setAppsErr('');
+      const res = await fetch(`${base}/api/job-applications/${id}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setApps(data || []);
+    } catch (e) {
+      setAppsErr(e.message || 'Failed to load applications');
+    } finally {
+      setAppsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchApplications();
+  }, [id, base]);
+
+  // Poll for notifications and refresh applications if withdrawal notification received
   useEffect(() => {
     if (!id) return;
-    let ignore = false;
-    (async () => {
-      try {
-        setAppsLoading(true);
-        setAppsErr('');
-        const res = await fetch(`${base}/api/job-applications/${id}`, {
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!ignore) setApps(data || []);
-      } catch (e) {
-        if (!ignore) setAppsErr(e.message || 'Failed to load applications');
-      } finally {
-        if (!ignore) setAppsLoading(false);
-      }
-    })();
-    return () => { ignore = true; };
+    
+    // Refresh every 15 seconds to catch withdrawals
+    const interval = setInterval(fetchApplications, 15000);
+    return () => clearInterval(interval);
   }, [id, base]);
 
   const images = Array.isArray(job?.images) && job.images.length > 0
@@ -233,6 +243,40 @@ const decide = async (app, nextStatus) => {
     setSelected(null);
   };
 
+  // Handle status change
+  const handleStatusChange = async (newStatus) => {
+    // Show confirmation for destructive status changes
+    if (newStatus === 'cancelled' || newStatus === 'completed') {
+      const confirmed = window.confirm(
+        `Are you sure you want to mark this job as ${newStatus}? This action may affect active applications.`
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      const response = await fetch(`${base}/api/browse-jobs/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Failed to update status');
+      }
+
+      const updated = await response.json();
+      setJob(updated.job || { ...job, status: newStatus });
+    } catch (err) {
+      console.error('Failed to update job status:', err);
+      alert(err.message || 'Failed to update job status. Please try again.');
+    }
+  };
+
   if (loading) return <div className="py-16 text-center">Loading…</div>;
   if (err) return <div className="py-16 text-center text-red-600">❌ {err}</div>;
   if (!job) return <div className="py-16 text-center">Not found.</div>;
@@ -300,6 +344,22 @@ const decide = async (app, nextStatus) => {
             <InfoRow icon="📍" label="Location" value={job.location || '—'} />
             <InfoRow icon="💸" label="Budget" value={`${job.budget || 0} ৳`} />
             <InfoRow icon="📅" label="Schedule" value={`${job.date || '—'}${job.time ? ` • ${job.time}` : ''}`} />
+            {job.expiresAt && (
+              <InfoRow 
+                icon="⏰" 
+                label="Expires" 
+                value={
+                  <span className={new Date(job.expiresAt) <= new Date() ? 'text-error font-semibold' : new Date(job.expiresAt) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) ? 'text-warning font-semibold' : ''}>
+                    {new Date(job.expiresAt).toLocaleDateString()}
+                    {new Date(job.expiresAt) > new Date() && (
+                      <span className="ml-1 text-xs opacity-70">
+                        ({Math.ceil((new Date(job.expiresAt) - new Date()) / (1000 * 60 * 60 * 24))} days left)
+                      </span>
+                    )}
+                  </span>
+                } 
+              />
+            )}
           </div>
 
           {/* description */}
@@ -310,9 +370,32 @@ const decide = async (app, nextStatus) => {
             </p>
           </div>
 
+          {/* Status Selector */}
+          <div className="pt-2">
+            <label className="block text-sm font-medium text-base-content opacity-70 mb-2">
+              Job Status
+            </label>
+            <select
+              className="select select-bordered w-full"
+              value={job.status || 'active'}
+              onChange={(e) => handleStatusChange(e.target.value)}
+            >
+              <option value="active">Active</option>
+              <option value="on-hold">On Hold</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
           {/* actions */}
           <div className="pt-2 flex gap-3">
             <Link to="/My-Posted-Jobs" className="btn btn-outline">Back to list</Link>
+            <ShareButton
+              jobId={id}
+              jobTitle={job.title}
+              jobDescription={job.description}
+              isClient={true}
+            />
             <Link to={`/edit-job/${id}`} className="btn btn-primary">Edit</Link>
             <DeleteJobButton jobId={id} jobTitle={job.title} />
           </div>

@@ -8,6 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import ShareButton from '../components/ShareButton';
 
 // Delete Job Button Component
 function DeleteJobButton({ jobId, jobTitle, onDelete }) {
@@ -94,8 +95,9 @@ export default function PostedJobs() {
 
   useEffect(() => {
     const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+    // Fetch all jobs for client including completed ones
     const url = clientId
-      ? `${base}/api/browse-jobs?clientId=${encodeURIComponent(clientId)}`
+      ? `${base}/api/browse-jobs?clientId=${encodeURIComponent(clientId)}&status=all`
       : `${base}/api/browse-jobs`;
 
     let ignore = false;
@@ -106,6 +108,7 @@ export default function PostedJobs() {
         setErr('');
 
         const res = await fetch(url, { headers: { Accept: 'application/json' } });
+
         if (!res.ok) throw new Error(`HTTP ${res.status} at ${url}`);
 
         const ct = res.headers.get('content-type') || '';
@@ -158,13 +161,95 @@ export default function PostedJobs() {
   const filteredJobs =
     filter === 'all'
       ? jobs
-      : jobs.filter((job) => String(job.status).toLowerCase() === filter);
+      : jobs.filter((job) => {
+          const jobStatus = String(job.status || 'active').toLowerCase();
+          const filterStatus = String(filter).toLowerCase();
+          // Handle 'in-progress' vs 'in progress' variations
+          if (filterStatus === 'in-progress' || filterStatus === 'in progress') {
+            return jobStatus === 'in-progress' || jobStatus === 'in progress';
+          }
+          return jobStatus === filterStatus;
+        });
+
+  // Handle status change
+  const handleStatusChange = async (jobId, newStatus) => {
+    // Show confirmation for destructive status changes
+    if (newStatus === 'cancelled' || newStatus === 'completed') {
+      const confirmed = window.confirm(
+        `Are you sure you want to mark this job as ${newStatus}? This action may affect active applications.`
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const response = await fetch(`${base}/api/browse-jobs/${jobId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          clientId: clientId
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Failed to update status');
+      }
+
+      // Update local state
+      setJobs(prevJobs =>
+        prevJobs.map(j =>
+          (j.mongoId || j.id) === jobId
+            ? { ...j, status: newStatus }
+            : j
+        )
+      );
+
+      // Refresh jobs list to ensure we have all statuses
+      const refreshResponse = await fetch(`${base}/api/browse-jobs?clientId=${encodeURIComponent(clientId)}&status=all`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        const normalized = (Array.isArray(refreshData) ? refreshData : []).map((j) => {
+          let mongoId = null;
+          if (j._id) {
+            if (typeof j._id === 'string') {
+              mongoId = j._id;
+            } else if (j._id.$oid) {
+              mongoId = j._id.$oid;
+            } else if (j._id.toString) {
+              mongoId = j._id.toString();
+            }
+          }
+          return {
+            ...j,
+            id: j.id ?? mongoId ?? String(j._id || ''),
+            mongoId: mongoId || j.id || String(j._id || ''),
+            images: j.images || [],
+            applicants: j.applicants || [],
+            status: j.status || 'active',
+          };
+        });
+        setJobs(normalized);
+      }
+    } catch (err) {
+      console.error('Failed to update job status:', err);
+      alert(err.message || 'Failed to update job status. Please try again.');
+    }
+  };
 
   // Calculate stats for header
   const totalJobs = jobs.length;
-  const activeJobs = jobs.filter(job => job.status === 'active').length;
-  const inProgressJobs = jobs.filter(job => job.status === 'in-progress').length;
-  const completedJobs = jobs.filter(job => job.status === 'completed').length;
+  const activeJobs = jobs.filter(job => String(job.status || 'active').toLowerCase() === 'active').length;
+  const inProgressJobs = jobs.filter(job => {
+    const status = String(job.status || '').toLowerCase();
+    return status === 'in-progress' || status === 'in progress';
+  }).length;
+  const completedJobs = jobs.filter(job => String(job.status || '').toLowerCase() === 'completed').length;
   const totalApplicants = jobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0);
 
   // Filter options with counts
@@ -380,6 +465,19 @@ export default function PostedJobs() {
                       <span className="text-lg">🗓️</span>
                       <span>{job.date}</span>
                     </div>
+                    {job.expiresAt && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-lg">⏰</span>
+                        <span className={new Date(job.expiresAt) <= new Date() ? 'text-error font-semibold' : new Date(job.expiresAt) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) ? 'text-warning font-semibold' : 'opacity-80'}>
+                          Expires: {new Date(job.expiresAt).toLocaleDateString()}
+                          {new Date(job.expiresAt) > new Date() && (
+                            <span className="ml-1 text-xs">
+                              ({Math.ceil((new Date(job.expiresAt) - new Date()) / (1000 * 60 * 60 * 24))} days left)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Enhanced Applicants Section */}
@@ -412,8 +510,31 @@ export default function PostedJobs() {
                   </div>
                 </div>
 
+                {/* Status Selector */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-base-content opacity-70 mb-1">
+                    Status
+                  </label>
+                  <select
+                    className="select select-bordered select-sm w-full"
+                    value={job.status || 'active'}
+                    onChange={(e) => handleStatusChange(job.mongoId || job.id, e.target.value)}
+                  >
+                    <option value="active">Active</option>
+                    <option value="on-hold">On Hold</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
                 {/* Enhanced Action Buttons */}
                 <div className="card-actions justify-end gap-2">
+                  <ShareButton
+                    jobId={job.mongoId || job.id}
+                    jobTitle={job.title}
+                    jobDescription={job.description}
+                    isClient={true}
+                  />
                   <Link 
                     to={`/edit-job/${job.mongoId || job.id}`}
                     className="btn btn-sm btn-ghost"
