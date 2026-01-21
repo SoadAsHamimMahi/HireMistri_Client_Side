@@ -6,7 +6,8 @@ import {
   signOut, 
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendEmailVerification
 } from "firebase/auth";
 import { app } from '../Authentication/firebaseConfig'; // ✅ import app
 
@@ -33,6 +34,19 @@ const AuthProvider = ({ children }) => { // ✅ fixed `children`
     return signInWithPopup(auth, googleProvider);
   };
 
+  // Send email verification
+  const sendVerificationEmail = async () => {
+    if (!auth.currentUser) throw new Error('No user logged in');
+    return sendEmailVerification(auth.currentUser);
+  };
+
+  // Reload user to get latest emailVerified status
+  const reloadUser = async () => {
+    if (!auth.currentUser) return;
+    await auth.currentUser.reload();
+    setUser({ ...auth.currentUser }); // Trigger state update
+  };
+
   // Logout
   const logOut = () => {
     return signOut(auth);
@@ -52,6 +66,8 @@ const AuthProvider = ({ children }) => { // ✅ fixed `children`
     createUser,
     signIn,
     signInWithGoogle,
+    sendVerificationEmail,
+    reloadUser,
     logOut
   };
 

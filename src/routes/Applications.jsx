@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { AuthContext } from '../Authentication/AuthProvider';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Messages from './Messages';
 import ApplicationNotes from '../components/ApplicationNotes';
 
@@ -9,6 +9,7 @@ export default function Applications() {
   const { isDarkMode } = useTheme();
   const { user } = useContext(AuthContext);
   const { jobId } = useParams(); // Get jobId from URL
+  const navigate = useNavigate();
   
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,8 @@ export default function Applications() {
     
     try {
       const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-      const response = await fetch(`${base}/api/users/${workerId}`, {
+      // Use public profile endpoint to avoid pulling private fields
+      const response = await fetch(`${base}/api/users/${workerId}/public`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -452,8 +454,9 @@ export default function Applications() {
                       <button 
                         className="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white border-none"
                         onClick={() => {
-                          // TODO: Implement view profile functionality
-                          alert('View Profile functionality will be implemented');
+                          const wid = applicant.workerId;
+                          if (!wid) return;
+                          navigate(`/worker/${wid}`);
                         }}
                       >
                         <i className="fas fa-eye mr-1"></i>
