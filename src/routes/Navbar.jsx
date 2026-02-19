@@ -2,24 +2,16 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useTheme } from '../contexts/ThemeContext';
-import { useMessages } from '../contexts/MessagesContext';
 import axios from 'axios';
-import Messages from './Messages';
 import Notifications from '../components/Notifications';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const [showMessages, setShowMessages] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [conversations, setConversations] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [loadingConversations, setLoadingConversations] = useState(false);
-  const [selectedConversation, setSelectedConversation] = useState(null);
   const { user, logOut } = useContext(AuthContext); // ✅ access user state
   const { isDarkMode, toggleTheme } = useTheme();
-  const { preloadMessages } = useMessages();
   const navigate = useNavigate();
   
   const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
@@ -64,104 +56,6 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [user?.uid]);
 
-  // Fetch conversations for the user
-  useEffect(() => {
-    if (!user?.uid) {
-      setConversations([]);
-      setUnreadCount(0);
-      return;
-    }
-
-    const fetchConversations = async () => {
-      try {
-        setLoadingConversations(true);
-        const response = await axios.get(`${API_BASE}/api/messages/conversations?userId=${user.uid}`);
-        const rawConvos = response.data || [];
-        
-        // Transform the data structure
-        const convos = rawConvos.map(conv => {
-          const lastMsg = conv.lastMessage || {};
-          // Determine the other participant (not the current user)
-          const otherId = lastMsg.senderId === user.uid 
-            ? (lastMsg.recipientId || null)
-            : (lastMsg.senderId || null);
-          const otherName = lastMsg.senderId === user.uid 
-            ? (lastMsg.recipientName || 'User')
-            : (lastMsg.senderName || 'User');
-          
-          return {
-            conversationId: conv._id,
-            jobId: lastMsg.jobId || null,
-            workerId: otherId, // For client-side, the other participant is the worker
-            clientId: user.uid, // Current user is the client
-            workerName: otherName,
-            lastMessageText: lastMsg.message || '',
-            lastMessageCreatedAt: lastMsg.createdAt,
-            unreadCount: conv.unreadCount || 0,
-          };
-        }).filter(conv => conv.conversationId); // Filter out any invalid conversations
-        
-        setConversations(convos);
-        
-        // Calculate total unread count
-        const totalUnread = convos.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-        setUnreadCount(totalUnread);
-      } catch (err) {
-        console.error('Failed to fetch conversations:', err);
-      } finally {
-        setLoadingConversations(false);
-      }
-    };
-
-    fetchConversations();
-    
-    // Poll for new conversations every 5 seconds
-    const interval = setInterval(fetchConversations, 5000);
-    return () => clearInterval(interval);
-  }, [user?.uid, API_BASE]);
-
-  const handleConversationClick = (conversation) => {
-    // Pre-load messages before opening modal
-    if (conversation.conversationId) {
-      preloadMessages(conversation.conversationId);
-    }
-    setSelectedConversation(conversation);
-    setShowMessages(false);
-  };
-
-  const closeMessages = () => {
-    setSelectedConversation(null);
-    // Refresh conversations when closing
-    if (user?.uid) {
-      axios.get(`${API_BASE}/api/messages/conversations?userId=${user.uid}`)
-        .then(res => {
-          const rawConvos = res.data || [];
-          const convos = rawConvos.map(conv => {
-            const lastMsg = conv.lastMessage || {};
-            const otherId = lastMsg.senderId === user.uid ? lastMsg.recipientId : lastMsg.senderId;
-            const otherName = lastMsg.senderId === user.uid 
-              ? lastMsg.recipientName 
-              : lastMsg.senderName;
-            
-            return {
-              conversationId: conv._id,
-              jobId: lastMsg.jobId || null,
-              workerId: otherId,
-              clientId: user.uid,
-              workerName: otherName || 'User',
-              lastMessageText: lastMsg.message || '',
-              lastMessageCreatedAt: lastMsg.createdAt,
-              unreadCount: conv.unreadCount || 0,
-            };
-          });
-          setConversations(convos);
-          const totalUnread = convos.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-          setUnreadCount(totalUnread);
-        })
-        .catch(err => console.error('Failed to refresh conversations:', err));
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await logOut();
@@ -177,17 +71,17 @@ export default function Navbar() {
       {/* Top Navbar */}
       <div className="navbar bg-base-200 text-base-content px-4 md:px-6 shadow-sm justify-between items-center transition-colors duration-300">
 
-        <div className='flex gap-7'>
+        <div className="flex gap-6">
           <Link to="/" className="text-4xl font-heading font-bold text-base-content">
             Hire<span className="text-primary">Mistri</span>
           </Link>
 
-          {/* Desktop Search Bar */}
+          {/* Desktop Search Bar - reduced width */}
           <div className="hidden lg:flex">
             <input
               type="text"
               placeholder="Find Workers"
-              className="input input-bordered bg-base-100 text-base-content w-[400px] xl:w-[500px] rounded-l-full"
+              className="input input-bordered bg-base-100 text-base-content w-64 xl:w-80 rounded-l-full"
             />
             <button className="btn btn-primary rounded-r-full border-none">
               <i className="fas fa-search"></i>
@@ -195,20 +89,17 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-6 text-sm">
+        {/* Desktop Menu - gap-4, fewer visible links (My Jobs in dropdown only) */}
+        <div className="hidden lg:flex items-center gap-4 text-sm">
           {user ? (
             <>
-              <Link to="/dashboard" className="text-base-content hover:text-primary transition-colors font-medium">
+              <Link to="/dashboard" className="text-base-content hover:text-primary transition-colors font-medium py-2">
                 Dashboard
               </Link>
-              <Link to="/post-job" className="text-base-content hover:text-primary transition-colors font-medium">
+              <Link to="/post-job" className="text-base-content hover:text-primary transition-colors font-medium py-2">
                 Post Job
               </Link>
-              <Link to="/My-Posted-Jobs" className="text-base-content hover:text-primary transition-colors font-medium">
-                My Jobs
-              </Link>
-              <Link to="/applications" className="text-base-content hover:text-primary transition-colors font-medium">
+              <Link to="/applications" className="text-base-content hover:text-primary transition-colors font-medium py-2">
                 Applications
               </Link>
               
@@ -225,97 +116,6 @@ export default function Navbar() {
                     </span>
                   )}
                 </button>
-              </div>
-              
-              {/* Messages */}
-              <div className="relative">
-                <button 
-                  className="btn btn-ghost btn-circle relative"
-                  onClick={() => setShowMessages(!showMessages)}
-                >
-                  <i className="far fa-envelope text-lg text-base-content"></i>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-primary text-primary-content text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  )}
-                </button>
-                
-                {/* Messages Dropdown */}
-                {showMessages && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowMessages(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-base-200 border border-base-300 rounded-xl shadow-2xl z-50 max-h-[500px] flex flex-col">
-                      <div className="p-4 border-b border-base-300 flex items-center justify-between">
-                        <h3 className="font-semibold text-base-content">Messages</h3>
-                        <button 
-                          onClick={() => setShowMessages(false)}
-                          className="btn btn-sm btn-ghost"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      
-                      <div className="overflow-y-auto flex-1">
-                        {loadingConversations ? (
-                          <div className="p-4 text-center">
-                            <span className="loading loading-spinner loading-sm text-primary"></span>
-                            <p className="text-sm text-base-content opacity-70 mt-2">Loading conversations...</p>
-                          </div>
-                        ) : conversations.length === 0 ? (
-                          <div className="p-4 text-center text-base-content opacity-70">
-                            <p className="text-sm">No conversations yet</p>
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-base-300">
-                            {conversations.map((conv) => {
-                              const lastMessageTime = conv.lastMessageCreatedAt 
-                                ? new Date(conv.lastMessageCreatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                : '';
-                              
-                              return (
-                                <button
-                                  key={conv.conversationId}
-                                  onClick={() => handleConversationClick(conv)}
-                                  className="w-full p-4 text-left hover:bg-base-300 transition-colors"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                      <i className="fas fa-user text-primary"></i>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center justify-between mb-1">
-                                        <p className="font-medium text-sm text-base-content truncate">
-                                          {conv.workerName || 'User'}
-                                        </p>
-                                        {lastMessageTime && (
-                                          <span className="text-xs text-base-content opacity-60 ml-2 flex-shrink-0">
-                                            {lastMessageTime}
-                                          </span>
-                                        )}
-                                      </div>
-                                      <p className="text-xs text-base-content opacity-70 truncate">
-                                        {conv.lastMessageText || 'No messages yet'}
-                                      </p>
-                                    </div>
-                                    {conv.unreadCount > 0 && (
-                                      <span className="bg-primary text-primary-content text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                                        {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-                                      </span>
-                                    )}
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
 
               {/* Theme Toggle */}
@@ -389,7 +189,7 @@ export default function Navbar() {
             className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
             onClick={() => setIsMenuOpen(false)}
           />
-          <div className="fixed top-0 right-0 w-4/5 h-full z-50 px-6 py-6 overflow-y-auto animate-fadeSlideIn rounded-l-xl shadow-lg transition-colors duration-300 bg-base-200 text-base-content">
+          <div className="fixed top-0 right-0 max-w-sm w-full h-full z-50 px-6 py-6 overflow-y-auto animate-fadeSlideIn rounded-l-xl shadow-lg transition-colors duration-300 bg-base-200 text-base-content">
             <div className="flex items-center justify-between mb-6">
               {user ? (
                 <div className="flex items-center gap-3">
@@ -409,12 +209,12 @@ export default function Navbar() {
             </div>
 
             {user && (
-              <nav className="flex flex-col gap-3 text-sm">
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="text-base-content transition-colors hover:text-primary">Dashboard</Link>
-                <Link to="/post-job" onClick={() => setIsMenuOpen(false)} className="text-base-content transition-colors hover:text-primary">Post a Job</Link>
-                <Link to="/My-Posted-Jobs" onClick={() => setIsMenuOpen(false)} className="text-base-content transition-colors hover:text-primary">My Posted Jobs</Link>
-                <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="text-base-content transition-colors hover:text-primary">Applications</Link>
-                <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="text-base-content transition-colors hover:text-primary">My Profile</Link>
+              <nav className="flex flex-col gap-4 text-sm">
+                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Dashboard</Link>
+                <Link to="/post-job" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Post a Job</Link>
+                <Link to="/My-Posted-Jobs" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Posted Jobs</Link>
+                <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Applications</Link>
+                <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Profile</Link>
                 
                 {/* Mobile Theme Toggle */}
                 <button 
@@ -442,35 +242,37 @@ export default function Navbar() {
         />
       )}
 
-      {/* Messages Modal */}
-      {selectedConversation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={closeMessages} />
-          <div className="relative bg-base-200 rounded-xl shadow-2xl w-full max-w-2xl">
-            <Messages
-              conversationId={selectedConversation.conversationId}
-              jobId={selectedConversation.jobId}
-              workerId={selectedConversation.workerId}
-              workerName={selectedConversation.workerName || 'User'}
-              onClose={closeMessages}
-            />
-          </div>
-        </div>
-      )}
 
-      {/* Desktop Category Bar */}
-      <div className="border-t border-base-300 text-xl px-4 py-2 hidden lg:flex gap-4 overflow-x-auto whitespace-nowrap transition-colors duration-300 bg-base-200">
+      {/* Desktop Category Bar - dropdown on lg, horizontal scroll on xl only */}
+      <div className="border-t border-base-300 px-4 py-2 hidden xl:flex gap-4 overflow-x-auto whitespace-nowrap transition-colors duration-300 bg-base-200">
         {categories.map((cat, idx) => (
           <NavLink
             key={idx}
             to={`/services/${cat.toLowerCase().replace(/\s|\(|\)/g, '-')}`}
             className={({ isActive }) =>
-              `hover:underline transition-colors ${isActive ? 'font-semibold text-primary' : 'text-base-content hover:text-base-content'}`
+              `text-base hover:underline transition-colors ${isActive ? 'font-semibold text-primary' : 'text-base-content hover:text-base-content'}`
             }
           >
             {cat}
           </NavLink>
         ))}
+      </div>
+      {/* Categories dropdown for lg (when horizontal bar is hidden) */}
+      <div className="border-t border-base-300 px-4 py-2 hidden lg:flex xl:hidden transition-colors duration-300 bg-base-200">
+        <div className="dropdown">
+          <label tabIndex={0} className="btn btn-ghost btn-sm gap-2 text-base-content">
+            <i className="fas fa-th-large"></i> Categories
+          </label>
+          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-base-300 mt-2">
+            {categories.map((cat, idx) => (
+              <li key={idx}>
+                <Link to={`/services/${cat.toLowerCase().replace(/\s|\(|\)/g, '-')}`} className="text-base-content">
+                  {cat}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

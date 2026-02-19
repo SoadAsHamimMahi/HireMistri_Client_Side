@@ -1,6 +1,8 @@
 // src/routes/WorkerProfile.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import ReviewDisplay from '../components/ReviewDisplay';
+import PageContainer from '../components/layout/PageContainer';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
@@ -30,6 +32,7 @@ export default function WorkerProfile() {
         setError('');
         const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(workerId)}/public`, {
           headers: { Accept: 'application/json' },
+          cache: 'no-store',
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -66,6 +69,8 @@ export default function WorkerProfile() {
   const onTimeRate = stats.workerOnTimeRate !== null && stats.workerOnTimeRate !== undefined ? safeNum(stats.workerOnTimeRate) : null;
   const applicationsAsWorker = safeNum(stats.applicationsAsWorker);
   const rating = safeNum(profile?.averageRating || stats.averageRating);
+  const totalReviews = safeNum(stats.totalReviews);
+  const categoryRatings = stats.categoryRatings || {};
   
   // Trust fields
   const emailVerified = !!profile?.emailVerified;
@@ -89,14 +94,16 @@ export default function WorkerProfile() {
   const startingPrice = pricing.startingPrice || null;
   const minimumCharge = pricing.minimumCharge || null;
   const currency = pricing.currency || 'BDT';
+  const skillsDisplay = skills.length > 0 ? skills : [...serviceCategories, ...serviceTags].filter(Boolean);
   
   // Portfolio lightbox state
   const [selectedImage, setSelectedImage] = useState(null);
+  
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-100">
-        <div className="max-w-5xl mx-auto p-6">
+      <div className="min-h-screen page-bg">
+        <PageContainer maxWidth="6xl">
           <div className="flex items-center gap-3 mb-6">
             <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}>
               <i className="fas fa-arrow-left mr-2"></i>Back
@@ -108,15 +115,15 @@ export default function WorkerProfile() {
               <p className="opacity-70">Loading worker profile...</p>
             </div>
           </div>
-        </div>
+        </PageContainer>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-base-100">
-        <div className="max-w-5xl mx-auto p-6">
+      <div className="min-h-screen page-bg">
+        <PageContainer maxWidth="6xl">
           <button className="btn btn-ghost btn-sm mb-6" onClick={() => navigate(-1)}>
             <i className="fas fa-arrow-left mr-2"></i>Back
           </button>
@@ -127,15 +134,15 @@ export default function WorkerProfile() {
               <div className="text-sm">{error}</div>
             </div>
           </div>
-        </div>
+        </PageContainer>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-base-100">
-        <div className="max-w-5xl mx-auto p-6">
+      <div className="min-h-screen page-bg">
+        <PageContainer maxWidth="6xl">
           <button className="btn btn-ghost btn-sm mb-6" onClick={() => navigate(-1)}>
             <i className="fas fa-arrow-left mr-2"></i>Back
           </button>
@@ -143,14 +150,14 @@ export default function WorkerProfile() {
             <i className="fas fa-info-circle"></i>
             <span>No profile data found.</span>
           </div>
-        </div>
+        </PageContainer>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <div className="max-w-5xl mx-auto p-6">
+    <div className="min-h-screen page-bg">
+      <PageContainer maxWidth="6xl">
         <div className="flex items-center justify-between gap-3 mb-6">
           <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}>
             <i className="fas fa-arrow-left mr-2"></i>Back
@@ -160,137 +167,347 @@ export default function WorkerProfile() {
           </Link>
         </div>
 
-        <div className="card bg-base-200 shadow-sm border border-base-300 overflow-hidden">
-          <div className="p-6 bg-gradient-to-r from-primary/10 to-secondary/10">
-            <div className="flex flex-col md:flex-row md:items-center gap-5">
-              <div className="avatar">
-                <div className="w-20 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                  <img
-                    src={profile.profileCover || 'https://i.pravatar.cc/150?img=12'}
-                    alt={displayName}
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://i.pravatar.cc/150?img=12';
-                    }}
-                  />
+        <div className="space-y-8">
+          {/* Card 1: Header */}
+          <div className="card bg-base-200 shadow-sm border border-base-300 overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-primary/10 to-secondary/10">
+              <div className="flex flex-col md:flex-row md:items-center gap-5">
+                <div className="avatar">
+                  <div className="w-16 md:w-20 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                    <img
+                      src={profile.profileCover || 'https://i.pravatar.cc/150?img=12'}
+                      alt={displayName}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://i.pravatar.cc/150?img=12';
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl font-bold text-base-content">{displayName}</h1>
-                  {profile.isAvailable ? (
-                    <span className="badge badge-success gap-2">
-                      <i className="fas fa-check-circle"></i>Available
-                    </span>
-                  ) : (
-                    <span className="badge badge-ghost gap-2">
-                      <i className="fas fa-pause-circle"></i>Not available
-                    </span>
-                  )}
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl lg:text-3xl font-bold text-base-content">{displayName}</h1>
+                    {profile.isAvailable ? (
+                      <span className="badge badge-success gap-2">
+                        <i className="fas fa-check-circle"></i>Available
+                      </span>
+                    ) : (
+                      <span className="badge badge-ghost gap-2">
+                        <i className="fas fa-pause-circle"></i>Not available
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-base-content opacity-70">
+                    {profile.headline || 'No headline provided.'}
+                  </p>
+                  <p className="text-sm opacity-70">
+                    <i className="fas fa-map-marker-alt mr-2"></i>
+                    {[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not set'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {emailVerified ? (
+                      <span className="badge badge-success badge-sm gap-1">
+                        <i className="fas fa-check-circle"></i>Email Verified
+                      </span>
+                    ) : (
+                      <span className="badge badge-warning badge-sm gap-1">
+                        <i className="fas fa-exclamation-circle"></i>Email Not Verified
+                      </span>
+                    )}
+                    {phoneVerified && (
+                      <span className="badge badge-success badge-sm gap-1">
+                        <i className="fas fa-phone"></i>Phone Verified
+                      </span>
+                    )}
+                    {memberSince && (
+                      <span className="badge badge-info badge-sm gap-1">
+                        <i className="fas fa-calendar"></i>Member since {memberSince}
+                      </span>
+                    )}
+                    {lastActive && (
+                      <span className="badge badge-ghost badge-sm gap-1">
+                        <i className="fas fa-clock"></i>Last active {lastActive}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-base-content opacity-70 mt-1">
-                  {profile.headline || 'No headline provided.'}
-                </p>
-                <p className="text-sm opacity-70 mt-2">
-                  <i className="fas fa-map-marker-alt mr-2"></i>
-                  {[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not set'}
-                </p>
-                
-                {/* Trust Badges */}
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {emailVerified ? (
-                    <span className="badge badge-success badge-sm gap-1">
-                      <i className="fas fa-check-circle"></i>Email Verified
-                    </span>
-                  ) : (
-                    <span className="badge badge-warning badge-sm gap-1">
-                      <i className="fas fa-exclamation-circle"></i>Email Not Verified
-                    </span>
-                  )}
-                  {phoneVerified && (
-                    <span className="badge badge-success badge-sm gap-1">
-                      <i className="fas fa-phone"></i>Phone Verified
-                    </span>
-                  )}
-                  {memberSince && (
-                    <span className="badge badge-info badge-sm gap-1">
-                      <i className="fas fa-calendar"></i>Member since {memberSince}
-                    </span>
-                  )}
-                  {lastActive && (
-                    <span className="badge badge-ghost badge-sm gap-1">
-                      <i className="fas fa-clock"></i>Last active {lastActive}
-                    </span>
-                  )}
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-2 min-w-[180px]">
-                <button className="btn btn-primary btn-sm">
-                  <i className="fas fa-user-check mr-2"></i>Hire / Invite
-                </button>
-                <button className="btn btn-outline btn-sm">
-                  <i className="fas fa-comments mr-2"></i>Message
-                </button>
+                <div className="flex flex-col gap-2 min-w-[180px]">
+                  <button className="btn btn-primary btn-sm">
+                    <i className="fas fa-user-check mr-2"></i>Hire / Invite
+                  </button>
+                  {(profile.phone || profile.email) && (
+                    <div className="flex flex-col gap-2">
+                      {profile.phone && (
+                        <a
+                          href={`tel:${profile.phone.replace(/\s/g, '')}`}
+                          className="btn btn-success btn-sm"
+                        >
+                          <i className="fas fa-phone mr-2"></i>Call
+                        </a>
+                      )}
+                      {profile.email && (
+                        <a
+                          href={`mailto:${profile.email}`}
+                          className="btn btn-outline btn-sm"
+                        >
+                          <i className="fas fa-envelope mr-2"></i>Email
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="card-body">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="stat bg-base-100 rounded-xl border border-base-300">
-                <div className="stat-title">Completed</div>
-                <div className="stat-value text-primary">{completedJobs}</div>
-                <div className="stat-desc">Jobs</div>
-              </div>
-              <div className="stat bg-base-100 rounded-xl border border-base-300">
-                <div className="stat-title">Active</div>
-                <div className="stat-value">{activeOrders}</div>
-                <div className="stat-desc">Orders</div>
-              </div>
-              <div className="stat bg-base-100 rounded-xl border border-base-300">
-                <div className="stat-title">Response</div>
-                <div className="stat-value">{responseRate}%</div>
-                <div className="stat-desc">Accepted / applied</div>
-              </div>
-              <div className="stat bg-base-100 rounded-xl border border-base-300">
-                <div className="stat-title">Rating</div>
-                <div className="stat-value">{rating.toFixed(1)}</div>
-                <div className="stat-desc">Reviews pending</div>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">About</h3>
-              <p className="opacity-80">
-                {profile.bio || 'This worker hasn’t written an about section yet.'}
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Skills</h3>
-              {skills.length === 0 ? (
-                <p className="opacity-70">No skills added yet.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((s, i) => (
-                    <span key={`${s}-${i}`} className="badge badge-outline">
-                      {s}
-                    </span>
-                  ))}
+          {/* Card 2: Stats */}
+          <div className="card bg-base-200 shadow-sm border border-base-300">
+            <div className="card-body">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
+                  <div className="stat-title text-sm">Completed</div>
+                  <div className="stat-value text-primary text-2xl">{completedJobs}</div>
+                  <div className="stat-desc text-xs">Jobs</div>
                 </div>
-              )}
-            </div>
-
-            <div className="mt-6 text-sm opacity-70">
-              <p>
+                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
+                  <div className="stat-title text-sm">Active</div>
+                  <div className="stat-value text-2xl">{activeOrders}</div>
+                  <div className="stat-desc text-xs">Orders</div>
+                </div>
+                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
+                  <div className="stat-title text-sm">Response</div>
+                  <div className="stat-value text-2xl">{responseRate}%</div>
+                  <div className="stat-desc text-xs">Accepted / applied</div>
+                </div>
+                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
+                  <div className="stat-title text-sm">Rating</div>
+                  <div className="stat-value text-2xl">{rating.toFixed(1)}</div>
+                  <div className="stat-desc text-xs">{totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}</div>
+                </div>
+              </div>
+              <p className="text-sm opacity-70 mt-4">
                 <i className="fas fa-file-alt mr-2"></i>
                 Applications submitted: <span className="font-semibold">{applicationsAsWorker}</span>
               </p>
             </div>
           </div>
+
+          {/* Card 3: About + Skills */}
+          <div className="card bg-base-200 shadow-sm border border-base-300">
+            <div className="card-body space-y-4">
+              <h3 className="text-lg font-semibold mb-0">About</h3>
+              <div className="prose prose-sm max-w-none text-base-content">
+                <p className="opacity-80 leading-relaxed">
+                  {(profile.bio && profile.bio.trim()) || (profile.headline && profile.headline.trim()) || 'This worker hasn’t written an about section yet.'}
+                </p>
+              </div>
+              <div className="divider my-2"></div>
+              <h3 className="text-base font-semibold">Skills</h3>
+              {skillsDisplay.length === 0 ? (
+                <p className="opacity-70 text-sm">No skills added yet.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {skillsDisplay.map((s, i) => (
+                    <span key={`${s}-${i}`} className="badge badge-outline">{s}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 4: Services + Service Area + Experience */}
+          {(serviceCategories.length > 0 || serviceTags.length > 0 || serviceCities.length > 0 || serviceRadiusKm != null || (experienceYears != null && experienceYears !== '')) && (
+            <div className="card bg-base-200 shadow-sm border border-base-300">
+              <div className="card-body space-y-4">
+                {(serviceCategories.length > 0 || serviceTags.length > 0) && (
+                  <>
+                    <h3 className="text-base font-semibold">Services Offered</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {serviceCategories.map((c, i) => (
+                        <span key={`cat-${i}`} className="badge badge-primary">{c}</span>
+                      ))}
+                      {serviceTags.map((t, i) => (
+                        <span key={`tag-${i}`} className="badge badge-outline">{t}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {(serviceCities.length > 0 || serviceRadiusKm) && (
+                  <>
+                    <h3 className="text-base font-semibold">Service Area</h3>
+                    <p className="opacity-80 text-sm">
+                      {serviceCities.length > 0 && serviceCities.join(', ')}
+                      {serviceRadiusKm && (serviceCities.length > 0 ? ` • Within ${serviceRadiusKm} km` : `Within ${serviceRadiusKm} km radius`)}
+                    </p>
+                  </>
+                )}
+                {experienceYears != null && experienceYears !== '' && (
+                  <>
+                    <h3 className="text-base font-semibold">Experience</h3>
+                    <p className="opacity-80 text-sm">
+                      <i className="fas fa-briefcase mr-2 text-primary"></i>
+                      {Number(experienceYears) === 0 ? 'Less than 1 year' : `${experienceYears} ${Number(experienceYears) === 1 ? 'year' : 'years'} of experience`}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Card 5: Certifications + Languages */}
+          {(certifications.length > 0 || languages.length > 0) && (
+            <div className="card bg-base-200 shadow-sm border border-base-300">
+              <div className="card-body space-y-4">
+                {certifications.length > 0 && (
+                  <>
+                    <h3 className="text-base font-semibold">Certifications</h3>
+                    <ul className="space-y-2">
+                      {certifications.map((c, i) => (
+                        <li key={i} className="flex items-start gap-2 bg-base-100 rounded-lg p-3 border border-base-300">
+                          <i className="fas fa-award text-primary mt-0.5"></i>
+                          <div>
+                            <span className="font-medium">{c.title || 'Certification'}</span>
+                            {(c.issuer || c.year) && (
+                              <span className="text-sm opacity-70 ml-2">
+                                {c.issuer}{c.issuer && c.year ? ' • ' : ''}{c.year}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {languages.length > 0 && (
+                  <>
+                    <h3 className="text-base font-semibold">Languages</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {languages.map((l, i) => (
+                        <span key={i} className="badge badge-ghost gap-1">
+                          <i className="fas fa-language"></i>{l}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Card 6: Pricing */}
+          {(hourlyRate != null || startingPrice != null || minimumCharge != null) && (
+            <div className="card bg-base-200 shadow-sm border border-base-300">
+              <div className="card-body space-y-4">
+                <h3 className="text-base font-semibold">Pricing</h3>
+                <div className="grid gap-2">
+                  {hourlyRate != null && (
+                    <p className="opacity-80 text-sm">
+                      <span className="opacity-70">Hourly rate:</span> {currency} {hourlyRate}
+                    </p>
+                  )}
+                  {startingPrice != null && (
+                    <p className="opacity-80 text-sm">
+                      <span className="opacity-70">Starting from:</span> {currency} {startingPrice}
+                    </p>
+                  )}
+                  {minimumCharge != null && (
+                    <p className="opacity-80 text-sm">
+                      <span className="opacity-70">Minimum charge:</span> {currency} {minimumCharge}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card 7: Portfolio */}
+          {portfolio.length > 0 && (
+            <div className="card bg-base-200 shadow-sm border border-base-300">
+              <div className="card-body space-y-4">
+                <h3 className="text-base font-semibold">Portfolio</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {portfolio.map((item, i) => {
+                    const imgUrl = typeof item === 'string' ? item : (item?.url || item?.imageUrl);
+                    const caption = typeof item === 'object' && item?.caption;
+                    if (!imgUrl) return null;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        className="aspect-square rounded-lg overflow-hidden border border-base-300 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary"
+                        onClick={() => setSelectedImage({ url: imgUrl, caption })}
+                      >
+                        <img src={imgUrl} alt={caption || 'Portfolio'} className="w-full h-full object-cover" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Rating Breakdown */}
+          {totalReviews > 0 && Object.keys(categoryRatings).length > 0 && (
+            <div className="card bg-base-200 shadow-sm border border-base-300">
+              <div className="card-body space-y-4">
+                <h3 className="text-lg font-semibold mb-0">Rating Breakdown</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { key: 'qualityOfWork', label: 'Quality of Work', icon: 'fas fa-tools' },
+                    { key: 'punctuality', label: 'Punctuality', icon: 'fas fa-clock' },
+                    { key: 'communication', label: 'Communication', icon: 'fas fa-comments' },
+                    { key: 'professionalism', label: 'Professionalism', icon: 'fas fa-user-tie' },
+                    { key: 'valueForMoney', label: 'Value for Money', icon: 'fas fa-dollar-sign' },
+                    { key: 'cleanliness', label: 'Cleanliness', icon: 'fas fa-broom' },
+                  ].map((category) => {
+                    const categoryRating = categoryRatings[category.key] || 0;
+                    if (categoryRating === 0) return null;
+                    return (
+                      <div key={category.key} className="bg-base-100 rounded-lg p-4 border border-base-300">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <i className={`${category.icon} text-primary`}></i>
+                            <span className="font-medium text-base-content">{category.label}</span>
+                          </div>
+                          <span className="text-lg font-bold text-primary">{categoryRating.toFixed(1)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <i
+                              key={star}
+                              className={`fas fa-star text-sm ${
+                                star <= Math.round(categoryRating)
+                                  ? 'text-yellow-400'
+                                  : 'text-gray-300 dark:text-gray-600'
+                              }`}
+                            ></i>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </PageContainer>
+
+      {/* Reviews Section */}
+      {totalReviews > 0 && (
+        <PageContainer maxWidth="6xl">
+          <div className="card bg-base-200 shadow-sm border border-base-300">
+            <div className="card-body space-y-4">
+              <h3 className="text-lg font-semibold mb-0 text-base-content">
+                <i className="fas fa-star mr-2 text-primary"></i>
+                Reviews ({totalReviews})
+              </h3>
+              <ReviewDisplay workerId={workerId} limit={10} />
+            </div>
+          </div>
+        </PageContainer>
+      )}
 
       {/* Portfolio Lightbox Modal */}
       {selectedImage && (
@@ -314,6 +531,7 @@ export default function WorkerProfile() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

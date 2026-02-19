@@ -156,7 +156,7 @@ export default function EditJob() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-100 transition-colors duration-300 flex items-center justify-center">
+      <div className="min-h-screen page-bg transition-colors duration-300 flex items-center justify-center">
         <div className="text-center">
           <span className="loading loading-spinner loading-lg text-primary"></span>
           <p className="mt-4 text-base-content opacity-70">Loading job data...</p>
@@ -167,7 +167,7 @@ export default function EditJob() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-base-100 transition-colors duration-300 flex items-center justify-center">
+      <div className="min-h-screen page-bg transition-colors duration-300 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😞</div>
           <h2 className="text-2xl font-bold mb-2 text-base-content">Error</h2>
@@ -181,8 +181,8 @@ export default function EditJob() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen page-bg transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
         {/* Header */}
         <div className="mb-6">
           <button

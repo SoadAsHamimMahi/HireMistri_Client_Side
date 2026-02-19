@@ -26,6 +26,7 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
 import MyProfile from './routes/MyProfile';
 import EditJob from './routes/EditJob';
+import MessagesPaused from './routes/MessagesPaused';
 
 const router = createBrowserRouter([
   {
@@ -129,6 +130,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MyProfile />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'messages',
+        element: (
+          <ProtectedRoute>
+            <MessagesPaused />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'messages/:conversationId',
+        element: (
+          <ProtectedRoute>
+            <MessagesPaused />
           </ProtectedRoute>
         )
       },

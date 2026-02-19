@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -7,6 +7,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import axios from 'axios';
 import ShareButton from '../../components/ShareButton';
+import RatingModal from '../../components/RatingModal';
+import { AuthContext } from '../../Authentication/AuthProvider';
 
 // Delete Job Button Component
 function DeleteJobButton({ jobId, jobTitle }) {
@@ -79,6 +81,7 @@ function DeleteJobButton({ jobId, jobTitle }) {
 export default function PostedJobDetails() {
   const { id } = useParams();
   const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+  const { user } = useContext(AuthContext) || {};
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +96,10 @@ export default function PostedJobDetails() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [deciding, setDeciding] = useState(false);
+
+  // Rating modal state
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -120,6 +127,11 @@ export default function PostedJobDetails() {
     })();
     return () => { ignore = true; };
   }, [id, base]);
+
+  // Function to handle rating success
+  const handleRatingSuccess = () => {
+    fetchApplications();
+  };
 
   // load applications for this job
   const fetchApplications = async () => {
@@ -433,7 +445,36 @@ const decide = async (app, nextStatus) => {
                         <td>{a.workerPhone || '—'}</td>
                         <td><Badge text={a.status || 'pending'} tone={(a.status || 'pending').toLowerCase()} /></td>
                         <td className="text-right">
-                          <button className="btn btn-sm btn-outline" onClick={() => openModal(a)}>View</button>
+                          <div className="flex items-center gap-2 justify-end">
+                            <button className="btn btn-sm btn-outline" onClick={() => openModal(a)}>View</button>
+                            {a.status?.toLowerCase() === 'accepted' && (
+                              <button
+                                className="btn btn-sm btn-info"
+                                onClick={() => {
+                                  setSelectedApplication(a);
+                                  decide(a, 'completed');
+                                }}
+                                disabled={deciding}
+                                title="Mark this application as completed"
+                              >
+                                {deciding ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-check-double mr-1"></i>}
+                                Complete
+                              </button>
+                            )}
+                            {a.status?.toLowerCase() === 'completed' && (
+                              <button
+                                className="btn btn-sm btn-primary"
+                                onClick={() => {
+                                  setSelectedApplication(a);
+                                  setRatingModalOpen(true);
+                                }}
+                                title="Rate this worker"
+                              >
+                                <i className="fas fa-star mr-1"></i>
+                                Rate
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -485,24 +526,73 @@ const decide = async (app, nextStatus) => {
             <div className="mt-4 flex items-center justify-between">
               <button className="btn" onClick={closeModal}>Close</button>
               <div className="flex gap-2">
-                <button
-                  className="btn btn-success"
-                  disabled={deciding}
-                  onClick={() => decide(selected, 'accepted')}
-                >
-                  {deciding && selected.status !== 'accepted' ? 'Saving…' : 'Accept'}
-                </button>
-                <button
-                  className="btn btn-error text-white"
-                  disabled={deciding}
-                  onClick={() => decide(selected, 'rejected')}
-                >
-                  {deciding && selected.status !== 'rejected' ? 'Saving…' : 'Reject'}
-                </button>
+                {selected.status?.toLowerCase() === 'completed' ? (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setSelectedApplication(selected);
+                      setRatingModalOpen(true);
+                      closeModal();
+                    }}
+                  >
+                    <i className="fas fa-star mr-2"></i>
+                    Rate Worker
+                  </button>
+                ) : selected.status?.toLowerCase() === 'accepted' ? (
+                  <button
+                    className="btn btn-info"
+                    disabled={deciding}
+                    onClick={() => decide(selected, 'completed')}
+                  >
+                    {deciding ? 'Saving…' : (
+                      <>
+                        <i className="fas fa-check-double mr-2"></i>
+                        Mark as Completed
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn btn-success"
+                      disabled={deciding}
+                      onClick={() => decide(selected, 'accepted')}
+                    >
+                      {deciding && selected.status !== 'accepted' ? 'Saving…' : 'Accept'}
+                    </button>
+                    <button
+                      className="btn btn-error text-white"
+                      disabled={deciding}
+                      onClick={() => decide(selected, 'rejected')}
+                    >
+                      {deciding && selected.status !== 'rejected' ? 'Saving…' : 'Reject'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Rating Modal */}
+      {ratingModalOpen && selectedApplication && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedApplication(null);
+          }}
+          jobId={id}
+          applicationId={selectedApplication._id?.toString() || selectedApplication._id}
+          workerId={selectedApplication.workerId}
+          workerName={selectedApplication.workerName || 'Worker'}
+          jobTitle={job?.title}
+          onSuccess={() => {
+            // Refresh applications to show updated review status
+            fetchApplications();
+          }}
+        />
       )}
     </div>
   );

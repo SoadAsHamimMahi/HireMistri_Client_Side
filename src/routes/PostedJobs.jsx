@@ -275,8 +275,8 @@ export default function PostedJobs() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-100 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="min-h-screen page-bg transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
           <div className="text-center mb-8">
             <div className="h-12 w-64 mx-auto rounded-lg mb-4 bg-base-300 animate-pulse"></div>
             <div className="h-6 w-96 mx-auto rounded bg-base-300 animate-pulse"></div>
@@ -300,7 +300,7 @@ export default function PostedJobs() {
 
   if (err) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-100">
+      <div className="min-h-screen flex items-center justify-center page-bg">
         <div className="text-center">
           <div className="text-6xl mb-4">😞</div>
           <h2 className="text-2xl font-bold mb-2 text-base-content">Oops! Something went wrong</h2>
@@ -311,10 +311,10 @@ export default function PostedJobs() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 transition-colors duration-300">
+    <div className="min-h-screen page-bg transition-colors duration-300">
       {/* Enhanced Header Section */}
       <div className="relative overflow-hidden bg-base-200">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
           {/* Header Title */}
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-base-content">
@@ -359,7 +359,7 @@ export default function PostedJobs() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
         {/* Modern Filter System */}
         <div className="mb-8">

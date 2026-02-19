@@ -30,7 +30,7 @@ const PopularCategories = () => {
   };
 
   return (
-    <div className="relative z-30 mt-8 md:-mt-20 w-11/12 md:w-4/5 mx-auto">
+    <div className="relative z-30 mt-8 md:-mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4 text-base-content">Popular Categories</h2>
         <p className="text-base-content opacity-70">Find skilled professionals in your area</p>

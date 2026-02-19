@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const Banner = () => {
   return (
     <div
-      className="relative w-full mx-auto h-auto md:h-[75vh] lg:h-[85vh] overflow-hidden bg-no-repeat bg-cover bg-right"
+      className="relative w-full mx-auto h-[60vh] md:h-[75vh] overflow-hidden bg-no-repeat bg-cover bg-right"
       style={{
         backgroundImage: `url(${BannerBg})`,
       }}

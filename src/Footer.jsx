@@ -36,7 +36,7 @@ export default function Footer() {
     <footer className="mt-16 text-base-content">
       {/* CTA strip */}
       <div className="bg-gradient-to-r from-base-200 via-base-100 to-base-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h3 className="text-xl md:text-2xl font-semibold text-base-content">
             Empower your work with <span className="text-primary">Hire</span>Mistri
           </h3>
@@ -48,10 +48,10 @@ export default function Footer() {
               Post Job
             </Link>
             <Link
-              to="/jobs"
+              to="/My-Posted-Jobs"
               className="inline-flex items-center justify-center px-5 py-2 rounded-md border border-base-300 hover:bg-base-200 transition text-base-content"
             >
-              Browse Jobs
+              My Jobs
             </Link>
           </div>
         </div>
@@ -59,8 +59,8 @@ export default function Footer() {
 
       {/* Main footer */}
       <div className="bg-base-200 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Brand + contact */}
             <div>
               <Link to="/" className="inline-flex items-baseline gap-1 font-extrabold text-2xl">
@@ -114,7 +114,7 @@ export default function Footer() {
 
             {/* Categories */}
             <div>
-              <h4 className="text-base-content font-semibold mb-3">Top Categories</h4>
+              <h4 className="text-base-content font-semibold mb-4">Top Categories</h4>
               <ul className="space-y-2 text-sm">
                 {cats.map((c) => (
                   <li key={c}>
@@ -131,10 +131,10 @@ export default function Footer() {
 
             {/* For Clients */}
             <div>
-              <h4 className="text-base-content font-semibold mb-3">For Clients</h4>
+              <h4 className="text-base-content font-semibold mb-4">For Clients</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link to="/post-job" className="text-base-content opacity-70 hover:opacity-100">Post a Job</Link></li>
-                <li><Link to="/workers" className="text-base-content opacity-70 hover:opacity-100">Browse Workers</Link></li>
+                <li><Link to="/" className="text-base-content opacity-70 hover:opacity-100">Find Workers</Link></li>
                 <li><Link to="/how-it-works" className="text-base-content opacity-70 hover:opacity-100">How it works</Link></li>
                 <li><Link to="/pricing" className="text-base-content opacity-70 hover:opacity-100">Pricing</Link></li>
                 <li><Link to="/support" className="text-base-content opacity-70 hover:opacity-100">Support</Link></li>
@@ -143,7 +143,7 @@ export default function Footer() {
 
             {/* Newsletter */}
             <div>
-              <h4 className="text-base-content font-semibold mb-3">Get updates</h4>
+              <h4 className="text-base-content font-semibold mb-4">Get updates</h4>
               <p className="text-sm text-base-content opacity-70">
                 New categories, promos & tips—straight to your inbox.
               </p>
@@ -189,7 +189,7 @@ export default function Footer() {
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-10 pt-6 border-t border-base-300 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-xs text-base-content opacity-70">
+          <div className="pt-6 mt-8 border-t border-base-300 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-xs text-base-content opacity-70">
             <p>© {year} <span className="text-base-content">Hire</span><span className="text-primary">Mistri</span>. All rights reserved.</p>
             <div className="flex gap-5">
               <Link to="/terms" className="hover:opacity-100">Terms</Link>

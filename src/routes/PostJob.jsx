@@ -88,8 +88,8 @@ export default function PostJob() {
   const hasDraft = initialDraft !== null;
 
   return (
-    <div className="min-h-screen bg-base-100 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen page-bg transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
         {/* Draft Notice */}
         {hasDraft && (
           <div className="alert alert-info mb-6">

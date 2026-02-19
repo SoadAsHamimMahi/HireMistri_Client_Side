@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useTheme } from '../contexts/ThemeContext';
+import PageContainer from '../components/layout/PageContainer';
+import PageHeader from '../components/layout/PageHeader';
 
 const dummyJobs = [
   { id: 1, title: 'Fix Bathroom Leak', status: 'Open', applicants: 3, budget: '৳2,500', location: 'Dhanmondi, Dhaka' },
@@ -20,19 +22,12 @@ export default function Dashboard() {
   const totalApplicants = dummyJobs.reduce((sum, job) => sum + job.applicants, 0);
 
   return (
-    <div className="min-h-screen bg-base-100 transition-colors duration-300">
-      {/* Header Section */}
-      <div className="shadow-sm border-b border-base-300 transition-colors duration-300 bg-base-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-base-content">
-                Welcome back, Client! 👋
-              </h1>
-              <p className="mt-2 text-base-content opacity-70">
-                Manage your job postings and find the perfect workers for your projects.
-              </p>
-            </div>
+    <div className="min-h-screen page-bg transition-colors duration-300">
+      <PageContainer>
+        <PageHeader
+          title="Welcome back, Client! 👋"
+          subtitle="Manage your job postings and find the perfect workers for your projects."
+          actions={
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/20">
                 <i className="fas fa-user text-primary text-xl"></i>
@@ -42,14 +37,11 @@ export default function Dashboard() {
                 <p className="text-sm text-base-content opacity-50">Client Account</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+          }
+        />
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card bg-base-200 border-l-4 border-info p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-base-content opacity-70">Total Jobs</p>
@@ -61,7 +53,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-primary p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border-l-4 border-primary p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium opacity-70">Active Jobs</p>
@@ -73,7 +65,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-secondary p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border-l-4 border-secondary p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-base-content opacity-70">Completed</p>
@@ -85,7 +77,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-warning p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border-l-4 border-warning p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-base-content opacity-70">Total Applicants</p>
@@ -101,7 +93,7 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link to="/post-job" className="group">
-            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-base-300 hover:border-primary">
+            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-4 lg:p-6 border border-base-300 hover:border-primary">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center transition-colors bg-primary/20 group-hover:bg-primary/30">
                   <i className="fas fa-plus text-primary text-xl"></i>
@@ -115,7 +107,7 @@ export default function Dashboard() {
           </Link>
 
           <Link to="/My-Posted-Jobs" className="group">
-            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-base-300 hover:border-info">
+            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-4 lg:p-6 border border-base-300 hover:border-info">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center transition-colors bg-info/20 group-hover:bg-info/30">
                   <i className="fas fa-list text-info text-xl"></i>
@@ -129,7 +121,7 @@ export default function Dashboard() {
           </Link>
 
           <Link to="/applications" className="group">
-            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-base-300 hover:border-accent">
+            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-4 lg:p-6 border border-base-300 hover:border-accent">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center transition-colors bg-accent/20 group-hover:bg-accent/30">
                   <i className="fas fa-file-alt text-accent text-xl"></i>
@@ -143,7 +135,7 @@ export default function Dashboard() {
           </Link>
 
           <Link to="/my-profile" className="group">
-            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-base-300 hover:border-secondary">
+            <div className="card bg-base-200 shadow-sm hover:shadow-md transition-all duration-300 p-4 lg:p-6 border border-base-300 hover:border-secondary">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center transition-colors bg-secondary/20 group-hover:bg-secondary/30">
                   <i className="fas fa-user text-secondary text-xl"></i>
@@ -161,7 +153,7 @@ export default function Dashboard() {
         <div className="card bg-base-200 shadow-sm transition-colors duration-300">
           <div className="p-6 border-b border-base-300">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-base-content">
+              <h2 className="text-lg font-semibold mb-0 flex items-center gap-2 text-base-content">
                 <i className="fas fa-briefcase text-primary"></i>
                 Recent Job Postings
               </h2>
@@ -209,7 +201,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

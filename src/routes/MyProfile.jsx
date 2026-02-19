@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import axios from 'axios';
+import PageContainer from '../components/layout/PageContainer';
 
 export default function MyProfile() {
   const { user, sendVerificationEmail, reloadUser } = useContext(AuthContext);
@@ -314,7 +315,7 @@ export default function MyProfile() {
         {/* Hiring Credibility */}
         {stats && (
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-base-content">Hiring Credibility</h3>
+            <h3 className="text-lg font-semibold mb-4 text-base-content">Hiring Credibility</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                 <div className="text-2xl font-bold text-primary">{clientData.totalJobsPosted || 0}</div>
@@ -338,7 +339,7 @@ export default function MyProfile() {
 
         {/* Account Transparency */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-base-content">Account Information</h3>
+          <h3 className="text-lg font-semibold mb-4 text-base-content">Account Information</h3>
           <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
             <div className="space-y-2">
               {clientData.createdAt && (
@@ -389,7 +390,7 @@ export default function MyProfile() {
         {/* Preferences */}
         {clientData.preferences && (clientData.preferences.categories?.length > 0 || clientData.preferences.budgetMin || clientData.preferences.budgetMax) && (
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-base-content">Job Preferences</h3>
+            <h3 className="text-lg font-semibold mb-4 text-base-content">Job Preferences</h3>
             <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
               {clientData.preferences.categories?.length > 0 && (
                 <div className="mb-3">
@@ -415,7 +416,7 @@ export default function MyProfile() {
 
         {/* About Section */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-base-content">About</h3>
+          <h3 className="text-lg font-semibold mb-4 text-base-content">About</h3>
           <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
             {clientData.bio ? (
               <p className="text-base-content opacity-80">{clientData.bio}</p>
@@ -429,7 +430,7 @@ export default function MyProfile() {
 
         {/* Profile Details */}
         <div>
-          <h3 className="text-lg font-semibold mb-3 text-base-content">Profile Details</h3>
+          <h3 className="text-lg font-semibold mb-4 text-base-content">Profile Details</h3>
           <div className="space-y-3">
             {[
               { label: 'Full Name', value: `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || '—' },
@@ -787,7 +788,7 @@ export default function MyProfile() {
   // Show loading state
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-300 page-bg">
         <div className="text-center">
           <i className="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
           <p className="text-base-content opacity-70">Loading profile...</p>
@@ -797,10 +798,10 @@ export default function MyProfile() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="min-h-screen transition-colors duration-300 page-bg">
       {/* Header */}
       <div className={`shadow-sm border-b transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-base-content">My Profile</h1>
             <p className="mt-2 text-base-content opacity-70">
@@ -810,7 +811,7 @@ export default function MyProfile() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <PageContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Profile Summary */}
           <div className="lg:col-span-1">
@@ -980,7 +981,7 @@ export default function MyProfile() {
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }
