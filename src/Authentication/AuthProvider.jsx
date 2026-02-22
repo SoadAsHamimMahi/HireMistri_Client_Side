@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useRef, useState } from 'react';
 import { 
   getAuth, 
   createUserWithEmailAndPassword, 
@@ -18,6 +18,11 @@ const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => { // ✅ fixed `children`
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isSuspended, setIsSuspended] = useState(false);
+  const suspensionTimerRef = useRef(null);
+
+  const API_BASE = useMemo(() => (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, ''), []);
 
   // Create new user
   const createUser = (email, password) => {
@@ -52,23 +57,68 @@ const AuthProvider = ({ children }) => { // ✅ fixed `children`
     return signOut(auth);
   };
 
+  const checkSuspension = async (uid) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(uid)}`);
+      if (!res.ok) return false;
+      const doc = await res.json();
+      return !!doc?.isSuspended;
+    } catch {
+      return false;
+    }
+  };
+
   // Track current user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      console.log("Current User:", currentUser);
+      setLoading(true);
+      setIsSuspended(false);
+
+      if (suspensionTimerRef.current) {
+        clearInterval(suspensionTimerRef.current);
+        suspensionTimerRef.current = null;
+      }
+
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+
+      const uid = currentUser.uid;
+      // Initial suspension check
+      (async () => {
+        const suspended = await checkSuspension(uid);
+        setIsSuspended(suspended);
+        setLoading(false);
+      })();
+
+      // Periodically re-check (so admin suspensions take effect without reload)
+      suspensionTimerRef.current = setInterval(async () => {
+        const suspended = await checkSuspension(uid);
+        setIsSuspended(suspended);
+      }, 30000);
     });
     return () => unsubscribe();
   }, []);
 
+  const getIdToken = async () => {
+    if (!auth.currentUser) return null;
+    return auth.currentUser.getIdToken();
+  };
+
   const authInfo = {
     user,
+    loading,
+    isSuspended,
     createUser,
     signIn,
     signInWithGoogle,
     sendVerificationEmail,
     reloadUser,
-    logOut
+    logOut,
+    getIdToken,
+    API_BASE,
   };
 
   return (

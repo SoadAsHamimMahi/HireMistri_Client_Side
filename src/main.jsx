@@ -27,6 +27,8 @@ import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
 import MyProfile from './routes/MyProfile';
 import EditJob from './routes/EditJob';
 import MessagesPaused from './routes/MessagesPaused';
+import MessagesInbox from './routes/MessagesInbox';
+import SupportInbox from './routes/Support/SupportInbox';
 
 const router = createBrowserRouter([
   {
@@ -146,6 +148,38 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MessagesPaused />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'chats',
+        element: (
+          <ProtectedRoute>
+            <MessagesInbox basePath="chats" />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'chats/:conversationId',
+        element: (
+          <ProtectedRoute>
+            <MessagesInbox basePath="chats" />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'support',
+        element: (
+          <ProtectedRoute>
+            <SupportInbox />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'support/:ticketId',
+        element: (
+          <ProtectedRoute>
+            <SupportInbox />
           </ProtectedRoute>
         )
       },

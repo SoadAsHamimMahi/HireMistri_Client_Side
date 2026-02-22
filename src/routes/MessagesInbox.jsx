@@ -9,7 +9,7 @@ import { FaSearch, FaFilter, FaArrowLeft } from 'react-icons/fa';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
-export default function MessagesInbox() {
+export default function MessagesInbox({ basePath = 'messages' }) {
   const { user } = useContext(AuthContext) || {};
   const { conversationId: urlConversationId } = useParams();
   const [searchParams] = useSearchParams();
@@ -119,7 +119,7 @@ export default function MessagesInbox() {
       const ids = [user.uid, workerId].sort();
       const newConversationId = jobId ? `${jobId}_${ids.join('_')}` : `general_${ids.join('_')}`;
       setSelectedConversationId(newConversationId);
-      navigate(`/messages/${newConversationId}`, { replace: true });
+      navigate(`/${basePath}/${newConversationId}`, { replace: true });
     }
   }, [conversationId, workerId, jobId, user?.uid, navigate, preloadMessages]);
 
@@ -225,7 +225,7 @@ export default function MessagesInbox() {
 
   const handleConversationClick = (conv) => {
     setSelectedConversationId(conv.conversationId);
-    navigate(`/messages/${conv.conversationId}`);
+    navigate(`/${basePath}/${conv.conversationId}`);
     if (window.innerWidth < 768) {
       setShowMobileConversations(false);
     }
@@ -391,7 +391,7 @@ export default function MessagesInbox() {
                 <button
                   onClick={() => {
                     setShowMobileConversations(true);
-                    navigate('/messages');
+                    navigate(`/${basePath}`);
                   }}
                   className="btn btn-sm btn-ghost"
                 >

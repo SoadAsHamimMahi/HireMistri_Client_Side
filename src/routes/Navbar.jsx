@@ -68,38 +68,6 @@ export default function Navbar() {
 
   return (
     <div className="w-full">
-      {/* Sahayak-style green top bar */}
-      <div className="bg-[#1DC66C]">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex justify-between items-center h-10 text-primary-content text-sm">
-            <div className="flex items-center gap-4">
-              <Link to="/post-job" className="flex items-center gap-2 hover:opacity-90">
-                <i className="fas fa-plus-circle"></i>
-                <span>Post Job</span>
-              </Link>
-            </div>
-            <div className="hidden sm:flex items-center gap-4">
-              <span className="opacity-90">English</span>
-              <button
-                onClick={toggleTheme}
-                className="btn btn-ghost btn-sm min-h-0 h-8 px-2 text-primary-content hover:bg-white/20"
-                title={isDarkMode ? 'Light mode' : 'Dark mode'}
-              >
-                <i className={`text-lg ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
-              </button>
-              {user ? (
-                <Link to="/my-profile" className="flex items-center gap-2 font-medium hover:opacity-90">
-                  <i className="fas fa-user"></i>
-                  <span>Account</span>
-                </Link>
-              ) : (
-                <Link to="/login" className="font-medium hover:opacity-90">Login</Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Navbar */}
       <div className="navbar bg-base-200 text-base-content px-4 md:px-6 shadow-sm justify-between items-center transition-colors duration-300">
 
@@ -133,6 +101,12 @@ export default function Navbar() {
               </Link>
               <Link to="/applications" className="text-base-content hover:text-primary transition-colors font-medium py-2">
                 Applications
+              </Link>
+              <Link to="/chats" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+                Messages
+              </Link>
+              <Link to="/support" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+                Support
               </Link>
               
               {/* Notifications */}
@@ -176,6 +150,8 @@ export default function Navbar() {
                   <li><Link to="/post-job" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Post Job</Link></li>
                   <li><Link to="/My-Posted-Jobs" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Posted Jobs</Link></li>
                   <li><Link to="/applications" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Applications</Link></li>
+                  <li><Link to="/chats" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Messages</Link></li>
+                  <li><Link to="/support" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Support Center</Link></li>
                   <li><Link to="/my-profile" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Profile</Link></li>
                   <div className="divider my-1"></div>
                   <li><button onClick={handleLogout} className="rounded-lg text-base-content hover:bg-error/10 hover:text-error">Logout</button></li>
@@ -246,6 +222,8 @@ export default function Navbar() {
                 <Link to="/post-job" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Post a Job</Link>
                 <Link to="/My-Posted-Jobs" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Posted Jobs</Link>
                 <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Applications</Link>
+                <Link to="/chats" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Messages</Link>
+                <Link to="/support" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Support Center</Link>
                 <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Profile</Link>
                 
                 {/* Mobile Theme Toggle */}
