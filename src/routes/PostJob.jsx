@@ -5,6 +5,7 @@ import StepTitle from './PosteJobForm/StepTitle';
 import StepSkills from './PosteJobForm/StepSkills';
 import StepScope from './PosteJobForm/StepScope';
 import StepBudgetLocation from './PosteJobForm/StepBudgetLocation';
+import StepLocation from './PosteJobForm/StepLocation';
 import StepImagesReview from './PosteJobForm/StepImagesReview';
 import StepProgress from './PosteJobForm/StepProgress';
 
@@ -37,6 +38,9 @@ export default function PostJob() {
     category: '',
     description: '',
     location: '',
+    locationText: '',
+    locationGeo: null,
+    placeId: null,
     budget: '',
     date: '',
     time: '',
@@ -149,10 +153,19 @@ export default function PostJob() {
           />
         )}
         {step === 5 && (
+          <StepLocation
+            form={form}
+            setForm={setForm}
+            nextStep={() => setStep(6)}
+            prevStep={() => setStep(4)}
+            step={step}
+          />
+        )}
+        {step === 6 && (
           <StepImagesReview
             form={form}
             setForm={setForm}
-            prevStep={() => setStep(4)}
+            prevStep={() => setStep(5)}
             step={step}
             onSuccess={clearDraft}
           />

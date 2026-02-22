@@ -68,7 +68,39 @@ export default function Navbar() {
 
   return (
     <div className="w-full">
-      {/* Top Navbar */}
+      {/* Sahayak-style green top bar */}
+      <div className="bg-[#1DC66C]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex justify-between items-center h-10 text-primary-content text-sm">
+            <div className="flex items-center gap-4">
+              <Link to="/post-job" className="flex items-center gap-2 hover:opacity-90">
+                <i className="fas fa-plus-circle"></i>
+                <span>Post Job</span>
+              </Link>
+            </div>
+            <div className="hidden sm:flex items-center gap-4">
+              <span className="opacity-90">English</span>
+              <button
+                onClick={toggleTheme}
+                className="btn btn-ghost btn-sm min-h-0 h-8 px-2 text-primary-content hover:bg-white/20"
+                title={isDarkMode ? 'Light mode' : 'Dark mode'}
+              >
+                <i className={`text-lg ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
+              </button>
+              {user ? (
+                <Link to="/my-profile" className="flex items-center gap-2 font-medium hover:opacity-90">
+                  <i className="fas fa-user"></i>
+                  <span>Account</span>
+                </Link>
+              ) : (
+                <Link to="/login" className="font-medium hover:opacity-90">Login</Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
       <div className="navbar bg-base-200 text-base-content px-4 md:px-6 shadow-sm justify-between items-center transition-colors duration-300">
 
         <div className="flex gap-6">
@@ -83,7 +115,7 @@ export default function Navbar() {
               placeholder="Find Workers"
               className="input input-bordered bg-base-100 text-base-content w-64 xl:w-80 rounded-l-full"
             />
-            <button className="btn btn-primary rounded-r-full border-none">
+            <button className="btn rounded-r-full border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
               <i className="fas fa-search"></i>
             </button>
           </div>
@@ -118,10 +150,10 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* Theme Toggle */}
+              {/* Theme Toggle - desktop: only in green bar; show here on smaller than lg */}
               <button 
                 onClick={toggleTheme}
-                className="btn btn-ghost btn-circle"
+                className="btn btn-ghost btn-circle lg:hidden"
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 <i className={`text-lg text-base-content ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
@@ -135,11 +167,11 @@ export default function Navbar() {
                   </div>
                   <div className="text-left">
                     <p className="font-medium text-sm text-base-content">{user?.email?.split('@')[0] || 'Client'}</p>
-                    <p className="text-xs text-base-content opacity-70">01990444882</p>
+                    <p className="text-xs text-muted">01990444882</p>
                   </div>
                   <i className="fas fa-chevron-down text-xs text-base-content"></i>
                 </div>
-                <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg rounded-xl w-48 bg-base-200 border border-base-300">
+                <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl rounded-xl w-48 bg-surface border border-base-300">
                   <li><Link to="/dashboard" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Dashboard</Link></li>
                   <li><Link to="/post-job" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Post Job</Link></li>
                   <li><Link to="/My-Posted-Jobs" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Posted Jobs</Link></li>
@@ -151,7 +183,7 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <Link to="/login" className="btn btn-primary border-none font-medium px-6">
+            <Link to="/login" className="btn border-none font-medium px-6 bg-[#1DC66C] hover:bg-[#17A858] text-white">
               Login
             </Link>
           )}
@@ -176,7 +208,7 @@ export default function Navbar() {
             placeholder="Find Workers"
             className="input input-bordered bg-base-100 text-base-content w-full rounded-l-full"
           />
-          <button className="btn btn-primary rounded-r-full border-none">
+          <button className="btn rounded-r-full border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
             <i className="fas fa-search"></i>
           </button>
         </div>
@@ -201,7 +233,7 @@ export default function Navbar() {
                   <div className="font-semibold text-base-content">{user.email}</div>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn btn-primary border-none">
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
                   Login
                 </Link>
               )}

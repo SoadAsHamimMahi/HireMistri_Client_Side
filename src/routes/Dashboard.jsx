@@ -34,17 +34,17 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="font-semibold text-base-content">{user?.email || 'Client'}</p>
-                <p className="text-sm text-base-content opacity-50">Client Account</p>
+                <p className="text-sm text-muted">Client Account</p>
               </div>
             </div>
           }
         />
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border border-base-300 rounded-xl shadow-sm border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-base-content opacity-70">Total Jobs</p>
+                <p className="text-sm font-medium text-muted">Total Jobs</p>
                 <p className="text-3xl font-bold text-base-content">{totalJobs}</p>
               </div>
               <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-info/20">
@@ -53,10 +53,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-primary p-4 lg:p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border border-base-300 rounded-xl shadow-sm border-l-4 border-primary p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-70">Active Jobs</p>
+                <p className="text-sm font-medium text-muted">Active Jobs</p>
                 <p className="text-3xl font-bold text-base-content">{activeJobs}</p>
               </div>
               <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-primary/20">
@@ -65,10 +65,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-secondary p-4 lg:p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border border-base-300 rounded-xl shadow-sm border-l-4 border-secondary p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-base-content opacity-70">Completed</p>
+                <p className="text-sm font-medium text-muted">Completed</p>
                 <p className="text-3xl font-bold text-base-content">{completedJobs}</p>
               </div>
               <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-secondary/20">
@@ -77,10 +77,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-base-200 border-l-4 border-warning p-4 lg:p-6 transition-colors duration-300">
+          <div className="card bg-base-200 border border-base-300 rounded-xl shadow-sm border-l-4 border-warning p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-base-content opacity-70">Total Applicants</p>
+                <p className="text-sm font-medium text-muted">Total Applicants</p>
                 <p className="text-3xl font-bold text-base-content">{totalApplicants}</p>
               </div>
               <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-warning/20">
@@ -100,7 +100,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-base-content">Post New Job</h3>
-                  <p className="text-sm opacity-70">Create a new job posting</p>
+                  <p className="text-sm text-muted">Create a new job posting</p>
                 </div>
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-base-content">My Jobs</h3>
-                  <p className="text-sm text-base-content opacity-70">View all your jobs</p>
+                  <p className="text-sm text-muted">View all your jobs</p>
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-base-content">Applications</h3>
-                  <p className="text-sm text-base-content opacity-70">Review applications</p>
+                  <p className="text-sm text-muted">Review applications</p>
                 </div>
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-base-content">My Profile</h3>
-                  <p className="text-sm text-base-content opacity-70">Manage your profile</p>
+                  <p className="text-sm text-muted">Manage your profile</p>
                 </div>
               </div>
             </div>
@@ -169,7 +169,7 @@ export default function Dashboard() {
                 <div key={job.id} className="flex items-center justify-between p-4 rounded-lg transition-colors bg-base-300 hover:bg-base-300/80">
                   <div className="flex-1">
                     <h3 className="font-semibold text-base-content">{job.title}</h3>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-base-content opacity-70">
+                    <div className="flex items-center gap-4 mt-1 text-sm text-muted">
                       <span className="flex items-center gap-1">
                         <i className="fas fa-map-marker-alt text-primary"></i>
                         {job.location}

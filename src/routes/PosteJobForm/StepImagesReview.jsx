@@ -70,14 +70,17 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
         }
       }
 
-      // Second: Save job data with image URLs
-      await axios.post("http://localhost:5000/api/browse-jobs", {
+      const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+      await axios.post(`${API_BASE}/api/browse-jobs`, {
         clientId: user.uid,
         title: form.title,
         category: form.category,
         skills: form.skills || [],
         description: form.description,
-        location: form.location,
+        location: form.locationText || form.location,
+        locationText: form.locationText || form.location || null,
+        locationGeo: form.locationGeo || null,
+        placeId: form.placeId || null,
         budget: form.budget,
         date: form.date,
         time: form.time,
@@ -128,7 +131,7 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
         <div className="card bg-base-200 shadow-sm border border-base-300">
           <div className="card-body p-6 lg:p-8 space-y-6">
             <div>
-              <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 5 of 5</p>
+              <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 6 of 6</p>
               <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
                 Upload Images & Review
               </h2>
@@ -233,11 +236,11 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
                 </div>
                 <div>
                   <span className="text-xs font-semibold text-base-content opacity-60">Location</span>
-                  <p className="text-sm text-base-content">{form.location || 'Not provided'}</p>
+                  <p className="text-sm text-base-content">{form.locationText || form.location || 'Not provided'}</p>
                 </div>
                 <div>
                   <span className="text-xs font-semibold text-base-content opacity-60">Budget</span>
-                  <p className="text-sm text-base-content font-semibold text-primary">
+                  <p className="text-sm font-semibold text-primary">
                     {form.budget ? `৳${form.budget}` : 'Not provided'}
                   </p>
                 </div>

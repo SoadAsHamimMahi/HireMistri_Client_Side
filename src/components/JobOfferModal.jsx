@@ -6,12 +6,19 @@ import { LocationPicker } from './maps';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
-export default function ChatJobCreationModal({ 
-  onClose, 
-  onSuccess,
-  conversationId,
-  targetWorkerId
-}) {
+const CATEGORIES = [
+  'Electrician', 'Plumber', 'Mechanic', 'Technician', 'Carpenter',
+  'Mason (Rajmistri)', 'Welder', 'Painter', 'AC Technician', 'Other'
+];
+
+function getDefaultExpiresAt() {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString().slice(0, 16);
+}
+
+export default function JobOfferModal({ workerId, workerName, workerCategories = [], onClose, onSuccess }) {
   const { user } = useContext(AuthContext) || {};
   const [form, setForm] = useState({
     title: '',
@@ -21,7 +28,8 @@ export default function ChatJobCreationModal({
     locationText: '',
     locationGeo: null,
     placeId: null,
-    budget: ''
+    budget: '',
+    expiresAt: getDefaultExpiresAt(),
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -40,10 +48,10 @@ export default function ChatJobCreationModal({
   };
 
   const wordCount = form.description.trim().split(/\s+/).filter(Boolean).length;
-  const minWords = 10; // Reduced from 20 to 10 for simplicity
+  const minWords = 10;
   const isDescriptionValid = wordCount >= minWords;
+  const categoryMismatch = form.category && workerCategories.length > 0 && !workerCategories.includes(form.category);
 
-  // Auto-detect location on mount
   useEffect(() => {
     if (!form.location && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -52,64 +60,59 @@ export default function ChatJobCreationModal({
             const { latitude, longitude } = pos.coords;
             const res = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-              {
-                headers: {
-                  'User-Agent': 'HireMistri/1.0'
-                }
-              }
+              { headers: { 'User-Agent': 'HireMistri/1.0' } }
             );
             const data = await res.json();
             const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
             setForm((prev) => ({ ...prev, location: address }));
-          } catch (error) {
-            console.error('Error fetching location:', error);
+          } catch (err) {
+            console.error('Error fetching location:', err);
           }
         },
-        (error) => {
-          console.error('Geolocation error:', error);
-          // Silently fail - user can still enter location manually
-        }
+        () => {}
       );
     }
-  }, []); // Run once on mount
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation
     if (!form.title.trim()) {
       toast.error('Title is required');
       return;
     }
-
     if (!form.category) {
       toast.error('Category is required');
       return;
     }
-
     if (!isDescriptionValid) {
       toast.error(`Description must be at least ${minWords} words`);
       return;
     }
-
     if (!(form.locationText || form.location || '').trim()) {
       toast.error('Location is required');
       return;
     }
-
-    if (!form.budget || parseFloat(form.budget) <= 0) {
+    const budgetNum = parseFloat(form.budget);
+    if (isNaN(budgetNum) || budgetNum <= 0) {
       toast.error('Budget must be a positive number');
       return;
     }
-
     if (!user?.uid) {
-      toast.error('You must be logged in to create a job');
+      toast.error('You must be logged in to send a job offer');
+      return;
+    }
+    if (!workerId) {
+      toast.error('Worker not specified');
+      return;
+    }
+    const expiresAt = new Date(form.expiresAt);
+    if (expiresAt <= new Date()) {
+      toast.error('Offer must expire in the future');
       return;
     }
 
     try {
       setSubmitting(true);
-
       const payload = {
         clientId: user.uid,
         title: form.title.trim(),
@@ -119,26 +122,22 @@ export default function ChatJobCreationModal({
         locationText: form.locationText || form.location || null,
         locationGeo: form.locationGeo || null,
         placeId: form.placeId || null,
-        budget: parseFloat(form.budget),
+        budget: budgetNum,
         date: new Date().toISOString().split('T')[0],
         time: new Date().toTimeString().slice(0, 5),
-        ...(conversationId && targetWorkerId && {
-          isPrivate: true,
-          conversationId: conversationId,
-          targetWorkerId: targetWorkerId
-        })
+        isPrivate: true,
+        targetWorkerId: workerId,
+        conversationId: `profile_${user.uid}_${workerId}`,
+        expiresAt: expiresAt.toISOString(),
       };
-
       const response = await axios.post(`${API_BASE}/api/browse-jobs`, payload);
-      
-      toast.success('Job created successfully!');
-      if (onSuccess) {
-        onSuccess(response.data.jobId);
-      }
+      const days = Math.ceil((expiresAt - new Date()) / (24 * 60 * 60 * 1000));
+      toast.success(`Job offer sent! It expires in ${days} day(s).`);
+      if (onSuccess) onSuccess(response.data.jobId);
       onClose();
     } catch (err) {
-      console.error('Failed to create job:', err);
-      toast.error(err.response?.data?.error || 'Failed to create job');
+      const msg = err.response?.data?.error || 'Failed to send job offer';
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -147,30 +146,23 @@ export default function ChatJobCreationModal({
   return (
     <div className="modal modal-open">
       <div className="modal-box max-w-lg">
-        <h3 className="font-bold text-lg mb-4">Create Job</h3>
-        
+        <h3 className="font-bold text-lg mb-2">Send Job Offer to {workerName || 'Worker'}</h3>
+        <p className="text-sm text-muted mb-4">Only this worker will see this offer. They can accept or propose a different budget.</p>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
           <div>
-            <label className="label">
-              <span className="label-text">Job Title *</span>
-            </label>
+            <label className="label"><span className="label-text">Job Title *</span></label>
             <input
               type="text"
               name="title"
               className="input input-bordered w-full"
-              placeholder="e.g. Need a plumber to fix leaky faucet"
+              placeholder="e.g. Fix leaky faucet"
               value={form.title}
               onChange={handleChange}
               required
             />
           </div>
-
-          {/* Category */}
           <div>
-            <label className="label">
-              <span className="label-text">Category *</span>
-            </label>
+            <label className="label"><span className="label-text">Category *</span></label>
             <select
               name="category"
               className="select select-bordered w-full"
@@ -179,46 +171,34 @@ export default function ChatJobCreationModal({
               required
             >
               <option disabled value="">Select Category</option>
-              <option value="Electrician">Electrician</option>
-              <option value="Plumber">Plumber</option>
-              <option value="Mechanic">Mechanic</option>
-              <option value="Technician">Technician</option>
-              <option value="Carpenter">Carpenter</option>
-              <option value="Mason">Mason (Rajmistri)</option>
-              <option value="Welder">Welder</option>
-              <option value="Painter">Painter</option>
-              <option value="AC Technician">AC Technician</option>
-              <option value="Other">Other</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
+            {categoryMismatch && (
+              <p className="text-xs text-warning mt-1">
+                This worker may not have listed this service. They can still respond to your offer.
+              </p>
+            )}
           </div>
-
-          {/* Description */}
           <div>
             <label className="label">
               <span className="label-text">Description *</span>
-              <span className="label-text-alt">
-                {wordCount}/{minWords} words min
-              </span>
+              <span className="label-text-alt">{wordCount}/{minWords} words min</span>
             </label>
             <textarea
               name="description"
               className="textarea textarea-bordered w-full"
-              placeholder="Briefly describe what needs to be done..."
+              placeholder="Describe what you need..."
               value={form.description}
               onChange={handleChange}
               rows={4}
               required
             />
             {form.description && !isDescriptionValid && (
-              <label className="label">
-                <span className="label-text-alt text-error">
-                  {minWords - wordCount} more words required
-                </span>
-              </label>
+              <span className="label-text-alt text-error">{minWords - wordCount} more words required</span>
             )}
           </div>
-
-          {/* Location */}
           <div>
             <LocationPicker
               value={form.locationText || form.location || ''}
@@ -227,17 +207,13 @@ export default function ChatJobCreationModal({
               placeholder="Search or pick job location"
             />
           </div>
-
-          {/* Budget */}
           <div>
-            <label className="label">
-              <span className="label-text">Budget (BDT) *</span>
-            </label>
+            <label className="label"><span className="label-text">Budget (BDT) *</span></label>
             <input
               type="number"
               name="budget"
               className="input input-bordered w-full"
-              placeholder="e.g. 5000, 10000"
+              placeholder="e.g. 5000"
               value={form.budget}
               onChange={handleChange}
               min="0"
@@ -245,30 +221,27 @@ export default function ChatJobCreationModal({
               required
             />
           </div>
-
-          {/* Actions */}
+          <div>
+            <label className="label"><span className="label-text">Offer expires *</span></label>
+            <input
+              type="datetime-local"
+              name="expiresAt"
+              className="input input-bordered w-full"
+              value={form.expiresAt}
+              onChange={handleChange}
+              min={new Date().toISOString().slice(0, 16)}
+              required
+            />
+            <p className="text-xs text-muted mt-1">Default: 7 days. The worker must respond before this time.</p>
+          </div>
           <div className="modal-action">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-ghost"
-              disabled={submitting}
-            >
-              Cancel
-            </button>
+            <button type="button" onClick={onClose} className="btn btn-ghost" disabled={submitting}>Cancel</button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting || !isDescriptionValid || !form.title || !form.category || !form.location || !form.budget}
+              disabled={submitting || !isDescriptionValid || !form.title || !form.category || !(form.locationText || form.location) || !form.budget}
             >
-              {submitting ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Creating...
-                </>
-              ) : (
-                'Create Job'
-              )}
+              {submitting ? <><span className="loading loading-spinner loading-sm"></span> Sending...</> : 'Send Job Offer'}
             </button>
           </div>
         </form>

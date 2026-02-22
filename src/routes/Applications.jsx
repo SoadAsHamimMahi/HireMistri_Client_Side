@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { getAuth } from 'firebase/auth';
 import { useTheme } from '../contexts/ThemeContext';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -38,26 +39,17 @@ export default function Applications() {
   const toggleProposal = (id) => setExpandedProposal((prev) => ({ ...prev, [id]: !prev[id] }));
   const toggleNegotiation = (id) => setExpandedNegotiation((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  // Function to fetch worker details
+  // Function to fetch worker details (name, etc. - no phone/email from public)
   const fetchWorkerDetails = async (workerId) => {
-    if (workerDetails[workerId]) return workerDetails[workerId]; // Already cached
-    
+    if (workerDetails[workerId]) return workerDetails[workerId];
     try {
       const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-      // Use public profile endpoint to avoid pulling private fields
       const response = await fetch(`${base}/api/users/${workerId}/public`, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
       });
-      
       if (response.ok) {
         const workerData = await response.json();
-        setWorkerDetails(prev => ({
-          ...prev,
-          [workerId]: workerData
-        }));
+        setWorkerDetails(prev => ({ ...prev, [workerId]: workerData }));
         return workerData;
       }
     } catch (err) {
@@ -66,17 +58,35 @@ export default function Applications() {
     return null;
   };
 
-  // Function to get worker info with fallbacks
+  // Fetch worker contact (phone/email) - only after job accepted, requires auth
+  const fetchWorkerContact = async (workerId) => {
+    try {
+      const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken?.();
+      if (!token) return null;
+      const res = await fetch(`${base}/api/users/${encodeURIComponent(workerId)}/contact`, {
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) return await res.json();
+    } catch (err) {
+      console.error('Failed to fetch worker contact:', err);
+    }
+    return null;
+  };
+
+  // Function to get worker info with fallbacks (phone/email only for accepted applications)
   const getWorkerInfo = (applicant) => {
     const workerData = workerDetails[applicant.workerId];
+    const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
     return {
       name: workerData?.displayName || 
             workerData?.name || 
             [workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ') ||
             applicant.workerName || 
             'Unknown Worker',
-      email: workerData?.email || applicant.workerEmail || 'No email',
-      phone: workerData?.phone || applicant.workerPhone || 'No phone'
+      email: isAccepted ? (applicant.workerEmail || workerData?.email || '') : '',
+      phone: isAccepted ? (applicant.workerPhone || workerData?.phone || '') : ''
     };
   };
 
@@ -218,11 +228,14 @@ export default function Applications() {
       }
       if (newStatus === 'accepted' && applicant) {
         toast.success('Worker accepted! Call them to coordinate timing and location.');
-        const data = await fetchWorkerDetails(applicant.workerId);
+        const [data, contact] = await Promise.all([
+          fetchWorkerDetails(applicant.workerId),
+          fetchWorkerContact(applicant.workerId)
+        ]);
         const workerInfo = {
           name: data?.displayName || [data?.firstName, data?.lastName].filter(Boolean).join(' ') || applicant.workerName || 'Unknown Worker',
-          email: data?.email || applicant.workerEmail || 'No email',
-          phone: data?.phone || applicant.workerPhone || 'No phone'
+          email: contact?.email || applicant.workerEmail || '',
+          phone: contact?.phone || applicant.workerPhone || ''
         };
         setAcceptSuccessModal({ applicant: updatedApp, workerInfo });
       }
@@ -308,7 +321,7 @@ export default function Applications() {
           <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-70">Total</p>
+                <p className="text-sm font-medium text-muted">Total</p>
                 <p className="text-3xl font-bold text-base-content">{applications.length}</p>
               </div>
               <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-info/20">
@@ -320,7 +333,7 @@ export default function Applications() {
           <div className="card bg-base-200 border-l-4 border-warning p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-70">Pending</p>
+                <p className="text-sm font-medium text-muted">Pending</p>
                 <p className="text-3xl font-bold text-base-content">
                   {applications.filter(a => a.status === 'pending').length}
                 </p>
@@ -334,7 +347,7 @@ export default function Applications() {
           <div className={`card bg-base-200 border-l-4 border-primary p-4 lg:p-6 transition-colors duration-300`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className={`text-sm font-medium opacity-70`}>Accepted</p>
+                <p className="text-sm font-medium text-muted">Accepted</p>
                 <p className={`text-3xl font-bold text-base-content`}>
                   {applications.filter(a => a.status === 'accepted').length}
                 </p>
@@ -348,7 +361,7 @@ export default function Applications() {
           <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-70">Completed</p>
+                <p className="text-sm font-medium text-muted">Completed</p>
                 <p className="text-3xl font-bold text-base-content">
                   {applications.filter(a => (a.status || '').toLowerCase() === 'completed').length}
                 </p>
@@ -362,7 +375,7 @@ export default function Applications() {
           <div className="card bg-base-200 border-l-4 border-error p-4 lg:p-6 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-70">Rejected</p>
+                <p className="text-sm font-medium text-muted">Rejected</p>
                 <p className="text-3xl font-bold text-base-content">
                   {applications.filter(a => (a.status || '').toLowerCase() === 'rejected').length}
                 </p>
@@ -387,7 +400,7 @@ export default function Applications() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={`input input-bordered w-full pl-10`}
                 />
-                <i className={`fas fa-search absolute left-3 top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}></i>
+                <i className="fas fa-search absolute left-3 top-3 text-muted"></i>
               </div>
             </div>
             <div className="lg:w-64">
@@ -482,16 +495,22 @@ export default function Applications() {
                           </span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-4 text-sm mb-3 opacity-80 space-y-0">
-                          <span className="flex items-center gap-1">
-                            <i className="fas fa-envelope text-primary"></i>
-                            {workerInfo.email}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <i className="fas fa-phone text-primary"></i>
-                            {workerInfo.phone}
-                          </span>
-                        </div>
+                        {(applicant.status || '').toLowerCase() === 'accepted' && (workerInfo.phone || workerInfo.email) && (
+                          <div className="flex flex-wrap items-center gap-4 text-sm mb-3 opacity-80 space-y-0">
+                            {workerInfo.email && (
+                              <span className="flex items-center gap-1">
+                                <i className="fas fa-envelope text-primary"></i>
+                                {workerInfo.email}
+                              </span>
+                            )}
+                            {workerInfo.phone && (
+                              <span className="flex items-center gap-1">
+                                <i className="fas fa-phone text-primary"></i>
+                                {workerInfo.phone}
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-2 mb-4">
                           <span className="text-sm opacity-70">
@@ -527,7 +546,7 @@ export default function Applications() {
                         {applicant.proposedPrice && (
                           <div className="mt-4 space-y-4">
                             {expandedNegotiation[applicant._id] ? (
-                          <div className="card bg-gradient-to-r from-primary/10 to-blue/10 border border-primary/20 p-4">
+                          <div className="card bg-gradient-to-r from-primary/10 to-primary-focus/10 border border-primary/20 p-4">
                             <div className="flex items-center justify-between mb-3">
                               <h4 className="font-semibold text-base-content">
                                 <i className="fas fa-money-bill-wave mr-2"></i>
@@ -763,7 +782,7 @@ export default function Applications() {
 
                     <div className="flex flex-col md:flex-row gap-2 ml-0 md:ml-4 mt-4 md:mt-0">
                       <button 
-                        className="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white border-none"
+                        className="btn btn-sm btn-outline border-none bg-base-300 hover:bg-base-200 text-base-content"
                         onClick={() => {
                           const wid = applicant.workerId;
                           if (!wid) return;
@@ -788,7 +807,7 @@ export default function Applications() {
                             Accept
                           </button>
                           <button 
-                            className="btn btn-sm bg-red-500 hover:bg-red-600 text-white border-none"
+                            className="btn btn-sm btn-error border-none"
                             onClick={() => updateApplicationStatus(applicant._id, 'rejected')}
                             disabled={updating === applicant._id}
                           >
@@ -854,7 +873,7 @@ export default function Applications() {
                       )}
                       {(applicant.status || '').toLowerCase() === 'rejected' && (
                         <button 
-                          className="btn btn-sm bg-gray-500 hover:bg-gray-600 text-white border-none"
+                          className="btn btn-sm bg-base-300 hover:bg-base-200 text-base-content border-none"
                           onClick={() => updateApplicationStatus(applicant._id, 'pending')}
                           disabled={updating === applicant._id}
                         >

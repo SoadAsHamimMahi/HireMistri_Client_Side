@@ -317,21 +317,21 @@ export default function MyProfile() {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-base-content">Hiring Credibility</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
                 <div className="text-2xl font-bold text-primary">{clientData.totalJobsPosted || 0}</div>
-                <div className="text-sm text-base-content opacity-70">Jobs Posted</div>
+                <div className="text-sm text-muted">Jobs Posted</div>
               </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
                 <div className="text-2xl font-bold text-primary">{stats.clientJobsCompleted || 0}</div>
-                <div className="text-sm text-base-content opacity-70">Jobs Completed</div>
+                <div className="text-sm text-muted">Jobs Completed</div>
               </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
                 <div className="text-2xl font-bold text-primary">{stats.clientHireRate || 0}%</div>
-                <div className="text-sm text-base-content opacity-70">Hire Rate</div>
+                <div className="text-sm text-muted">Hire Rate</div>
               </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
                 <div className="text-2xl font-bold text-primary">{stats.clientCancellationRate || 0}%</div>
-                <div className="text-sm text-base-content opacity-70">Cancellation Rate</div>
+                <div className="text-sm text-muted">Cancellation Rate</div>
               </div>
             </div>
           </div>
@@ -340,22 +340,22 @@ export default function MyProfile() {
         {/* Account Transparency */}
         <div>
           <h3 className="text-lg font-semibold mb-4 text-base-content">Account Information</h3>
-          <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+          <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
             <div className="space-y-2">
               {clientData.createdAt && (
                 <div className="flex justify-between">
-                  <span className="text-base-content opacity-70">Member Since:</span>
+                  <span className="text-muted">Member Since:</span>
                   <span className="text-base-content font-medium">{new Date(clientData.createdAt).toLocaleDateString()}</span>
                 </div>
               )}
               {clientData.lastActiveAt && (
                 <div className="flex justify-between">
-                  <span className="text-base-content opacity-70">Last Active:</span>
+                  <span className="text-muted">Last Active:</span>
                   <span className="text-base-content font-medium">{new Date(clientData.lastActiveAt).toLocaleDateString()}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-base-content opacity-70">Email Verified:</span>
+                <span className="text-muted">Email Verified:</span>
                 <div className="flex items-center gap-2">
                   <span className={`badge ${(user?.emailVerified || clientData.emailVerified) ? 'badge-success' : 'badge-warning'}`}>
                     {(user?.emailVerified || clientData.emailVerified) ? 'Verified' : 'Not Verified'}
@@ -391,10 +391,10 @@ export default function MyProfile() {
         {clientData.preferences && (clientData.preferences.categories?.length > 0 || clientData.preferences.budgetMin || clientData.preferences.budgetMax) && (
           <div>
             <h3 className="text-lg font-semibold mb-4 text-base-content">Job Preferences</h3>
-            <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+            <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
               {clientData.preferences.categories?.length > 0 && (
                 <div className="mb-3">
-                  <span className="text-sm text-base-content opacity-70">Preferred Categories: </span>
+                  <span className="text-sm text-muted">Preferred Categories: </span>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {clientData.preferences.categories.map((cat, i) => (
                       <span key={i} className="badge badge-outline">{cat}</span>
@@ -404,7 +404,7 @@ export default function MyProfile() {
               )}
               {(clientData.preferences.budgetMin || clientData.preferences.budgetMax) && (
                 <div>
-                  <span className="text-sm text-base-content opacity-70">Budget Range: </span>
+                  <span className="text-sm text-muted">Budget Range: </span>
                   <span className="text-base-content font-medium">
                     {clientData.preferences.currency} {clientData.preferences.budgetMin || '0'} - {clientData.preferences.budgetMax || '∞'}
                   </span>
@@ -417,7 +417,7 @@ export default function MyProfile() {
         {/* About Section */}
         <div>
           <h3 className="text-lg font-semibold mb-4 text-base-content">About</h3>
-          <div className={`rounded-lg p-4 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+          <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
             {clientData.bio ? (
               <p className="text-base-content opacity-80">{clientData.bio}</p>
             ) : (
@@ -442,7 +442,7 @@ export default function MyProfile() {
               { label: 'Headline', value: clientData.headline || '—' },
               { label: 'Skills', value: clientData.skills && clientData.skills.length > 0 ? clientData.skills.join(', ') : '—' },
             ].map((item, index) => (
-              <div key={index} className={`flex justify-between items-center py-2 border-b last:border-b-0 ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+              <div key={index} className={`flex justify-between items-center py-2 border-b last:border-b-0 ${'border-base-300'}`}>
                 <div className="flex-1">
                   <span className="font-medium text-base-content opacity-80">{item.label}:</span>
                   {item.note && <span className="text-xs text-base-content opacity-50 ml-2">({item.note})</span>}
@@ -534,7 +534,7 @@ export default function MyProfile() {
           value={editForm.headline}
           onChange={handleEditChange}
           placeholder="e.g., Professional Client | 5+ years"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
@@ -547,7 +547,7 @@ export default function MyProfile() {
           onChange={handleEditChange}
           rows={4}
           placeholder="Tell workers about your experience and specialties..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
@@ -558,7 +558,7 @@ export default function MyProfile() {
           <input
             type="text"
             placeholder="e.g., Project Management, Quality Control"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 addSkill(e.target.value);
@@ -658,7 +658,7 @@ export default function MyProfile() {
       {/* Address */}
       <div>
         <h3 className="text-lg font-semibold mb-4 text-base-content">Address</h3>
-        <p className="text-sm text-base-content opacity-70 mb-3">
+        <p className="text-sm text-muted mb-3">
           <i className="fas fa-info-circle mr-1"></i>
           Public profiles show only city/area. Full address is private and only shared after booking.
         </p>
@@ -777,7 +777,7 @@ export default function MyProfile() {
       <div className="flex justify-end">
         <button
           onClick={handlePasswordUpdate}
-          className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+          className="btn btn-primary"
         >
           Update Password
         </button>
@@ -791,7 +791,7 @@ export default function MyProfile() {
       <div className="min-h-screen flex items-center justify-center transition-colors duration-300 page-bg">
         <div className="text-center">
           <i className="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
-          <p className="text-base-content opacity-70">Loading profile...</p>
+          <p className="text-muted">Loading profile...</p>
         </div>
       </div>
     );
@@ -800,11 +800,11 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen transition-colors duration-300 page-bg">
       {/* Header */}
-      <div className={`shadow-sm border-b transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <div className={`shadow-sm border-b transition-colors duration-300 ${'bg-base-200 border-base-300'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-base-content">My Profile</h1>
-            <p className="mt-2 text-base-content opacity-70">
+            <p className="mt-2 text-muted">
               Manage your professional information and showcase your skills to potential workers.
             </p>
           </div>
@@ -815,14 +815,14 @@ export default function MyProfile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Profile Summary */}
           <div className="lg:col-span-1">
-            <div className={`rounded-xl shadow-sm p-6 sticky top-8 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl shadow-sm p-6 sticky top-8 transition-colors duration-300 ${'bg-base-200'}`}>
               <div className="text-center">
                 {/* Profile Picture */}
                 <div className="relative inline-block mb-4">
                   <img
                     src={(clientData.profileCover && clientData.profileCover.trim()) ? clientData.profileCover : "https://i.pravatar.cc/150?img=3"}
                     alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-green-100"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-base-300"
                     onError={(e) => {
                       console.error('Failed to load profile image:', clientData.profileCover);
                       // Only set fallback if it's not already the fallback
@@ -859,7 +859,7 @@ export default function MyProfile() {
                 <h2 className="text-xl font-bold mb-1 text-base-content">
                   {clientData.displayName || `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || 'Client'}
                 </h2>
-                <p className="mb-6 text-base-content opacity-70">{clientData.phone || 'No phone number'}</p>
+                <p className="mb-6 text-muted">{clientData.phone || 'No phone number'}</p>
 
                 {/* Trust Badges */}
                 <div className="flex flex-wrap gap-2 justify-center mb-4">
@@ -900,26 +900,26 @@ export default function MyProfile() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className={`rounded-lg p-3 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
                     <p className="text-2xl font-bold text-primary">{clientData.averageRating || '0.0'}</p>
-                    <p className="text-sm text-base-content opacity-70">Rating</p>
+                    <p className="text-sm text-muted">Rating</p>
                   </div>
                   <div className="rounded-lg p-3 transition-colors duration-300 bg-base-200">
                     <p className="text-2xl font-bold text-base-content">{clientData.totalJobsPosted || 0}</p>
-                    <p className="text-sm text-base-content opacity-70">Jobs Posted</p>
+                    <p className="text-sm text-muted">Jobs Posted</p>
                   </div>
                   {clientData.stats && (
                     <>
                       {clientData.stats.clientJobsCompleted !== undefined && (
-                        <div className={`rounded-lg p-3 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                        <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
                           <p className="text-2xl font-bold text-primary">{clientData.stats.clientJobsCompleted || 0}</p>
-                          <p className="text-sm text-base-content opacity-70">Completed</p>
+                          <p className="text-sm text-muted">Completed</p>
                         </div>
                       )}
                       {clientData.stats.clientHireRate !== undefined && (
-                        <div className={`rounded-lg p-3 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                        <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
                           <p className="text-2xl font-bold text-primary">{clientData.stats.clientHireRate || 0}%</p>
-                          <p className="text-sm text-base-content opacity-70">Hire Rate</p>
+                          <p className="text-sm text-muted">Hire Rate</p>
                         </div>
                       )}
                     </>
@@ -932,9 +932,9 @@ export default function MyProfile() {
 
           {/* Right Panel - Profile Management */}
           <div className="lg:col-span-2">
-            <div className={`rounded-xl shadow-sm transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl shadow-sm transition-colors duration-300 ${'bg-base-200'}`}>
               {/* Navigation Tabs */}
-              <div className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className={`border-b ${'border-base-300'}`}>
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab('overview')}

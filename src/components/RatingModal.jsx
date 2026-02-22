@@ -182,14 +182,14 @@ const RatingModal = ({
             className={`text-2xl transition-colors ${
               star <= value
                 ? 'text-yellow-400'
-                : 'text-gray-300 dark:text-gray-600'
+                : 'text-muted'
             } ${!starDisabled ? 'hover:text-yellow-400' : ''} focus:outline-none`}
             disabled={submitting || starDisabled}
           >
             <i className="fas fa-star"></i>
           </button>
         ))}
-        <span className="ml-2 text-sm text-base-content opacity-70">
+        <span className="ml-2 text-sm text-muted">
           {value > 0 ? `${value}/5` : 'Not rated'}
         </span>
       </div>
@@ -209,7 +209,7 @@ const RatingModal = ({
             <h3 className="text-2xl font-bold text-base-content">
               {existingReview ? 'Your Review' : 'Rate Worker'}
             </h3>
-            <p className="text-sm text-base-content opacity-70 mt-1">
+            <p className="text-sm text-muted mt-1">
               {workerName} • {jobTitle || 'Job'}
             </p>
           </div>
@@ -251,7 +251,7 @@ const RatingModal = ({
                       <i className={`${category.icon} text-primary`}></i>
                       <span className="font-medium text-base-content">{category.label}</span>
                     </div>
-                    <p className="text-sm text-base-content opacity-70">{category.description}</p>
+                    <p className="text-sm text-muted">{category.description}</p>
                   </div>
                 </div>
                 <StarRating
@@ -270,7 +270,7 @@ const RatingModal = ({
               <span className="font-semibold text-base-content">Overall Rating</span>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-primary">{overallRating.toFixed(1)}</span>
-                <span className="text-base-content opacity-70">/ 5.0</span>
+                <span className="text-muted">/ 5.0</span>
               </div>
             </div>
             <div className="flex items-center gap-1 mt-2">
@@ -280,7 +280,7 @@ const RatingModal = ({
                   className={`fas fa-star text-lg ${
                     star <= Math.round(overallRating)
                       ? 'text-yellow-400'
-                      : 'text-gray-300 dark:text-gray-600'
+                      : 'text-muted'
                   }`}
                 ></i>
               ))}
@@ -300,7 +300,7 @@ const RatingModal = ({
               disabled={submitting || !!existingReview}
               maxLength={1000}
             />
-            <div className="text-xs text-base-content opacity-60 mt-1 text-right">
+            <div className="text-xs text-muted mt-1 text-right">
               {reviewText.length}/1000 characters
             </div>
           </div>

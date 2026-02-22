@@ -8,6 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import ShareButton from '../components/ShareButton';
 
 // Delete Job Button Component
@@ -82,12 +83,45 @@ function DeleteJobButton({ jobId, jobTitle, onDelete }) {
   );
 }
 
+// Withdraw job offer (client only, for private/sent offers)
+function WithdrawOfferButton({ jobId, jobTitle, clientId, onWithdrawn }) {
+  const [withdrawing, setWithdrawing] = useState(false);
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+
+  const handleWithdraw = async () => {
+    if (!clientId || !jobId) return;
+    if (!window.confirm(`Withdraw the job offer "${jobTitle}"? The worker will be notified.`)) return;
+    try {
+      setWithdrawing(true);
+      await axios.post(`${base}/api/job-offers/${jobId}/withdraw`, { clientId }, { headers: { 'Content-Type': 'application/json' } });
+      toast.success('Job offer withdrawn');
+      if (onWithdrawn) onWithdrawn();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to withdraw offer');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className="btn btn-sm btn-error"
+      onClick={handleWithdraw}
+      disabled={withdrawing}
+    >
+      {withdrawing ? <span className="loading loading-spinner loading-sm" /> : 'Withdraw'}
+    </button>
+  );
+}
+
 export default function PostedJobs() {
   const { isDarkMode } = useTheme();
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
+  const [workerNames, setWorkerNames] = useState({});
 
   const auth = useContext(AuthContext);
   const currentUser = auth?.user ?? null;
@@ -158,18 +192,43 @@ export default function PostedJobs() {
     return () => { ignore = true; };
   }, [clientId]);
 
+  // Sent offers: private jobs where clientId is the current user
+  const sentOffers = (jobs || []).filter((j) => j.isPrivate === true);
+  const pendingSentOffers = sentOffers.filter((j) => String(j.offerStatus || '').toLowerCase() === 'pending');
+
+  // Fetch worker display names for sent offers
+  const sentOfferWorkerIds = [...new Set(sentOffers.map((j) => j.targetWorkerId).filter(Boolean))];
+  useEffect(() => {
+    const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+    if (sentOfferWorkerIds.length === 0) return;
+    let ignore = false;
+    sentOfferWorkerIds.forEach((workerId) => {
+      if (workerNames[workerId]) return;
+      fetch(`${base}/api/users/${encodeURIComponent(workerId)}/public`, { headers: { Accept: 'application/json' } })
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (ignore || !data) return;
+          const name = data.displayName || [data.firstName, data.lastName].filter(Boolean).join(' ') || data.email || 'Worker';
+          setWorkerNames((prev) => ({ ...prev, [workerId]: name }));
+        })
+        .catch(() => {});
+    });
+    return () => { ignore = true; };
+  }, [sentOfferWorkerIds.join(',')]);
+
   const filteredJobs =
-    filter === 'all'
-      ? jobs
-      : jobs.filter((job) => {
-          const jobStatus = String(job.status || 'active').toLowerCase();
-          const filterStatus = String(filter).toLowerCase();
-          // Handle 'in-progress' vs 'in progress' variations
-          if (filterStatus === 'in-progress' || filterStatus === 'in progress') {
-            return jobStatus === 'in-progress' || jobStatus === 'in progress';
-          }
-          return jobStatus === filterStatus;
-        });
+    filter === 'sent-offers'
+      ? sentOffers
+      : filter === 'all'
+        ? jobs
+        : jobs.filter((job) => {
+            const jobStatus = String(job.status || 'active').toLowerCase();
+            const filterStatus = String(filter).toLowerCase();
+            if (filterStatus === 'in-progress' || filterStatus === 'in progress') {
+              return jobStatus === 'in-progress' || jobStatus === 'in progress';
+            }
+            return jobStatus === filterStatus;
+          });
 
   // Handle status change
   const handleStatusChange = async (jobId, newStatus) => {
@@ -255,6 +314,7 @@ export default function PostedJobs() {
   // Filter options with counts
   const filterOptions = [
     { key: 'all', label: 'All Jobs', count: totalJobs, icon: '📋' },
+    { key: 'sent-offers', label: 'Sent Offers', count: sentOffers.length, icon: '✉️' },
     { key: 'active', label: 'Active', count: activeJobs, icon: '🟢' },
     { key: 'in-progress', label: 'In Progress', count: inProgressJobs, icon: '🟡' },
     { key: 'completed', label: 'Completed', count: completedJobs, icon: '🔵' }
@@ -383,12 +443,14 @@ export default function PostedJobs() {
           <div className="text-center py-16">
             <div className="text-8xl mb-6">📋</div>
             <h3 className="text-2xl font-bold mb-4 text-base-content">
-              {filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs found`}
+              {filter === 'sent-offers' ? 'No sent offers' : filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs found`}
             </h3>
             <p className="text-lg mb-8 opacity-70">
-              {filter === 'all' 
-                ? 'Start by posting your first job to find skilled workers' 
-                : `Try switching to a different filter or post a new job`
+              {filter === 'sent-offers'
+                ? 'Job offers you send from a worker profile will appear here. You can withdraw pending offers.'
+                : filter === 'all'
+                  ? 'Start by posting your first job to find skilled workers'
+                  : 'Try switching to a different filter or post a new job'
               }
             </p>
             {filter === 'all' && (
@@ -400,6 +462,55 @@ export default function PostedJobs() {
                 Post Your First Job
               </Link>
             )}
+          </div>
+        ) : filter === 'sent-offers' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredJobs.map((job) => {
+              const offerStatus = (job.offerStatus || 'pending').toLowerCase();
+              const isPending = offerStatus === 'pending';
+              const workerName = job.targetWorkerId ? (workerNames[job.targetWorkerId] || 'Loading...') : 'Worker';
+              return (
+                <div
+                  key={job.id || job.mongoId}
+                  className="card bg-base-200 border border-base-300 shadow-xl"
+                >
+                  <div className="card-body">
+                    <h3 className="card-title line-clamp-2">{job.title}</h3>
+                    <p className="text-sm opacity-70">{job.category}</p>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">To:</span>
+                      <span>{workerName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-bold text-primary">{job.budget} {job.currency || '৳'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`badge badge-sm ${isPending ? 'badge-warning' : offerStatus === 'accepted' ? 'badge-success' : 'badge-ghost'}`}>
+                        {offerStatus}
+                      </span>
+                      {job.expiresAt && new Date(job.expiresAt) > new Date() && (
+                        <span className="text-xs opacity-70">
+                          Expires {new Date(job.expiresAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="card-actions justify-end mt-2">
+                      {isPending && (
+                        <WithdrawOfferButton
+                          jobId={job.mongoId || job.id}
+                          jobTitle={job.title}
+                          clientId={clientId}
+                          onWithdrawn={() => {
+                            setJobs((prev) => prev.map((j) => (j.mongoId || j.id) === (job.mongoId || job.id) ? { ...j, offerStatus: 'withdrawn', status: 'cancelled' } : j));
+                          }}
+                        />
+                      )}
+                      <Link to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} className="btn btn-sm btn-ghost">View</Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

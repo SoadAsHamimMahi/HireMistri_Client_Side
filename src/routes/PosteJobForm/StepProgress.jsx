@@ -6,7 +6,8 @@ export default function StepProgress({ currentStep }) {
     { number: 2, label: 'Skills' },
     { number: 3, label: 'Scope' },
     { number: 4, label: 'Budget' },
-    { number: 5, label: 'Review' },
+    { number: 5, label: 'Location' },
+    { number: 6, label: 'Review' },
   ];
 
   return (

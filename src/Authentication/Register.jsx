@@ -100,7 +100,7 @@ const Register = () => {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-900">
+    <section className="bg-base-200">
       <div className="flex justify-center min-h-screen">
         <div
           className="hidden bg-cover lg:block lg:w-2/5"
@@ -124,7 +124,7 @@ const Register = () => {
                 type="button" 
                 onClick={handleGoogleSignUp}
                 disabled={submitting}
-                className="w-full py-2 border mt-3 rounded flex items-center justify-center gap-2 hover:bg-gray-50 transition disabled:opacity-60"
+                className="w-full py-2 border border-base-300 mt-3 rounded flex items-center justify-center gap-2 hover:bg-base-300 transition disabled:opacity-60"
               >
                 <img src={GoogleImage} alt="Google" className="w-5 h-5" />
                 {submitting ? 'Signing up...' : 'Continue with Google'}
@@ -227,7 +227,7 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center justify-center w-full px-6 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-400 transition disabled:opacity-60"
+                  className="btn btn-primary w-full disabled:opacity-60"
                 >
                   <span>{submitting ? 'Signing up…' : 'Sign Up'}</span>
                 </button>

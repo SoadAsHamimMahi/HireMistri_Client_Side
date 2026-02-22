@@ -24,11 +24,11 @@ const ReviewCard = ({ review }) => {
             className={`fas fa-star text-sm ${
               star <= Math.round(rating)
                 ? 'text-yellow-400'
-                : 'text-gray-300 dark:text-gray-600'
+                : 'text-muted'
             }`}
           ></i>
         ))}
-        <span className="ml-1 text-sm font-medium text-base-content opacity-70">
+        <span className="ml-1 text-sm font-medium text-muted">
           {rating.toFixed(1)}
         </span>
       </div>
@@ -44,7 +44,7 @@ const ReviewCard = ({ review }) => {
           </div>
           <div>
             <p className="font-semibold text-base-content">{review.clientName || 'Anonymous'}</p>
-            <p className="text-xs text-base-content opacity-60">
+            <p className="text-xs text-muted">
               {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -73,7 +73,7 @@ const ReviewCard = ({ review }) => {
           return (
             <div key={category.key} className="flex items-center gap-2">
               <i className={`${category.icon} text-primary text-xs`}></i>
-              <span className="text-xs text-base-content opacity-70 flex-1 truncate">
+              <span className="text-xs text-muted flex-1 truncate">
                 {category.label}
               </span>
               <div className="flex items-center gap-1">
@@ -83,7 +83,7 @@ const ReviewCard = ({ review }) => {
                     className={`fas fa-star text-xs ${
                       star <= Math.round(rating)
                         ? 'text-yellow-400'
-                        : 'text-gray-300 dark:text-gray-600'
+                        : 'text-muted'
                     }`}
                   ></i>
                 ))}
@@ -148,7 +148,7 @@ const ReviewDisplay = ({ workerId, limit = 10 }) => {
     return (
       <div className="text-center py-8">
         <span className="loading loading-spinner loading-md"></span>
-        <p className="text-sm text-base-content opacity-70 mt-2">Loading reviews...</p>
+        <p className="text-sm text-muted mt-2">Loading reviews...</p>
       </div>
     );
   }
@@ -166,7 +166,7 @@ const ReviewDisplay = ({ workerId, limit = 10 }) => {
     return (
       <div className="text-center py-8">
         <i className="fas fa-comments text-4xl text-base-content opacity-30 mb-3"></i>
-        <p className="text-base-content opacity-70">No reviews yet.</p>
+        <p className="text-muted">No reviews yet.</p>
       </div>
     );
   }

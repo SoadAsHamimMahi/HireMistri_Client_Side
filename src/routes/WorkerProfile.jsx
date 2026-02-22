@@ -1,8 +1,11 @@
 // src/routes/WorkerProfile.jsx
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
+import { AuthContext } from '../Authentication/AuthProvider';
 import ReviewDisplay from '../components/ReviewDisplay';
 import PageContainer from '../components/layout/PageContainer';
+import JobOfferModal from '../components/JobOfferModal';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
@@ -14,10 +17,13 @@ function safeNum(v) {
 export default function WorkerProfile() {
   const { workerId } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [profile, setProfile] = useState(null);
+  const [contact, setContact] = useState(null); // { phone, email } when client has accepted job with worker
+  const [showJobOfferModal, setShowJobOfferModal] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -50,6 +56,40 @@ export default function WorkerProfile() {
       ignore = true;
     };
   }, [workerId]);
+
+  // Fetch contact details only when client is logged in and has accepted job with this worker
+  useEffect(() => {
+    if (!user?.uid || !workerId || user.uid === workerId) {
+      setContact(null);
+      return;
+    }
+    let ignore = false;
+    (async () => {
+      try {
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken?.();
+        if (!token) {
+          if (!ignore) setContact(null);
+          return;
+        }
+        const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(workerId)}/contact`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok && !ignore) {
+          const data = await res.json();
+          setContact(data);
+        } else {
+          if (!ignore) setContact(null);
+        }
+      } catch {
+        if (!ignore) setContact(null);
+      }
+    })();
+    return () => { ignore = true; };
+  }, [user?.uid, workerId]);
 
   const displayName = useMemo(() => {
     if (!profile) return 'Worker';
@@ -112,7 +152,7 @@ export default function WorkerProfile() {
           <div className="card bg-base-200 shadow-sm border border-base-300">
             <div className="card-body">
               <span className="loading loading-spinner loading-md"></span>
-              <p className="opacity-70">Loading worker profile...</p>
+              <p className="text-muted">Loading worker profile...</p>
             </div>
           </div>
         </PageContainer>
@@ -197,10 +237,10 @@ export default function WorkerProfile() {
                       </span>
                     )}
                   </div>
-                  <p className="text-base-content opacity-70">
+                  <p className="text-muted">
                     {profile.headline || 'No headline provided.'}
                   </p>
-                  <p className="text-sm opacity-70">
+                  <p className="text-sm text-muted">
                     <i className="fas fa-map-marker-alt mr-2"></i>
                     {[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not set'}
                   </p>
@@ -233,33 +273,61 @@ export default function WorkerProfile() {
                 </div>
 
                 <div className="flex flex-col gap-2 min-w-[180px]">
-                  <button className="btn btn-primary btn-sm">
-                    <i className="fas fa-user-check mr-2"></i>Hire / Invite
-                  </button>
-                  {(profile.phone || profile.email) && (
+                  {user ? (
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setShowJobOfferModal(true)}
+                    >
+                      <i className="fas fa-user-check mr-2"></i>Hire / Invite
+                    </button>
+                  ) : (
+                    <Link to="/login" className="btn btn-primary btn-sm">
+                      <i className="fas fa-user-check mr-2"></i>Hire / Invite
+                    </Link>
+                  )}
+                  {(contact?.phone || contact?.email) ? (
                     <div className="flex flex-col gap-2">
-                      {profile.phone && (
+                      {contact.phone && (
                         <a
-                          href={`tel:${profile.phone.replace(/\s/g, '')}`}
+                          href={`tel:${contact.phone.replace(/\s/g, '')}`}
                           className="btn btn-success btn-sm"
                         >
                           <i className="fas fa-phone mr-2"></i>Call
                         </a>
                       )}
-                      {profile.email && (
+                      {contact.email && (
                         <a
-                          href={`mailto:${profile.email}`}
+                          href={`mailto:${contact.email}`}
                           className="btn btn-outline btn-sm"
                         >
                           <i className="fas fa-envelope mr-2"></i>Email
                         </a>
                       )}
                     </div>
+                  ) : user ? (
+                    <p className="text-xs text-muted max-w-[180px]">
+                      Contact details are shared after you accept their application.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted max-w-[180px]">
+                      Sign in and accept their application to view contact details.
+                    </p>
                   )}
                 </div>
               </div>
             </div>
           </div>
+
+          {showJobOfferModal && (
+            <JobOfferModal
+              workerId={workerId}
+              workerName={displayName}
+              workerCategories={Array.isArray(profile?.servicesOffered?.categories) ? profile.servicesOffered.categories : []}
+              onClose={() => setShowJobOfferModal(false)}
+              onSuccess={() => setShowJobOfferModal(false)}
+            />
+          )}
 
           {/* Card 2: Stats */}
           <div className="card bg-base-200 shadow-sm border border-base-300">
@@ -286,7 +354,7 @@ export default function WorkerProfile() {
                   <div className="stat-desc text-xs">{totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}</div>
                 </div>
               </div>
-              <p className="text-sm opacity-70 mt-4">
+              <p className="text-sm text-muted mt-4">
                 <i className="fas fa-file-alt mr-2"></i>
                 Applications submitted: <span className="font-semibold">{applicationsAsWorker}</span>
               </p>
@@ -298,14 +366,14 @@ export default function WorkerProfile() {
             <div className="card-body space-y-4">
               <h3 className="text-lg font-semibold mb-0">About</h3>
               <div className="prose prose-sm max-w-none text-base-content">
-                <p className="opacity-80 leading-relaxed">
+                <p className="text-base-content opacity-80 leading-relaxed">
                   {(profile.bio && profile.bio.trim()) || (profile.headline && profile.headline.trim()) || 'This worker hasn’t written an about section yet.'}
                 </p>
               </div>
               <div className="divider my-2"></div>
               <h3 className="text-base font-semibold">Skills</h3>
               {skillsDisplay.length === 0 ? (
-                <p className="opacity-70 text-sm">No skills added yet.</p>
+                <p className="text-muted text-sm">No skills added yet.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {skillsDisplay.map((s, i) => (
@@ -336,7 +404,7 @@ export default function WorkerProfile() {
                 {(serviceCities.length > 0 || serviceRadiusKm) && (
                   <>
                     <h3 className="text-base font-semibold">Service Area</h3>
-                    <p className="opacity-80 text-sm">
+                    <p className="text-muted text-sm">
                       {serviceCities.length > 0 && serviceCities.join(', ')}
                       {serviceRadiusKm && (serviceCities.length > 0 ? ` • Within ${serviceRadiusKm} km` : `Within ${serviceRadiusKm} km radius`)}
                     </p>
@@ -345,7 +413,7 @@ export default function WorkerProfile() {
                 {experienceYears != null && experienceYears !== '' && (
                   <>
                     <h3 className="text-base font-semibold">Experience</h3>
-                    <p className="opacity-80 text-sm">
+                    <p className="text-muted text-sm">
                       <i className="fas fa-briefcase mr-2 text-primary"></i>
                       {Number(experienceYears) === 0 ? 'Less than 1 year' : `${experienceYears} ${Number(experienceYears) === 1 ? 'year' : 'years'} of experience`}
                     </p>
@@ -369,7 +437,7 @@ export default function WorkerProfile() {
                           <div>
                             <span className="font-medium">{c.title || 'Certification'}</span>
                             {(c.issuer || c.year) && (
-                              <span className="text-sm opacity-70 ml-2">
+                              <span className="text-sm text-muted ml-2">
                                 {c.issuer}{c.issuer && c.year ? ' • ' : ''}{c.year}
                               </span>
                             )}
@@ -402,18 +470,18 @@ export default function WorkerProfile() {
                 <h3 className="text-base font-semibold">Pricing</h3>
                 <div className="grid gap-2">
                   {hourlyRate != null && (
-                    <p className="opacity-80 text-sm">
-                      <span className="opacity-70">Hourly rate:</span> {currency} {hourlyRate}
+                    <p className="text-muted text-sm">
+                      <span className="text-muted">Hourly rate:</span> {currency} {hourlyRate}
                     </p>
                   )}
                   {startingPrice != null && (
-                    <p className="opacity-80 text-sm">
-                      <span className="opacity-70">Starting from:</span> {currency} {startingPrice}
+                    <p className="text-muted text-sm">
+                      <span className="text-muted">Starting from:</span> {currency} {startingPrice}
                     </p>
                   )}
                   {minimumCharge != null && (
-                    <p className="opacity-80 text-sm">
-                      <span className="opacity-70">Minimum charge:</span> {currency} {minimumCharge}
+                    <p className="text-muted text-sm">
+                      <span className="text-muted">Minimum charge:</span> {currency} {minimumCharge}
                     </p>
                   )}
                 </div>
@@ -479,7 +547,7 @@ export default function WorkerProfile() {
                               className={`fas fa-star text-sm ${
                                 star <= Math.round(categoryRating)
                                   ? 'text-yellow-400'
-                                  : 'text-gray-300 dark:text-gray-600'
+                                  : 'text-muted'
                               }`}
                             ></i>
                           ))}
@@ -514,7 +582,7 @@ export default function WorkerProfile() {
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <div className="relative max-w-4xl max-h-full">
             <button
-              className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl z-10"
+              className="absolute top-4 right-4 text-primary-content hover:opacity-80 text-2xl z-10"
               onClick={() => setSelectedImage(null)}
             >
               <i className="fas fa-times"></i>

@@ -9,6 +9,8 @@ import axios from 'axios';
 import ShareButton from '../../components/ShareButton';
 import RatingModal from '../../components/RatingModal';
 import { AuthContext } from '../../Authentication/AuthProvider';
+import { useWebSocket } from '../../contexts/WebSocketContext';
+import { JobLocationMap, LiveTrackingMap } from '../../components/maps';
 
 // Delete Job Button Component
 function DeleteJobButton({ jobId, jobTitle }) {
@@ -82,6 +84,7 @@ export default function PostedJobDetails() {
   const { id } = useParams();
   const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
   const { user } = useContext(AuthContext) || {};
+  const { socket } = useWebSocket() || {};
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -289,11 +292,12 @@ const decide = async (app, nextStatus) => {
     }
   };
 
-  if (loading) return <div className="py-16 text-center">Loading…</div>;
-  if (err) return <div className="py-16 text-center text-red-600">❌ {err}</div>;
-  if (!job) return <div className="py-16 text-center">Not found.</div>;
+  if (loading) return <div className="min-h-screen page-bg py-16 text-center text-base-content">Loading…</div>;
+  if (err) return <div className="min-h-screen page-bg py-16 text-center text-error">❌ {err}</div>;
+  if (!job) return <div className="min-h-screen page-bg py-16 text-center text-base-content">Not found.</div>;
 
   return (
+    <div className="min-h-screen page-bg transition-colors duration-300">
     <div className="max-w-6xl mx-auto py-10 px-5">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between gap-3">
@@ -376,15 +380,47 @@ const decide = async (app, nextStatus) => {
 
           {/* description */}
           <div>
-            <p className="text-base-content opacity-60 text-sm mb-1">Description</p>
+            <p className="text-muted text-sm mb-1">Description</p>
             <p className="leading-relaxed text-base-content bg-base-100 p-4 rounded-lg">
               {job.description || 'No description provided.'}
             </p>
           </div>
 
+          {/* Job location map */}
+          {(job.locationGeo || job.locationText || job.location) && (
+            <div>
+              <p className="text-muted text-sm mb-2">Location</p>
+              <JobLocationMap
+                locationGeo={job.locationGeo}
+                locationText={job.locationText || job.location}
+                className="mt-1"
+              />
+            </div>
+          )}
+
+          {/* Live tracking (when job has an accepted application) */}
+          {(() => {
+            const acceptedApp = Array.isArray(apps) ? apps.find((a) => (a.status || '').toLowerCase() === 'accepted') : null;
+            const peerWorkerId = acceptedApp?.workerId;
+            if (!id || !user?.uid || !peerWorkerId) return null;
+            return (
+              <div>
+                <p className="text-muted text-sm mb-2">Live location</p>
+                <LiveTrackingMap
+                  jobId={id}
+                  jobLocationGeo={job.locationGeo}
+                  currentUserId={user.uid}
+                  peerUserId={peerWorkerId}
+                  socket={socket}
+                  isAccepted={!!acceptedApp}
+                />
+              </div>
+            );
+          })()}
+
           {/* Status Selector */}
           <div className="pt-2">
-            <label className="block text-sm font-medium text-base-content opacity-70 mb-2">
+            <label className="block text-sm font-medium text-muted mb-2">
               Job Status
             </label>
             <select
@@ -420,9 +456,9 @@ const decide = async (app, nextStatus) => {
             </div>
 
             {appsLoading ? (
-              <div className="p-4 border rounded-lg text-sm text-base-content opacity-70 bg-base-100">Loading applications…</div>
+              <div className="p-4 border border-base-300 rounded-lg text-sm text-muted bg-base-100">Loading applications…</div>
             ) : appsErr ? (
-              <div className="p-4 border rounded-lg text-sm text-rose-600 bg-rose-50">❌ {appsErr}</div>
+              <div className="p-4 border border-base-300 rounded-lg text-sm text-error bg-error/10">❌ {appsErr}</div>
             ) : Array.isArray(apps) && apps.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="table table-zebra w-full">
@@ -441,8 +477,12 @@ const decide = async (app, nextStatus) => {
                       <tr key={`${a.workerId}-${i}`}>
                         <td>{i + 1}</td>
                         <td>{a.workerName || '—'}</td>
-                        <td className="break-all">{a.workerEmail || a.postedByEmail || '—'}</td>
-                        <td>{a.workerPhone || '—'}</td>
+                        <td className="break-all">
+                          {a.status?.toLowerCase() === 'accepted' ? (a.workerEmail || a.postedByEmail || '—') : '—'}
+                        </td>
+                        <td>
+                          {a.status?.toLowerCase() === 'accepted' ? (a.workerPhone || '—') : '—'}
+                        </td>
                         <td><Badge text={a.status || 'pending'} tone={(a.status || 'pending').toLowerCase()} /></td>
                         <td className="text-right">
                           <div className="flex items-center gap-2 justify-end">
@@ -482,7 +522,7 @@ const decide = async (app, nextStatus) => {
                 </table>
               </div>
             ) : (
-              <div className="p-4 border rounded-lg text-sm text-base-content opacity-70 bg-base-100">
+              <div className="p-4 border border-base-300 rounded-lg text-sm text-muted bg-base-100">
                 No applicants yet.
               </div>
             )}
@@ -499,32 +539,36 @@ const decide = async (app, nextStatus) => {
 
             <div className="space-y-2 text-sm mb-3">
               <div className="flex justify-between gap-3">
-                <span className="text-base-content opacity-60 w-28">Name</span>
+                <span className="text-muted w-28">Name</span>
                 <span className="font-medium">{selected.workerName || '—'}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-base-content opacity-60 w-28">Email</span>
-                <span className="font-medium break-all">{selected.workerEmail || selected.postedByEmail || '—'}</span>
+                <span className="text-muted w-28">Email</span>
+                <span className="font-medium break-all">
+                  {selected.status?.toLowerCase() === 'accepted' ? (selected.workerEmail || selected.postedByEmail || '—') : '—'}
+                </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-base-content opacity-60 w-28">Phone</span>
-                <span className="font-medium">{selected.workerPhone || '—'}</span>
+                <span className="text-muted w-28">Phone</span>
+                <span className="font-medium">
+                  {selected.status?.toLowerCase() === 'accepted' ? (selected.workerPhone || '—') : '—'}
+                </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-base-content opacity-60 w-28">Status</span>
+                <span className="text-muted w-28">Status</span>
                 <span><Badge text={selected.status || 'pending'} tone={(selected.status || 'pending').toLowerCase()} /></span>
               </div>
             </div>
 
             <div>
-              <p className="text-base-content opacity-60 text-sm mb-1">Proposal</p>
+              <p className="text-muted text-sm mb-1">Proposal</p>
               <div className="p-3 border rounded-lg bg-base-100 whitespace-pre-wrap">
                 {selected.proposalText || '—'}
               </div>
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <button className="btn" onClick={closeModal}>Close</button>
+              <button className="btn btn-ghost" onClick={closeModal}>Close</button>
               <div className="flex gap-2">
                 {selected.status?.toLowerCase() === 'completed' ? (
                   <button
@@ -561,7 +605,7 @@ const decide = async (app, nextStatus) => {
                       {deciding && selected.status !== 'accepted' ? 'Saving…' : 'Accept'}
                     </button>
                     <button
-                      className="btn btn-error text-white"
+                      className="btn btn-error"
                       disabled={deciding}
                       onClick={() => decide(selected, 'rejected')}
                     >
@@ -594,6 +638,7 @@ const decide = async (app, nextStatus) => {
           }}
         />
       )}
+    </div>
     </div>
   );
 }
