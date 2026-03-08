@@ -44,6 +44,16 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
     // Original submit logic for creating new jobs
     setIsSubmitting(true);
 
+    // Sanitize expiresAt: if it's a date-only string (YYYY-MM-DD), treat as end of that day
+    // to avoid timezone-midnight issues on the server. Empty/past dates become null.
+    const sanitizeExpiresAt = (val) => {
+      if (!val) return null;
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(val))) d.setHours(23, 59, 59, 999);
+      return d > new Date() ? val : null;
+    };
+
     try {
       // First: Upload images if any
       let imageUrls = [];
@@ -88,7 +98,7 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
         workersNeeded: form.workersNeeded,
         urgency: form.urgency,
         images: imageUrls,
-        expiresAt: form.expiresAt || null,
+        expiresAt: sanitizeExpiresAt(form.expiresAt),
       });
 
       // Show success modal
@@ -131,7 +141,7 @@ export default function StepImagesReview({ form, setForm, prevStep, isEditMode =
         <div className="card bg-base-200 shadow-sm border border-base-300">
           <div className="card-body p-6 lg:p-8 space-y-6">
             <div>
-              <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 6 of 6</p>
+              <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 5 of 5</p>
               <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
                 Upload Images & Review
               </h2>

@@ -32,7 +32,8 @@ export default function StepSkills({ form, setForm, nextStep, prevStep }) {
   };
 
   const skills = form.skills || [];
-  const isDisabled = skills.length < 1;
+  // Skills are optional; category is the required primary classification.
+  const isDisabled = false;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -45,7 +46,7 @@ export default function StepSkills({ form, setForm, nextStep, prevStep }) {
               What are the main skills required for your work?
             </h2>
             <p className="text-base-content opacity-70 leading-relaxed">
-              For the best results, add 3–5 relevant skills that define the task.
+              Optional: add a few skills to help workers find your job faster.
             </p>
           </div>
 

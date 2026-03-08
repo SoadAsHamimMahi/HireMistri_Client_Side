@@ -513,163 +513,124 @@ export default function PostedJobs() {
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredJobs.map((job) => (
-            <div
-              key={job.id}
-              className="card bg-base-200 border border-base-300 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-2"
-            >
-              {/* Enhanced Image Section */}
-              <div className="relative h-48 overflow-hidden">
-                {/* Status Badge Overlay */}
-                <div className="absolute top-4 left-4 z-10">
-                  <span className={`badge ${getStatusColor(job.status)} gap-1`}>
-                    <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
-                    {job.status}
-                  </span>
-                </div>
-                
-                {/* Urgency Badge */}
-                {job.applicants?.length > 5 && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <span className="badge badge-warning gap-1">
-                      🔥 Hot Job
-                    </span>
-                  </div>
-                )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredJobs.map((job) => {
+              const jobId = job.mongoId || job.id;
+              const thumb = job.images?.[0] || null;
+              const applicantCount = job.applicants?.length || 0;
+              const isExpired = job.expiresAt && new Date(job.expiresAt) <= new Date();
+              const expiresSoon = job.expiresAt && !isExpired &&
+                new Date(job.expiresAt) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-                <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="h-full">
-                  {(job.images || []).map((img, idx) => (
-                    <SwiperSlide key={idx}>
-                      <img src={img} alt={`Job ${job.id}`} className="object-cover w-full h-48 transition-transform duration-500 group-hover:scale-110" />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-
-              {/* Enhanced Job Content */}
-              <div className="card-body">
-                <div>
-                  <h3 className="card-title line-clamp-2">
-                    {job.title}
-                  </h3>
-                  <p className="text-sm opacity-70 mb-4">
-                    {job.category}
-                  </p>
-
-                  {/* Enhanced Details Grid */}
-                  <div className="grid grid-cols-1 gap-3 mb-4">
-                    <div className="flex items-center gap-2 text-sm opacity-80">
-                      <span className="text-lg">📍</span>
-                      <span className="truncate">{job.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm opacity-80">
-                      <span className="text-lg">💰</span>
-                      <span className="font-bold text-primary">
-                        {job.budget} ৳
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm opacity-80">
-                      <span className="text-lg">🗓️</span>
-                      <span>{job.date}</span>
-                    </div>
-                    {job.expiresAt && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-lg">⏰</span>
-                        <span className={new Date(job.expiresAt) <= new Date() ? 'text-error font-semibold' : new Date(job.expiresAt) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) ? 'text-warning font-semibold' : 'opacity-80'}>
-                          Expires: {new Date(job.expiresAt).toLocaleDateString()}
-                          {new Date(job.expiresAt) > new Date() && (
-                            <span className="ml-1 text-xs">
-                              ({Math.ceil((new Date(job.expiresAt) - new Date()) / (1000 * 60 * 60 * 24))} days left)
-                            </span>
-                          )}
-                        </span>
+              return (
+                <div
+                  key={jobId}
+                  className="flex flex-col bg-base-200 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  {/* Image */}
+                  <div className="relative h-44 bg-base-300 flex-shrink-0">
+                    {thumb ? (
+                      <img src={thumb} alt={job.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                        <i className="fas fa-briefcase text-5xl text-primary/20" />
                       </div>
                     )}
+                    {/* Category badge — top right */}
+                    {job.category && (
+                      <span className="absolute top-3 right-3 bg-primary text-primary-content text-xs font-semibold px-3 py-1 rounded-full shadow">
+                        {job.category}
+                      </span>
+                    )}
+                    {/* Status badge — top left */}
+                    <span className={`absolute top-3 left-3 badge badge-sm ${getStatusColor(job.status)} gap-1`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                      {job.status}
+                    </span>
                   </div>
 
-                  {/* Enhanced Applicants Section */}
-                  <div className="card bg-base-300 p-3 mb-4">
-                    <div className="flex items-center justify-between">
+                  {/* Body */}
+                  <div className="flex flex-col flex-1 p-4">
+                    {/* Title */}
+                    <h3 className="font-bold text-base text-primary leading-snug line-clamp-1 mb-2">
+                      {job.title}
+                    </h3>
+
+                    {/* Meta */}
+                    <div className="space-y-1.5 text-sm text-base-content/70 flex-1">
+                      {job.location && (
+                        <div className="flex items-start gap-2">
+                          <i className="fas fa-map-marker-alt text-primary mt-0.5 w-3.5 shrink-0" />
+                          <span className="line-clamp-2 leading-snug">{job.location}</span>
+                        </div>
+                      )}
+                      {job.date && (
+                        <div className="flex items-center gap-2">
+                          <i className="fas fa-calendar-alt text-primary w-3.5 shrink-0" />
+                          <span>Posted: {job.date}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">👷</span>
-                        <span className="text-sm font-medium opacity-80">
-                          Applicants
+                        <i className="fas fa-users text-primary w-3.5 shrink-0" />
+                        <span>
+                          {applicantCount} applicant{applicantCount !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-info">
-                          {job.applicants?.length || 0}
-                        </span>
-                        {job.applicants?.length > 0 && (
-                          <div className="flex -space-x-2">
-                            {job.applicants.slice(0, 3).map((applicant, idx) => (
-                              <div key={idx} className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-secondary border-2 border-base-100"></div>
-                            ))}
-                            {job.applicants.length > 3 && (
-                              <div className="w-6 h-6 rounded-full border-2 border-base-100 bg-base-300 flex items-center justify-center text-xs font-bold">
-                                +{job.applicants.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      {job.expiresAt && (
+                        <div className={`flex items-center gap-2 text-xs font-medium ${isExpired ? 'text-error' : expiresSoon ? 'text-warning' : 'text-base-content/50'}`}>
+                          <i className="fas fa-clock w-3.5 shrink-0" />
+                          <span>
+                            {isExpired
+                              ? 'Expired'
+                              : `Expires ${new Date(job.expiresAt).toLocaleDateString()} (${Math.ceil((new Date(job.expiresAt) - new Date()) / 86400000)}d left)`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price */}
+                    {job.budget && (
+                      <p className="text-primary font-extrabold text-2xl mt-3">
+                        ৳{job.budget}
+                      </p>
+                    )}
+
+                    {/* View Details */}
+                    <div className="mt-3 pt-3 border-t border-base-300">
+                      <Link
+                        to={`/My-Posted-Job-Details/${jobId}`}
+                        className="flex items-center justify-center gap-2 font-bold text-sm text-base-content hover:text-primary transition-colors"
+                      >
+                        View Details <i className="fas fa-arrow-right" />
+                      </Link>
+                    </div>
+
+                    {/* Management strip */}
+                    <div className="mt-3 pt-3 border-t border-base-300 flex items-center gap-1.5">
+                      <select
+                        className="select select-bordered select-xs flex-1 min-w-0"
+                        value={job.status || 'active'}
+                        onChange={(e) => handleStatusChange(jobId, e.target.value)}
+                      >
+                        <option value="active">Active</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                      <ShareButton jobId={jobId} jobTitle={job.title} jobDescription={job.description} isClient={true} />
+                      <Link to={`/edit-job/${jobId}`} className="btn btn-xs btn-ghost px-2" title="Edit">
+                        <i className="fas fa-pen" />
+                      </Link>
+                      <DeleteJobButton
+                        jobId={jobId}
+                        jobTitle={job.title}
+                        onDelete={() => setJobs(prev => prev.filter(j => (j.mongoId || j.id) !== jobId))}
+                      />
                     </div>
                   </div>
                 </div>
-
-                {/* Status Selector */}
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-base-content opacity-70 mb-1">
-                    Status
-                  </label>
-                  <select
-                    className="select select-bordered select-sm w-full"
-                    value={job.status || 'active'}
-                    onChange={(e) => handleStatusChange(job.mongoId || job.id, e.target.value)}
-                  >
-                    <option value="active">Active</option>
-                    <option value="on-hold">On Hold</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-
-                {/* Enhanced Action Buttons */}
-                <div className="card-actions justify-end gap-2">
-                  <ShareButton
-                    jobId={job.mongoId || job.id}
-                    jobTitle={job.title}
-                    jobDescription={job.description}
-                    isClient={true}
-                  />
-                  <Link 
-                    to={`/edit-job/${job.mongoId || job.id}`}
-                    className="btn btn-sm btn-ghost"
-                  >
-                    ✏️ Edit
-                  </Link>
-                  <DeleteJobButton 
-                    jobId={job.mongoId || job.id} 
-                    jobTitle={job.title}
-                    onDelete={() => {
-                      // Remove the deleted job from the list
-                      setJobs(prevJobs => prevJobs.filter(j => (j.mongoId || j.id) !== (job.mongoId || job.id)));
-                    }}
-                  />
-                  <Link 
-                    to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} 
-                    className="btn btn-sm btn-primary"
-                  >
-                    👁️ View Details
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
           </div>
         )}
       </div>

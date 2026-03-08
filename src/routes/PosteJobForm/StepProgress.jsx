@@ -3,11 +3,10 @@ import { FaCheck } from 'react-icons/fa';
 export default function StepProgress({ currentStep }) {
   const steps = [
     { number: 1, label: 'Title' },
-    { number: 2, label: 'Skills' },
-    { number: 3, label: 'Scope' },
-    { number: 4, label: 'Budget' },
-    { number: 5, label: 'Location' },
-    { number: 6, label: 'Review' },
+    { number: 2, label: 'Scope' },
+    { number: 3, label: 'Budget' },
+    { number: 4, label: 'Location' },
+    { number: 5, label: 'Review' },
   ];
 
   return (

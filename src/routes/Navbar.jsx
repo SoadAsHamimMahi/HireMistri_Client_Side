@@ -124,10 +124,10 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* Theme Toggle - desktop: only in green bar; show here on smaller than lg */}
+              {/* Theme Toggle */}
               <button 
                 onClick={toggleTheme}
-                className="btn btn-ghost btn-circle lg:hidden"
+                className="btn btn-ghost btn-circle"
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 <i className={`text-lg text-base-content ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
@@ -146,12 +146,7 @@ export default function Navbar() {
                   <i className="fas fa-chevron-down text-xs text-base-content"></i>
                 </div>
                 <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl rounded-xl w-48 bg-surface border border-base-300">
-                  <li><Link to="/dashboard" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Dashboard</Link></li>
-                  <li><Link to="/post-job" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Post Job</Link></li>
                   <li><Link to="/My-Posted-Jobs" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Posted Jobs</Link></li>
-                  <li><Link to="/applications" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Applications</Link></li>
-                  <li><Link to="/chats" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Messages</Link></li>
-                  <li><Link to="/support" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">Support Center</Link></li>
                   <li><Link to="/my-profile" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Profile</Link></li>
                   <div className="divider my-1"></div>
                   <li><button onClick={handleLogout} className="rounded-lg text-base-content hover:bg-error/10 hover:text-error">Logout</button></li>

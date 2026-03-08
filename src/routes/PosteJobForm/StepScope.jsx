@@ -2,7 +2,21 @@ import { FaClock, FaUsers, FaFlag, FaFolderOpen, FaArrowRight, FaArrowLeft } fro
 
 export default function StepScope({ form, setForm, nextStep, prevStep }) {
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Keep category as the primary classification, and mirror it into skills once
+    // so the user doesn't have to select the same thing twice.
+    if (name === 'category') {
+      setForm((prev) => {
+        const next = { ...prev, category: value };
+        const skills = Array.isArray(prev.skills) ? prev.skills : [];
+        if (value && !skills.includes(value)) {
+          next.skills = [...skills, value];
+        }
+        return next;
+      });
+      return;
+    }
+    setForm({ ...form, [name]: value });
   };
 
   const isDisabled = !form.category;
@@ -13,7 +27,7 @@ export default function StepScope({ form, setForm, nextStep, prevStep }) {
       <div className="card bg-base-200 shadow-sm border border-base-300">
         <div className="card-body p-6 lg:p-8 space-y-6">
           <div>
-            <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 3 of 5</p>
+            <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 2 of 5</p>
             <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
               Define the scope of your work
             </h2>

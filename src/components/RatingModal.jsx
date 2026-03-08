@@ -57,7 +57,7 @@ const RatingModal = ({
 
       (async () => {
         try {
-          const response = await fetch(`${API_BASE}/api/reviews/application/${applicationId}`, {
+          const response = await fetch(`${API_BASE}/api/reviews/application/${applicationId}?reviewerId=${encodeURIComponent(user?.uid || '')}`, {
             headers: { Accept: 'application/json' },
           });
           if (response.ok) {
@@ -82,7 +82,7 @@ const RatingModal = ({
         }
       })();
     }
-  }, [isOpen, applicationId]);
+  }, [isOpen, applicationId, user?.uid]);
 
   // Calculate overall rating when category ratings change
   useEffect(() => {
@@ -135,6 +135,10 @@ const RatingModal = ({
           applicationId,
           workerId,
           clientId: user.uid,
+          reviewerId: user.uid,
+          reviewerRole: 'client',
+          revieweeId: workerId,
+          revieweeRole: 'worker',
           ratings,
           overallRating,
           reviewText: reviewText.trim(),

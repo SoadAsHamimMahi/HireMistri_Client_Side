@@ -99,6 +99,9 @@ export default function PostedJobDetails() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [deciding, setDeciding] = useState(false);
+  const [negotiatingAppId, setNegotiatingAppId] = useState(null);
+  const [counterPrice, setCounterPrice] = useState('');
+  const [negotiating, setNegotiating] = useState(false);
 
   // Rating modal state
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
@@ -220,6 +223,10 @@ const decide = async (app, nextStatus) => {
     alert('Missing application id'); 
     return;
   }
+  if (nextStatus === 'accepted' && app.proposedPrice && !isPriceFinalized(app)) {
+    alert('Please finalize price negotiation before accepting this worker.');
+    return;
+  }
   try {
     setDeciding(true);
 
@@ -227,7 +234,10 @@ const decide = async (app, nextStatus) => {
     const res = await fetch(`${base}/api/applications/${app._id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: nextStatus }),
+      body: JSON.stringify({
+        status: nextStatus,
+        ...(nextStatus === 'completed' ? { actorRole: 'client' } : {})
+      }),
     });
 
     if (!res.ok) {
@@ -235,15 +245,62 @@ const decide = async (app, nextStatus) => {
       throw new Error(error || `Failed to update status (${res.status})`);
     }
 
-    // update local UI
+    const updated = await res.json().catch(() => ({}));
     setApps(prev =>
-      prev.map(x => x._id === app._id ? { ...x, status: nextStatus } : x)
+      prev.map(x => x._id === app._id ? { ...x, ...updated, status: updated.status || nextStatus } : x)
     );
-    setSelected(s => s && { ...s, status: nextStatus });
+    setSelected(s => (s ? { ...s, ...updated, status: updated.status || nextStatus } : s));
   } catch (e) {
     alert(e.message || 'Failed to update application');
   } finally {
     setDeciding(false);
+  }
+};
+
+const isPriceFinalized = (app) => {
+  if (!app?.proposedPrice) return true;
+  const hasFinalPrice = app.finalPrice != null && Number(app.finalPrice) > 0;
+  const negotiationAccepted = (app.negotiationStatus || '').toLowerCase() === 'accepted';
+  return hasFinalPrice || negotiationAccepted;
+};
+
+const formatCurrency = (amount) => {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return '—';
+  return `৳${n.toLocaleString()}`;
+};
+
+const updateNegotiation = async (app, payload, onSuccessMessage) => {
+  if (!app?.jobId || !app?.workerId) {
+    alert('Missing application identifiers');
+    return;
+  }
+  try {
+    setNegotiating(true);
+    const res = await fetch(`${base}/api/applications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jobId: app.jobId,
+        workerId: app.workerId,
+        ...payload
+      })
+    });
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({}));
+      throw new Error(error || 'Failed to update negotiation');
+    }
+    const data = await res.json();
+    const updatedApp = data?.application || {};
+    setApps((prev) => prev.map((x) => (x._id === app._id ? { ...x, ...updatedApp } : x)));
+    setSelected((prev) => (prev && prev._id === app._id ? { ...prev, ...updatedApp } : prev));
+    if (onSuccessMessage) alert(onSuccessMessage);
+    setNegotiatingAppId(null);
+    setCounterPrice('');
+  } catch (e) {
+    alert(e.message || 'Failed to update negotiation');
+  } finally {
+    setNegotiating(false);
   }
 };
 
@@ -466,6 +523,9 @@ const decide = async (app, nextStatus) => {
                     <tr>
                       <th>#</th>
                       <th>Worker</th>
+                      <th>Proposed</th>
+                      <th>Negotiation</th>
+                      <th>Final</th>
                       <th>Email</th>
                       <th>Phone</th>
                       <th>Status</th>
@@ -477,6 +537,15 @@ const decide = async (app, nextStatus) => {
                       <tr key={`${a.workerId}-${i}`}>
                         <td>{i + 1}</td>
                         <td>{a.workerName || '—'}</td>
+                        <td className="font-medium">{formatCurrency(a.proposedPrice)}</td>
+                        <td>
+                          {a.proposedPrice ? (
+                            <Badge text={a.negotiationStatus || 'pending'} tone={(a.negotiationStatus || 'pending').toLowerCase() === 'accepted' ? 'accepted' : 'pending'} />
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                        <td className="font-medium">{formatCurrency(a.finalPrice)}</td>
                         <td className="break-all">
                           {a.status?.toLowerCase() === 'accepted' ? (a.workerEmail || a.postedByEmail || '—') : '—'}
                         </td>
@@ -567,6 +636,114 @@ const decide = async (app, nextStatus) => {
               </div>
             </div>
 
+            {selected.proposedPrice ? (
+              <div className="mt-3 p-3 border rounded-lg bg-base-100 space-y-2">
+                <p className="text-sm font-semibold">Price Negotiation</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted">Worker Proposed</span>
+                  <span className="font-semibold text-primary">{formatCurrency(selected.proposedPrice)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted">Your Counter</span>
+                  <span>{formatCurrency(selected.counterPrice)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted">Final Agreed</span>
+                  <span className="font-semibold text-success">{formatCurrency(selected.finalPrice)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted">Negotiation Status</span>
+                  <span className="font-medium">{selected.negotiationStatus || 'pending'}</span>
+                </div>
+
+                {(selected.negotiationStatus || 'pending') !== 'accepted' && (selected.negotiationStatus || 'pending') !== 'cancelled' && (
+                  <div className="pt-2 border-t border-base-300">
+                    {negotiatingAppId === selected._id ? (
+                      <div className="space-y-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="100"
+                          value={counterPrice}
+                          onChange={(e) => setCounterPrice(e.target.value)}
+                          className="input input-sm input-bordered w-full"
+                          placeholder="Enter counter offer"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            className="btn btn-sm btn-primary"
+                            disabled={negotiating}
+                            onClick={() => {
+                              const value = parseFloat(counterPrice);
+                              if (Number.isNaN(value) || value <= 0) {
+                                alert('Enter a valid counter price');
+                                return;
+                              }
+                              updateNegotiation(
+                                selected,
+                                { counterPrice: value, negotiationStatus: 'countered' },
+                                'Counter offer sent'
+                              );
+                            }}
+                          >
+                            Send Counter
+                          </button>
+                          <button
+                            className="btn btn-sm btn-ghost"
+                            disabled={negotiating}
+                            onClick={() => {
+                              setNegotiatingAppId(null);
+                              setCounterPrice('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={() => {
+                            setNegotiatingAppId(selected._id);
+                            setCounterPrice(selected.counterPrice?.toString() || '');
+                          }}
+                        >
+                          Counter Offer
+                        </button>
+                        <button
+                          className="btn btn-sm btn-success"
+                          disabled={negotiating}
+                          onClick={() =>
+                            updateNegotiation(
+                              selected,
+                              { finalPrice: Number(selected.proposedPrice), negotiationStatus: 'accepted' },
+                              'Price accepted'
+                            )
+                          }
+                        >
+                          Accept Price
+                        </button>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          disabled={negotiating}
+                          onClick={() =>
+                            updateNegotiation(
+                              selected,
+                              { negotiationStatus: 'cancelled' },
+                              'Negotiation cancelled'
+                            )
+                          }
+                        >
+                          Cancel Negotiation
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : null}
+
             <div className="mt-4 flex items-center justify-between">
               <button className="btn btn-ghost" onClick={closeModal}>Close</button>
               <div className="flex gap-2">
@@ -599,8 +776,9 @@ const decide = async (app, nextStatus) => {
                   <>
                     <button
                       className="btn btn-success"
-                      disabled={deciding}
+                      disabled={deciding || (selected.proposedPrice && !isPriceFinalized(selected))}
                       onClick={() => decide(selected, 'accepted')}
+                      title={selected.proposedPrice && !isPriceFinalized(selected) ? 'Finalize price first' : 'Accept application'}
                     >
                       {deciding && selected.status !== 'accepted' ? 'Saving…' : 'Accept'}
                     </button>

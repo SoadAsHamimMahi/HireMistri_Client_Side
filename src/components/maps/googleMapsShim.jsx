@@ -180,8 +180,14 @@ export function Autocomplete({ children, onLoad, onPlaceChanged }) {
     const input = wrapperRef.current?.querySelector('input');
     if (!input || !window.google?.maps?.places) return;
     if (!autocompleteRef.current) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(input);
-      onLoad?.(autocompleteRef.current);
+      try {
+        autocompleteRef.current = new window.google.maps.places.Autocomplete(input);
+        onLoad?.(autocompleteRef.current);
+      } catch (e) {
+        // google.maps.places.Autocomplete unavailable (new customers after Mar 2025)
+        console.warn('Google Places Autocomplete unavailable, falling back to text input.', e.message);
+        return;
+      }
     }
     if (placeListenerRef.current) window.google.maps.event.removeListener(placeListenerRef.current);
     if (onPlaceChanged) {

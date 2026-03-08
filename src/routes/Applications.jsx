@@ -206,7 +206,7 @@ export default function Applications() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus, actorRole: 'client' })
       });
 
       if (!response.ok) {
@@ -216,7 +216,12 @@ export default function Applications() {
       const updatedApplication = await response.json();
       
       // Update the local state
-      const updatedApp = { ...applicant, status: newStatus, updatedAt: updatedApplication.updatedAt };
+      const updatedApp = {
+        ...applicant,
+        ...updatedApplication,
+        status: updatedApplication.status || newStatus,
+        updatedAt: updatedApplication.updatedAt
+      };
       setApplications(prev => 
         prev.map(app => 
           app._id === applicationId ? updatedApp : app
@@ -224,7 +229,11 @@ export default function Applications() {
       );
 
       if (newStatus === 'completed' && applicant) {
-        toast.success('Marked as completed. You can now rate this worker.');
+        if ((updatedApplication.status || '').toLowerCase() === 'completed') {
+          toast.success('Job completed by both sides. You can now rate this worker.');
+        } else {
+          toast.success('Completion request sent. Waiting for worker confirmation.');
+        }
       }
       if (newStatus === 'accepted' && applicant) {
         toast.success('Worker accepted! Call them to coordinate timing and location.');
@@ -932,48 +941,67 @@ export default function Applications() {
       {/* Accept Success Modal - show worker contact after accepting */}
       {acceptSuccessModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md border-2 border-success shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-full bg-success/20 flex items-center justify-center">
-                <i className="fas fa-check-circle text-success text-2xl"></i>
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-base-content">Worker Accepted!</h3>
-                <p className="text-sm opacity-70">Call to coordinate timing and location</p>
+          <div className="modal-box max-w-lg p-0 overflow-hidden border border-success/40 shadow-2xl">
+            <div className="bg-gradient-to-r from-success/20 via-success/10 to-transparent px-6 py-5 border-b border-success/20">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-success/20 text-success flex items-center justify-center">
+                  <i className="fas fa-check-circle text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl text-base-content">Worker Accepted</h3>
+                  <p className="text-sm text-base-content/70">You can contact the worker now to coordinate time and location.</p>
+                </div>
               </div>
             </div>
-            <div className="bg-base-200 rounded-xl p-4 mb-4">
-              <p className="font-semibold text-base-content">{acceptSuccessModal.workerInfo.name}</p>
-              <p className="text-sm opacity-70 mt-1">{acceptSuccessModal.applicant.title || acceptSuccessModal.applicant.jobTitle || 'Job'}</p>
-              {acceptSuccessModal.workerInfo.phone && acceptSuccessModal.workerInfo.phone !== 'No phone' && (
-                <div className="mt-3">
-                  <a
-                    href={`tel:${acceptSuccessModal.workerInfo.phone.replace(/\s/g, '')}`}
-                    className="btn btn-success btn-block"
-                  >
-                    <i className="fas fa-phone mr-2"></i>Call Now
-                  </a>
-                  <p className="text-xs opacity-70 mt-2">
-                    {acceptSuccessModal.workerInfo.phone}
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-xl border border-base-300 bg-base-200 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-base-content/70 text-xs uppercase tracking-wide mb-1">Worker</p>
+                    <p className="font-semibold text-lg text-base-content">{acceptSuccessModal.workerInfo.name}</p>
+                  </div>
+                  <div className="badge badge-success badge-outline">Accepted</div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-base-300">
+                  <p className="text-base-content/70 text-xs uppercase tracking-wide mb-1">Job</p>
+                  <p className="text-sm text-base-content">
+                    {acceptSuccessModal.applicant.title || acceptSuccessModal.applicant.jobTitle || 'Job'}
                   </p>
                 </div>
-              )}
-              {acceptSuccessModal.workerInfo.email && acceptSuccessModal.workerInfo.email !== 'No email' && (
-                <a
-                  href={`mailto:${acceptSuccessModal.workerInfo.email}`}
-                  className="btn btn-outline btn-sm mt-2"
-                >
-                  <i className="fas fa-envelope mr-2"></i>Email
-                </a>
-              )}
-            </div>
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setAcceptSuccessModal(null)}>
-                Close
-              </button>
-              <button className="btn btn-primary" onClick={() => setAcceptSuccessModal(null)}>
-                Done
-              </button>
+              </div>
+
+              <div className="rounded-xl border border-base-300 bg-base-200 p-4 space-y-3">
+                <p className="text-base-content/70 text-xs uppercase tracking-wide">Contact</p>
+                {acceptSuccessModal.workerInfo.phone && acceptSuccessModal.workerInfo.phone !== 'No phone' && (
+                  <>
+                    <a
+                      href={`tel:${acceptSuccessModal.workerInfo.phone.replace(/\s/g, '')}`}
+                      className="btn btn-success w-full"
+                    >
+                      <i className="fas fa-phone mr-2"></i>Call Now
+                    </a>
+                    <p className="text-xs text-base-content/70 text-center">{acceptSuccessModal.workerInfo.phone}</p>
+                  </>
+                )}
+                {acceptSuccessModal.workerInfo.email && acceptSuccessModal.workerInfo.email !== 'No email' && (
+                  <a
+                    href={`mailto:${acceptSuccessModal.workerInfo.email}`}
+                    className="btn btn-outline w-full"
+                  >
+                    <i className="fas fa-envelope mr-2"></i>Send Email
+                  </a>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button className="btn btn-ghost" onClick={() => setAcceptSuccessModal(null)}>
+                  Close
+                </button>
+                <button className="btn btn-primary" onClick={() => setAcceptSuccessModal(null)}>
+                  Done
+                </button>
+              </div>
             </div>
           </div>
           <div className="modal-backdrop bg-black/50" onClick={() => setAcceptSuccessModal(null)}></div>

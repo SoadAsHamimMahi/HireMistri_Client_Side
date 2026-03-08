@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
 import StepTitle from './PosteJobForm/StepTitle';
-import StepSkills from './PosteJobForm/StepSkills';
 import StepScope from './PosteJobForm/StepScope';
 import StepBudgetLocation from './PosteJobForm/StepBudgetLocation';
 import StepLocation from './PosteJobForm/StepLocation';
@@ -126,7 +125,7 @@ export default function PostJob() {
           <StepTitle form={form} setForm={setForm} nextStep={nextStep} step={step} />
         )}
         {step === 2 && (
-          <StepSkills
+          <StepScope
             form={form}
             setForm={setForm}
             nextStep={() => setStep(3)}
@@ -135,7 +134,7 @@ export default function PostJob() {
           />
         )}
         {step === 3 && (
-          <StepScope
+          <StepBudgetLocation
             form={form}
             setForm={setForm}
             nextStep={() => setStep(4)}
@@ -144,7 +143,7 @@ export default function PostJob() {
           />
         )}
         {step === 4 && (
-          <StepBudgetLocation
+          <StepLocation
             form={form}
             setForm={setForm}
             nextStep={() => setStep(5)}
@@ -153,19 +152,10 @@ export default function PostJob() {
           />
         )}
         {step === 5 && (
-          <StepLocation
-            form={form}
-            setForm={setForm}
-            nextStep={() => setStep(6)}
-            prevStep={() => setStep(4)}
-            step={step}
-          />
-        )}
-        {step === 6 && (
           <StepImagesReview
             form={form}
             setForm={setForm}
-            prevStep={() => setStep(5)}
+            prevStep={() => setStep(4)}
             step={step}
             onSuccess={clearDraft}
           />

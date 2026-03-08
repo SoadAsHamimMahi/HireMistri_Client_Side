@@ -16,6 +16,22 @@ export default function MyProfile() {
 
   const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
+  const normalizeProfileImageUrl = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    const raw = value.trim();
+    if (!raw) return '';
+    try {
+      const parsed = new URL(raw);
+      if (parsed.pathname.startsWith('/uploads/')) {
+        return `${base}${parsed.pathname}`;
+      }
+      return raw;
+    } catch {
+      if (raw.startsWith('/uploads/')) return `${base}${raw}`;
+      return raw;
+    }
+  };
+
   // Client data from API
   const [clientData, setClientData] = useState({
     firstName: '',
@@ -75,7 +91,9 @@ export default function MyProfile() {
         ...prev,
         ...userData,
         // Ensure profileCover is preserved if it exists and is valid
-        profileCover: (userData.profileCover && userData.profileCover.trim()) ? userData.profileCover : (prev.profileCover || ''),
+        profileCover: (userData.profileCover && userData.profileCover.trim())
+          ? normalizeProfileImageUrl(userData.profileCover)
+          : (prev.profileCover || ''),
         // Ensure computed fields have defaults
         totalJobsPosted: userData.totalJobsPosted || 0,
         averageRating: userData.averageRating || 0,
@@ -89,6 +107,9 @@ export default function MyProfile() {
       setEditForm(prev => ({
         ...prev,
         ...userData,
+        profileCover: (userData.profileCover && userData.profileCover.trim())
+          ? normalizeProfileImageUrl(userData.profileCover)
+          : (prev.profileCover || ''),
         preferences: userData.preferences || { categories: [], budgetMin: null, budgetMax: null, currency: 'BDT' }
       }));
       
@@ -133,15 +154,12 @@ export default function MyProfile() {
     try {
       const formData = new FormData();
       formData.append('avatar', file);
-      
-      const response = await axios.post(`${base}/api/users/${user.uid}/avatar`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
+
+      // Do not force Content-Type for FormData; browser sets correct boundary.
+      const response = await axios.post(`${base}/api/users/${user.uid}/avatar`, formData);
+
       // Server returns absolute URL, use it directly
-      const url = response.data?.url;
+      const url = normalizeProfileImageUrl(response.data?.url);
       if (!url) throw new Error('No URL returned from server');
       return url;
     } catch (error) {
@@ -282,10 +300,11 @@ export default function MyProfile() {
       try {
         const response = await axios.get(`${base}/api/users/${user.uid}`);
         const userData = response.data;
+        const normalizedServerUrl = normalizeProfileImageUrl(userData.profileCover);
         // Only update profileCover if server has it, otherwise keep our uploaded URL
-        if (userData.profileCover && userData.profileCover.trim()) {
-          setClientData(prev => ({ ...prev, ...userData, profileCover: userData.profileCover }));
-          setEditForm(prev => ({ ...prev, ...userData, profileCover: userData.profileCover }));
+        if (normalizedServerUrl) {
+          setClientData(prev => ({ ...prev, ...userData, profileCover: normalizedServerUrl }));
+          setEditForm(prev => ({ ...prev, ...userData, profileCover: normalizedServerUrl }));
         } else {
           // Server might not have it yet, keep our local URL
           setClientData(prev => ({ ...prev, ...userData, profileCover: url }));
@@ -301,6 +320,7 @@ export default function MyProfile() {
       console.error('Failed to upload avatar:', error);
       alert('Failed to upload avatar. Please try again.');
     } finally {
+      e.target.value = '';
       setSaving(false);
     }
   };

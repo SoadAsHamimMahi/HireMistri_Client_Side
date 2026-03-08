@@ -23,7 +23,7 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
       <div className="card bg-base-200 shadow-sm border border-base-300">
         <div className="card-body p-6 lg:p-8 space-y-6">
           <div>
-            <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 4 of 6</p>
+            <p className="text-sm font-medium text-base-content opacity-60 mb-2">Step 3 of 5</p>
             <h2 className="text-3xl lg:text-4xl font-bold leading-snug text-base-content mb-4">
               Set your Budget and Schedule
             </h2>
