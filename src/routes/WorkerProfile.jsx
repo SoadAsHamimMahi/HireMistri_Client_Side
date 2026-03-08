@@ -22,8 +22,9 @@ export default function WorkerProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [profile, setProfile] = useState(null);
-  const [contact, setContact] = useState(null); // { phone, email } when client has accepted job with worker
+  const [contact, setContact] = useState(null);
   const [showJobOfferModal, setShowJobOfferModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('about');
 
   useEffect(() => {
     let ignore = false;
@@ -52,12 +53,9 @@ export default function WorkerProfile() {
         if (!ignore) setLoading(false);
       }
     })();
-    return () => {
-      ignore = true;
-    };
+    return () => { ignore = true; };
   }, [workerId]);
 
-  // Fetch contact details only when client is logged in and has accepted job with this worker
   useEffect(() => {
     if (!user?.uid || !workerId || user.uid === workerId) {
       setContact(null);
@@ -73,10 +71,7 @@ export default function WorkerProfile() {
           return;
         }
         const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(workerId)}/contact`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
         });
         if (res.ok && !ignore) {
           const data = await res.json();
@@ -93,32 +88,16 @@ export default function WorkerProfile() {
 
   const displayName = useMemo(() => {
     if (!profile) return 'Worker';
-    return (
-      profile.displayName ||
-      [profile.firstName, profile.lastName].filter(Boolean).join(' ') ||
-      'Worker'
-    );
+    return profile.displayName || [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Worker';
   }, [profile]);
 
   const skills = Array.isArray(profile?.skills) ? profile.skills : [];
   const stats = profile?.stats || {};
   const completedJobs = safeNum(stats.workerCompletedJobs);
-  const activeOrders = safeNum(stats.workerActiveOrders);
-  const responseRate = safeNum(stats.workerResponseRate);
-  const responseTimeHours = stats.workerResponseTimeHours !== null && stats.workerResponseTimeHours !== undefined ? safeNum(stats.workerResponseTimeHours) : null;
-  const onTimeRate = stats.workerOnTimeRate !== null && stats.workerOnTimeRate !== undefined ? safeNum(stats.workerOnTimeRate) : null;
-  const applicationsAsWorker = safeNum(stats.applicationsAsWorker);
   const rating = safeNum(profile?.averageRating || stats.averageRating);
   const totalReviews = safeNum(stats.totalReviews);
-  const categoryRatings = stats.categoryRatings || {};
-  
-  // Trust fields
   const emailVerified = !!profile?.emailVerified;
   const phoneVerified = !!profile?.phoneVerified;
-  const memberSince = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : null;
-  const lastActive = profile?.lastActiveAt ? new Date(profile.lastActiveAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : null;
-  
-  // Work credibility fields
   const servicesOffered = profile?.servicesOffered || {};
   const serviceCategories = Array.isArray(servicesOffered.categories) ? servicesOffered.categories : [];
   const serviceTags = Array.isArray(servicesOffered.tags) ? servicesOffered.tags : [];
@@ -126,69 +105,45 @@ export default function WorkerProfile() {
   const serviceCities = Array.isArray(serviceArea.cities) ? serviceArea.cities : [];
   const serviceRadiusKm = serviceArea.radiusKm || null;
   const experienceYears = profile?.experienceYears || profile?.workExperience || null;
-  const certifications = Array.isArray(profile?.certifications) ? profile.certifications : [];
   const languages = Array.isArray(profile?.languages) ? profile.languages : [];
   const portfolio = Array.isArray(profile?.portfolio) ? profile.portfolio : [];
   const pricing = profile?.pricing || {};
   const hourlyRate = pricing.hourlyRate || null;
-  const startingPrice = pricing.startingPrice || null;
-  const minimumCharge = pricing.minimumCharge || null;
-  const currency = pricing.currency || 'BDT';
+  const currency = pricing.currency || '৳';
   const skillsDisplay = skills.length > 0 ? skills : [...serviceCategories, ...serviceTags].filter(Boolean);
-  
-  // Portfolio lightbox state
+
   const [selectedImage, setSelectedImage] = useState(null);
-  
 
   if (loading) {
     return (
-      <div className="min-h-screen page-bg">
+      <div className="min-h-screen bg-[#0f172a] text-slate-200 transition-colors duration-300">
         <PageContainer maxWidth="6xl">
-          <div className="flex items-center gap-3 mb-6">
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}>
-              <i className="fas fa-arrow-left mr-2"></i>Back
+          <div className="flex items-center gap-3 mb-6 pt-6">
+            <button className="btn btn-ghost btn-circle text-slate-300 hover:text-white" onClick={() => navigate(-1)}>
+              <i className="fas fa-arrow-left"></i>
             </button>
           </div>
-          <div className="card bg-base-200 shadow-sm border border-base-300">
-            <div className="card-body">
-              <span className="loading loading-spinner loading-md"></span>
-              <p className="text-muted">Loading worker profile...</p>
-            </div>
+          <div className="flex items-center justify-center p-20">
+            <span className="loading loading-spinner text-blue-500 loading-lg"></span>
           </div>
         </PageContainer>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !profile) {
     return (
-      <div className="min-h-screen page-bg">
+      <div className="min-h-screen bg-[#0f172a] text-slate-200 transition-colors duration-300">
         <PageContainer maxWidth="6xl">
-          <button className="btn btn-ghost btn-sm mb-6" onClick={() => navigate(-1)}>
-            <i className="fas fa-arrow-left mr-2"></i>Back
-          </button>
-          <div className="alert alert-error">
-            <i className="fas fa-exclamation-triangle"></i>
-            <div>
-              <h3 className="font-bold">Failed to load profile</h3>
-              <div className="text-sm">{error}</div>
-            </div>
+          <div className="flex items-center gap-3 mb-6 pt-6">
+            <button className="btn btn-ghost gap-2 text-slate-300" onClick={() => navigate(-1)}>
+              <i className="fas fa-arrow-left"></i> Back
+            </button>
           </div>
-        </PageContainer>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen page-bg">
-        <PageContainer maxWidth="6xl">
-          <button className="btn btn-ghost btn-sm mb-6" onClick={() => navigate(-1)}>
-            <i className="fas fa-arrow-left mr-2"></i>Back
-          </button>
-          <div className="alert alert-warning">
-            <i className="fas fa-info-circle"></i>
-            <span>No profile data found.</span>
+          <div className="text-center p-12 bg-[#1e293b] rounded-2xl border border-slate-700">
+            <i className="fas fa-exclamation-triangle text-red-500 text-5xl mb-4"></i>
+            <h3 className="font-bold text-2xl text-white">{error ? 'Oops, something went wrong' : 'Worker Not Found'}</h3>
+            <p className="text-slate-400 mt-2">{error || 'This profile is currently unavailable.'}</p>
           </div>
         </PageContainer>
       </div>
@@ -196,405 +151,318 @@ export default function WorkerProfile() {
   }
 
   return (
-    <div className="min-h-screen page-bg">
+    <div className="min-h-screen bg-[#0b1121] text-slate-300 pb-20 font-sans selection:bg-blue-500/30">
       <PageContainer maxWidth="6xl">
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}>
-            <i className="fas fa-arrow-left mr-2"></i>Back
+        
+        {/* Top Back Nav */}
+        <div className="py-6">
+          <button className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium transition-colors" onClick={() => navigate(-1)}>
+            <i className="fas fa-arrow-left"></i> Back to search
           </button>
-          <Link to="/applications" className="btn btn-outline btn-sm">
-            <i className="fas fa-briefcase mr-2"></i>Applications
-          </Link>
         </div>
 
-        <div className="space-y-8">
-          {/* Card 1: Header */}
-          <div className="card bg-base-200 shadow-sm border border-base-300 overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-primary/10 to-secondary/10">
-              <div className="flex flex-col md:flex-row md:items-center gap-5">
-                <div className="avatar">
-                  <div className="w-16 md:w-20 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Left Column (Main Content) */}
+          <div className="w-full lg:w-[65%] flex flex-col gap-8">
+            
+            {/* 1. Header Section */}
+            <div>
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                {/* Avatar area with online status */}
+                <div className="relative">
+                  <div className="w-32 h-32 md:w-40 md:h-40 mask mask-squircle bg-slate-800 border-2 border-slate-700 p-1">
                     <img
-                      src={profile.profileCover || 'https://i.pravatar.cc/150?img=12'}
+                      src={profile.profileCover || 'https://i.pravatar.cc/300?img=12'}
                       alt={displayName}
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://i.pravatar.cc/150?img=12';
-                      }}
+                      className="object-cover w-full h-full mask mask-squircle"
+                      onError={(e) => { e.currentTarget.src = 'https://i.pravatar.cc/300?img=12'; }}
                     />
                   </div>
+                  {profile.isAvailable && (
+                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-[#0b1121] rounded-full z-10 shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
+                  )}
                 </div>
 
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl lg:text-3xl font-bold text-base-content">{displayName}</h1>
-                    {profile.isAvailable ? (
-                      <span className="badge badge-success gap-2">
-                        <i className="fas fa-check-circle"></i>Available
-                      </span>
-                    ) : (
-                      <span className="badge badge-ghost gap-2">
-                        <i className="fas fa-pause-circle"></i>Not available
-                      </span>
-                    )}
+                {/* Profile Info */}
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-white tracking-tight">{displayName}</h1>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-600/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider border border-blue-600/30">
+                      <i className="fas fa-check-circle"></i> Verified
+                    </div>
                   </div>
-                  <p className="text-muted">
-                    {profile.headline || 'No headline provided.'}
+                  
+                  <p className="text-slate-300 text-lg font-medium">
+                    {profile.headline || 'Professional Worker'}
                   </p>
-                  <p className="text-sm text-muted">
-                    <i className="fas fa-map-marker-alt mr-2"></i>
-                    {[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not set'}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {emailVerified ? (
-                      <span className="badge badge-success badge-sm gap-1">
-                        <i className="fas fa-check-circle"></i>Email Verified
-                      </span>
-                    ) : (
-                      <span className="badge badge-warning badge-sm gap-1">
-                        <i className="fas fa-exclamation-circle"></i>Email Not Verified
-                      </span>
+                  
+                  {/* Ratings Row */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center text-yellow-500 text-sm">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <i key={star} className={`fas fa-star ${star <= rating ? '' : 'text-slate-600'} mr-0.5`}></i>
+                      ))}
+                    </div>
+                    <span className="text-white font-bold ml-1">{rating > 0 ? rating.toFixed(1) : 'New'}</span>
+                    <span className="text-slate-500 text-sm">({totalReviews} reviews)</span>
+                  </div>
+
+                  {/* Trust Badges */}
+                  <div className="flex flex-wrap items-center gap-3 mt-3">
+                    {emailVerified && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700/50">
+                        <i className="fas fa-id-card text-blue-400"></i> Identity Verified
+                      </div>
                     )}
                     {phoneVerified && (
-                      <span className="badge badge-success badge-sm gap-1">
-                        <i className="fas fa-phone"></i>Phone Verified
-                      </span>
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700/50">
+                        <i className="fas fa-mobile-alt text-blue-400"></i> Phone Verified
+                      </div>
                     )}
-                    {memberSince && (
-                      <span className="badge badge-info badge-sm gap-1">
-                        <i className="fas fa-calendar"></i>Member since {memberSince}
-                      </span>
-                    )}
-                    {lastActive && (
-                      <span className="badge badge-ghost badge-sm gap-1">
-                        <i className="fas fa-clock"></i>Last active {lastActive}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700/50">
+                      <i className="fas fa-award text-blue-400"></i> Top Rated
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-col gap-2 min-w-[180px]">
-                  {user ? (
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={() => setShowJobOfferModal(true)}
-                    >
-                      <i className="fas fa-user-check mr-2"></i>Hire / Invite
-                    </button>
-                  ) : (
-                    <Link to="/login" className="btn btn-primary btn-sm">
-                      <i className="fas fa-user-check mr-2"></i>Hire / Invite
-                    </Link>
-                  )}
-                  {(contact?.phone || contact?.email) ? (
-                    <div className="flex flex-col gap-2">
-                      {contact.phone && (
-                        <a
-                          href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                          className="btn btn-success btn-sm"
-                        >
-                          <i className="fas fa-phone mr-2"></i>Call
-                        </a>
-                      )}
-                      {contact.email && (
-                        <a
-                          href={`mailto:${contact.email}`}
-                          className="btn btn-outline btn-sm"
-                        >
-                          <i className="fas fa-envelope mr-2"></i>Email
-                        </a>
-                      )}
-                    </div>
-                  ) : user ? (
-                    <p className="text-xs text-muted max-w-[180px]">
-                      Contact details are shared after you accept their application.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted max-w-[180px]">
-                      Sign in and accept their application to view contact details.
-                    </p>
-                  )}
-                </div>
+              {/* Tabs Outline */}
+              <div className="flex items-center gap-8 mt-8 border-b border-slate-800">
+                <button 
+                  onClick={() => setActiveTab('about')}
+                  className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'about' ? 'text-blue-500' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  About
+                  {activeTab === 'about' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-md"></div>}
+                </button>
+                <button 
+                  onClick={() => setActiveTab('portfolio')}
+                  className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'portfolio' ? 'text-blue-500' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  Portfolio
+                  {activeTab === 'portfolio' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-md"></div>}
+                </button>
+                <button 
+                  onClick={() => setActiveTab('reviews')}
+                  className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'reviews' ? 'text-blue-500' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  Reviews
+                  {activeTab === 'reviews' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-md"></div>}
+                </button>
               </div>
             </div>
-          </div>
 
-          {showJobOfferModal && (
-            <JobOfferModal
-              workerId={workerId}
-              workerName={displayName}
-              workerCategories={Array.isArray(profile?.servicesOffered?.categories) ? profile.servicesOffered.categories : []}
-              onClose={() => setShowJobOfferModal(false)}
-              onSuccess={() => setShowJobOfferModal(false)}
-            />
-          )}
-
-          {/* Card 2: Stats */}
-          <div className="card bg-base-200 shadow-sm border border-base-300">
-            <div className="card-body">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
-                  <div className="stat-title text-sm">Completed</div>
-                  <div className="stat-value text-primary text-2xl">{completedJobs}</div>
-                  <div className="stat-desc text-xs">Jobs</div>
-                </div>
-                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
-                  <div className="stat-title text-sm">Active</div>
-                  <div className="stat-value text-2xl">{activeOrders}</div>
-                  <div className="stat-desc text-xs">Orders</div>
-                </div>
-                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
-                  <div className="stat-title text-sm">Response</div>
-                  <div className="stat-value text-2xl">{responseRate}%</div>
-                  <div className="stat-desc text-xs">Accepted / applied</div>
-                </div>
-                <div className="stat bg-base-100 rounded-xl border border-base-300 py-4 px-4">
-                  <div className="stat-title text-sm">Rating</div>
-                  <div className="stat-value text-2xl">{rating.toFixed(1)}</div>
-                  <div className="stat-desc text-xs">{totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}</div>
-                </div>
-              </div>
-              <p className="text-sm text-muted mt-4">
-                <i className="fas fa-file-alt mr-2"></i>
-                Applications submitted: <span className="font-semibold">{applicationsAsWorker}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: About + Skills */}
-          <div className="card bg-base-200 shadow-sm border border-base-300">
-            <div className="card-body space-y-4">
-              <h3 className="text-lg font-semibold mb-0">About</h3>
-              <div className="prose prose-sm max-w-none text-base-content">
-                <p className="text-base-content opacity-80 leading-relaxed">
-                  {(profile.bio && profile.bio.trim()) || (profile.headline && profile.headline.trim()) || 'This worker hasn’t written an about section yet.'}
+            {/* 2. Content Area based on Tabs (Scrolling down usually shows all, but we will lay it out linearly as per design) */}
+            
+            {/* ABOUT SECTION */}
+            <div className="mt-2" id="about">
+              <h2 className="text-xl font-bold text-white mb-4">About {displayName.split(' ')[0]}</h2>
+              <div className="text-slate-300/90 text-sm leading-relaxed space-y-4">
+                <p>
+                  {(profile.bio && profile.bio.trim()) || 
+                   "Experienced professional committed to providing high-quality services. Dedicated to punctuality, transparent pricing, and excellent workmanship."}
                 </p>
               </div>
-              <div className="divider my-2"></div>
-              <h3 className="text-base font-semibold">Skills</h3>
-              {skillsDisplay.length === 0 ? (
-                <p className="text-muted text-sm">No skills added yet.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {skillsDisplay.map((s, i) => (
-                    <span key={`${s}-${i}`} className="badge badge-outline">{s}</span>
-                  ))}
+
+              {/* Info Grid Boxes */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                <div className="bg-[#121a2f] border border-slate-800/80 rounded-xl p-4 flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Specialty</span>
+                  <span className="text-sm font-semibold text-slate-200 truncate">
+                    {skillsDisplay.length > 0 ? skillsDisplay[0] : 'General Worker'}
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 4: Services + Service Area + Experience */}
-          {(serviceCategories.length > 0 || serviceTags.length > 0 || serviceCities.length > 0 || serviceRadiusKm != null || (experienceYears != null && experienceYears !== '')) && (
-            <div className="card bg-base-200 shadow-sm border border-base-300">
-              <div className="card-body space-y-4">
-                {(serviceCategories.length > 0 || serviceTags.length > 0) && (
-                  <>
-                    <h3 className="text-base font-semibold">Services Offered</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {serviceCategories.map((c, i) => (
-                        <span key={`cat-${i}`} className="badge badge-primary">{c}</span>
-                      ))}
-                      {serviceTags.map((t, i) => (
-                        <span key={`tag-${i}`} className="badge badge-outline">{t}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-                {(serviceCities.length > 0 || serviceRadiusKm) && (
-                  <>
-                    <h3 className="text-base font-semibold">Service Area</h3>
-                    <p className="text-muted text-sm">
-                      {serviceCities.length > 0 && serviceCities.join(', ')}
-                      {serviceRadiusKm && (serviceCities.length > 0 ? ` • Within ${serviceRadiusKm} km` : `Within ${serviceRadiusKm} km radius`)}
-                    </p>
-                  </>
-                )}
-                {experienceYears != null && experienceYears !== '' && (
-                  <>
-                    <h3 className="text-base font-semibold">Experience</h3>
-                    <p className="text-muted text-sm">
-                      <i className="fas fa-briefcase mr-2 text-primary"></i>
-                      {Number(experienceYears) === 0 ? 'Less than 1 year' : `${experienceYears} ${Number(experienceYears) === 1 ? 'year' : 'years'} of experience`}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Card 5: Certifications + Languages */}
-          {(certifications.length > 0 || languages.length > 0) && (
-            <div className="card bg-base-200 shadow-sm border border-base-300">
-              <div className="card-body space-y-4">
-                {certifications.length > 0 && (
-                  <>
-                    <h3 className="text-base font-semibold">Certifications</h3>
-                    <ul className="space-y-2">
-                      {certifications.map((c, i) => (
-                        <li key={i} className="flex items-start gap-2 bg-base-100 rounded-lg p-3 border border-base-300">
-                          <i className="fas fa-award text-primary mt-0.5"></i>
-                          <div>
-                            <span className="font-medium">{c.title || 'Certification'}</span>
-                            {(c.issuer || c.year) && (
-                              <span className="text-sm text-muted ml-2">
-                                {c.issuer}{c.issuer && c.year ? ' • ' : ''}{c.year}
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                {languages.length > 0 && (
-                  <>
-                    <h3 className="text-base font-semibold">Languages</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {languages.map((l, i) => (
-                        <span key={i} className="badge badge-ghost gap-1">
-                          <i className="fas fa-language"></i>{l}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Card 6: Pricing */}
-          {(hourlyRate != null || startingPrice != null || minimumCharge != null) && (
-            <div className="card bg-base-200 shadow-sm border border-base-300">
-              <div className="card-body space-y-4">
-                <h3 className="text-base font-semibold">Pricing</h3>
-                <div className="grid gap-2">
-                  {hourlyRate != null && (
-                    <p className="text-muted text-sm">
-                      <span className="text-muted">Hourly rate:</span> {currency} {hourlyRate}
-                    </p>
-                  )}
-                  {startingPrice != null && (
-                    <p className="text-muted text-sm">
-                      <span className="text-muted">Starting from:</span> {currency} {startingPrice}
-                    </p>
-                  )}
-                  {minimumCharge != null && (
-                    <p className="text-muted text-sm">
-                      <span className="text-muted">Minimum charge:</span> {currency} {minimumCharge}
-                    </p>
-                  )}
+                <div className="bg-[#121a2f] border border-slate-800/80 rounded-xl p-4 flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Service Area</span>
+                  <span className="text-sm font-semibold text-slate-200 truncate">
+                    {serviceRadiusKm ? `Within ${serviceRadiusKm}km` : (serviceCities[0] || 'Local Area')}
+                  </span>
+                </div>
+                <div className="bg-[#121a2f] border border-slate-800/80 rounded-xl p-4 flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Languages</span>
+                  <span className="text-sm font-semibold text-slate-200 truncate">
+                    {languages.length > 0 ? languages.join(', ') : 'English, Local'}
+                  </span>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Card 7: Portfolio */}
-          {portfolio.length > 0 && (
-            <div className="card bg-base-200 shadow-sm border border-base-300">
-              <div className="card-body space-y-4">
-                <h3 className="text-base font-semibold">Portfolio</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {portfolio.map((item, i) => {
+            {/* PORTFOLIO SECTION */}
+            {portfolio.length > 0 && (
+              <div className="mt-6" id="portfolio">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">Recent Projects</h2>
+                  <button className="text-sm font-bold text-blue-500 hover:text-blue-400">View All <i className="fas fa-arrow-right ml-1"></i></button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {portfolio.slice(0,2).map((item, i) => {
                     const imgUrl = typeof item === 'string' ? item : (item?.url || item?.imageUrl);
-                    const caption = typeof item === 'object' && item?.caption;
                     if (!imgUrl) return null;
                     return (
-                      <button
+                      <button 
                         key={i}
-                        type="button"
-                        className="aspect-square rounded-lg overflow-hidden border border-base-300 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary"
-                        onClick={() => setSelectedImage({ url: imgUrl, caption })}
+                        className="w-full aspect-video rounded-2xl overflow-hidden cursor-pointer group relative border border-slate-800"
+                        onClick={() => setSelectedImage({ url: imgUrl, caption: typeof item === 'object' ? item.caption : '' })}
                       >
-                        <img src={imgUrl} alt={caption || 'Portfolio'} className="w-full h-full object-cover" />
+                        <img src={imgUrl} alt="Project" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
                       </button>
                     );
                   })}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Rating Breakdown */}
-          {totalReviews > 0 && Object.keys(categoryRatings).length > 0 && (
-            <div className="card bg-base-200 shadow-sm border border-base-300">
-              <div className="card-body space-y-4">
-                <h3 className="text-lg font-semibold mb-0">Rating Breakdown</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { key: 'qualityOfWork', label: 'Quality of Work', icon: 'fas fa-tools' },
-                    { key: 'punctuality', label: 'Punctuality', icon: 'fas fa-clock' },
-                    { key: 'communication', label: 'Communication', icon: 'fas fa-comments' },
-                    { key: 'professionalism', label: 'Professionalism', icon: 'fas fa-user-tie' },
-                    { key: 'valueForMoney', label: 'Value for Money', icon: 'fas fa-dollar-sign' },
-                    { key: 'cleanliness', label: 'Cleanliness', icon: 'fas fa-broom' },
-                  ].map((category) => {
-                    const categoryRating = categoryRatings[category.key] || 0;
-                    if (categoryRating === 0) return null;
-                    return (
-                      <div key={category.key} className="bg-base-100 rounded-lg p-4 border border-base-300">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <i className={`${category.icon} text-primary`}></i>
-                            <span className="font-medium text-base-content">{category.label}</span>
-                          </div>
-                          <span className="text-lg font-bold text-primary">{categoryRating.toFixed(1)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <i
-                              key={star}
-                              className={`fas fa-star text-sm ${
-                                star <= Math.round(categoryRating)
-                                  ? 'text-yellow-400'
-                                  : 'text-muted'
-                              }`}
-                            ></i>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            {/* REVIEWS SECTION */}
+            <div className="mt-8" id="reviews">
+              <h2 className="text-xl font-bold text-white mb-6">Client Reviews</h2>
+              <div className="bg-[#121a2f] border border-slate-800/80 rounded-2xl p-6">
+                <ReviewDisplay workerId={workerId} limit={10} />
               </div>
             </div>
-          )}
+
+          </div>
+
+          {/* Right Column (Floating Panel) */}
+          <div className="w-full lg:w-[35%] flex flex-col gap-6">
+            
+            {/* Pricing & Actions Card */}
+            <div className="bg-[#172136] border border-slate-700/50 rounded-2xl p-6 shadow-xl sticky top-24">
+              
+              {/* Rate Header */}
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rate</span>
+                  <div className="mt-1">
+                    <span className="text-3xl font-extrabold text-white">{hourlyRate ? `${currency}${hourlyRate}` : 'Negotiable'}</span>
+                    {hourlyRate && <span className="text-sm text-slate-400 font-medium"> / hr</span>}
+                  </div>
+                </div>
+                <div className="text-[11px] font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded">
+                  Instant Booking
+                </div>
+              </div>
+
+              {/* Stats Layout */}
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-3 text-slate-300">
+                    <i className="fas fa-check-circle text-slate-400 w-4 text-center"></i>
+                    <span className="font-medium">Jobs Completed</span>
+                  </div>
+                  <span className="font-bold text-white">{completedJobs > 0 ? `${completedJobs}+` : '0'}</span>
+                </div>
+                
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-3 text-slate-300">
+                    <i className="fas fa-history text-slate-400 w-4 text-center"></i>
+                    <span className="font-medium">Experience</span>
+                  </div>
+                  <span className="font-bold text-white">{experienceYears ? `${experienceYears} Years` : 'N/A'}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-3 text-slate-300">
+                    <i className="far fa-clock text-slate-400 w-4 text-center"></i>
+                    <span className="font-medium">Response Time</span>
+                  </div>
+                  <span className="font-bold text-green-400">{'< 1 hr'}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                {user ? (
+                  <button 
+                    className="w-full bg-[#2563eb] hover:bg-blue-600 text-white font-bold py-3.5 px-4 rounded-xl transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+                    onClick={() => setShowJobOfferModal(true)}
+                  >
+                    Hire Now
+                  </button>
+                ) : (
+                  <Link 
+                    to="/login"
+                    className="w-full text-center bg-[#2563eb] hover:bg-blue-600 text-white font-bold py-3.5 px-4 rounded-xl transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+                  >
+                    Login to Hire
+                  </Link>
+                )}
+
+                <button className="w-full bg-[#1e293b] hover:bg-slate-700 text-white font-semibold py-3.5 px-4 rounded-xl border border-slate-600 transition-colors">
+                  Message Worker
+                </button>
+              </div>
+
+              <div className="mt-5 text-center">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
+                  Secure payment via Hire Mistri Escrow
+                </span>
+              </div>
+            </div>
+
+            {/* Emergency Promo Card */}
+            <div className="bg-[#121a2f] border border-slate-800 rounded-2xl p-5 mt-2">
+              <h4 className="text-white font-bold text-sm mb-2">Need an emergency fix?</h4>
+              <p className="text-slate-400 text-xs mb-4 leading-relaxed">
+                {displayName.split(' ')[0]} is currently available for priority emergency jobs in your area.
+              </p>
+              <button className="text-blue-500 font-bold text-sm tracking-wide hover:text-blue-400 transition-colors">
+                Check Availability <i className="fas fa-bolt text-yellow-500 ml-1"></i>
+              </button>
+            </div>
+
+          </div>
         </div>
       </PageContainer>
 
-      {/* Reviews Section */}
-      {totalReviews > 0 && (
-        <PageContainer maxWidth="6xl">
-          <div className="card bg-base-200 shadow-sm border border-base-300">
-            <div className="card-body space-y-4">
-              <h3 className="text-lg font-semibold mb-0 text-base-content">
-                <i className="fas fa-star mr-2 text-primary"></i>
-                Reviews ({totalReviews})
-              </h3>
-              <ReviewDisplay workerId={workerId} limit={10} />
-            </div>
-          </div>
-        </PageContainer>
+      {/* Footer minimal spacer */}
+      <div className="mt-20 border-t border-slate-800 py-8 text-center flex flex-col gap-4">
+        <div className="flex justify-center gap-6 text-sm text-slate-400 font-medium">
+          <Link to="#" className="hover:text-blue-400 transition-colors">About Us</Link>
+          <Link to="#" className="hover:text-blue-400 transition-colors">Trust & Safety</Link>
+          <Link to="#" className="hover:text-blue-400 transition-colors">Contact Support</Link>
+        </div>
+        <p className="text-xs text-slate-600 font-semibold tracking-wide">
+          © 2024 Hire Mistri Technologies. All rights reserved.
+        </p>
+      </div>
+
+      {/* Modals */}
+      {showJobOfferModal && (
+        <JobOfferModal
+          workerId={workerId}
+          workerName={displayName}
+          workerCategories={serviceCategories}
+          onClose={() => setShowJobOfferModal(false)}
+          onSuccess={() => setShowJobOfferModal(false)}
+        />
       )}
 
-      {/* Portfolio Lightbox Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
-          <div className="relative max-w-4xl max-h-full">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-black/80 transition-all duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center">
             <button
-              className="absolute top-4 right-4 text-primary-content hover:opacity-80 text-2xl z-10"
+              className="absolute -top-12 right-0 text-white/50 hover:text-white transition-colors p-2 text-3xl focus:outline-none"
               onClick={() => setSelectedImage(null)}
             >
               <i className="fas fa-times"></i>
             </button>
-            <img
-              src={selectedImage.url || 'https://via.placeholder.com/800'}
-              alt={selectedImage.caption || 'Portfolio image'}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div className="relative rounded-lg overflow-hidden shadow-2xl bg-black">
+              <img
+                src={selectedImage.url || 'https://via.placeholder.com/800'}
+                alt={selectedImage.caption || 'Expanded portfolio image'}
+                className="max-w-full max-h-[85vh] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
             {selectedImage.caption && (
-              <p className="text-white mt-4 text-center">{selectedImage.caption}</p>
+              <div className="mt-4 text-slate-300 font-medium text-sm">
+                {selectedImage.caption}
+              </div>
             )}
           </div>
         </div>

@@ -29,6 +29,7 @@ import EditJob from './routes/EditJob';
 import MessagesPaused from './routes/MessagesPaused';
 import MessagesInbox from './routes/MessagesInbox';
 import SupportInbox from './routes/Support/SupportInbox';
+import ApplicationDetail from './routes/ApplicationDetail';
 
 const router = createBrowserRouter([
   {
@@ -180,6 +181,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <SupportInbox />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'application-detail/:applicationId',
+        element: (
+          <ProtectedRoute>
+            <ApplicationDetail />
           </ProtectedRoute>
         )
       },

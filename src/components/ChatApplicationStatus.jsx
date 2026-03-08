@@ -198,14 +198,26 @@ export default function ChatApplicationStatus({
             </span>
           )}
         </div>
-        {applicationData?._id && (
-          <Link
-            to={`/applications/${applicationData._id}`}
-            className="text-xs link link-primary"
-          >
-            View Details
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+          {jobId && (
+            <Link
+              to={`/My-Posted-Job-Details/${jobId}`}
+              className="text-xs link link-primary flex items-center gap-1"
+            >
+              <i className="fas fa-briefcase text-[10px]"></i>
+              View Job
+            </Link>
+          )}
+          {applicationData?._id && (
+            <Link
+              to={`/application-detail/${applicationData._id}`}
+              className="text-xs link link-primary flex items-center gap-1"
+            >
+              <i className="fas fa-file-alt text-[10px]"></i>
+              View Application
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Proposal Text Preview - support both proposalText (normal apply) and proposal (job-offer accept) */}

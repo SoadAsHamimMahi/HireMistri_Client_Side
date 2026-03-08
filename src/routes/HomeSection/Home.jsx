@@ -6,13 +6,10 @@ import PopularWarkers from './PopularWarkers';
 
 export default function Home() {
   return (
-    <div className="">
-      
+    <div className="bg-[#0b1121] min-h-screen text-slate-300 pb-20">
       <Banner></Banner>
-
-    <PopularCategories></PopularCategories>
+      <PopularCategories></PopularCategories>
       <PopularWarkers></PopularWarkers>
-     
     </div>
   );
 }

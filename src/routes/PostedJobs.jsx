@@ -1,18 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useTheme } from '../contexts/ThemeContext';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import ShareButton from '../components/ShareButton';
 
-// Delete Job Button Component
-function DeleteJobButton({ jobId, jobTitle, onDelete }) {
+// Delete Job Modal & Logic
+function DeleteJobButton({ jobId, jobTitle, onDelete, isIconOnly = false }) {
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
@@ -30,7 +24,7 @@ function DeleteJobButton({ jobId, jobTitle, onDelete }) {
       }
     } catch (err) {
       console.error('Failed to delete job:', err);
-      alert(err.response?.data?.error || 'Failed to delete job. Please try again.');
+      toast.error(err.response?.data?.error || 'Failed to delete job.');
     } finally {
       setDeleting(false);
     }
@@ -39,41 +33,51 @@ function DeleteJobButton({ jobId, jobTitle, onDelete }) {
   return (
     <>
       <button 
-        className="btn btn-sm btn-error"
+        type="button"
+        className={
+          isIconOnly === 'dropdown' 
+            ? "w-full flex items-center gap-3 px-4 py-2 hover:bg-slate-700 text-sm font-medium text-red-500 text-left transition-colors bg-transparent border-none"
+            : isIconOnly 
+              ? "p-2.5 bg-slate-800 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" 
+              : "w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors border border-red-500/20"
+        }
+        title="Delete Job"
         onClick={() => setShowModal(true)}
       >
-        🗑️
+        <i className={isIconOnly === 'dropdown' ? "fas fa-trash-alt text-sm" : isIconOnly ? "fas fa-trash-alt text-lg" : "fas fa-trash-alt text-sm"}></i>
+        {isIconOnly === 'dropdown' && " Delete Job"}
       </button>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
-          <div className="relative bg-base-200 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-base-300">
-            <h3 className="text-xl font-bold mb-4 text-base-content">Delete Job</h3>
-            <p className="text-base-content opacity-70 mb-6">
-              Are you sure you want to delete "{jobTitle}"? This action cannot be undone.
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="relative bg-[#1a2232] rounded-2xl shadow-2xl p-8 max-w-md w-full border border-red-500/30">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+              <i className="fas fa-exclamation-triangle text-3xl text-red-500"></i>
+            </div>
+            <h3 className="text-2xl font-bold mb-2 text-white text-center">Delete Job Post</h3>
+            <p className="text-slate-400 mb-8 text-center text-sm">
+              Are you sure you want to permanently delete <span className="font-bold text-slate-200">"{jobTitle}"</span>? This action cannot be undone.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-4 justify-center">
               <button
-                className="btn btn-outline"
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl transition-colors border border-slate-700"
                 onClick={() => setShowModal(false)}
                 disabled={deleting}
               >
                 Cancel
               </button>
               <button
-                className="btn btn-error text-white"
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
                 onClick={handleDelete}
                 disabled={deleting}
               >
                 {deleting ? (
-                  <>
-                    <span className="loading loading-spinner loading-sm mr-2"></span>
-                    Deleting...
-                  </>
+                  <i className="fas fa-spinner fa-spin"></i>
                 ) : (
-                  'Delete'
+                  <i className="fas fa-trash-alt text-sm"></i>
                 )}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
@@ -83,7 +87,7 @@ function DeleteJobButton({ jobId, jobTitle, onDelete }) {
   );
 }
 
-// Withdraw job offer (client only, for private/sent offers)
+// Withdraw Offer Logic
 function WithdrawOfferButton({ jobId, jobTitle, clientId, onWithdrawn }) {
   const [withdrawing, setWithdrawing] = useState(false);
   const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
@@ -106,11 +110,12 @@ function WithdrawOfferButton({ jobId, jobTitle, clientId, onWithdrawn }) {
   return (
     <button
       type="button"
-      className="btn btn-sm btn-error"
+      className="p-2.5 bg-red-500/10 rounded-xl text-red-400 hover:text-white hover:bg-red-500 transition-colors"
+      title="Withdraw Offer"
       onClick={handleWithdraw}
       disabled={withdrawing}
     >
-      {withdrawing ? <span className="loading loading-spinner loading-sm" /> : 'Withdraw'}
+      {withdrawing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-undo text-lg"></i>}
     </button>
   );
 }
@@ -129,7 +134,6 @@ export default function PostedJobs() {
 
   useEffect(() => {
     const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-    // Fetch all jobs for client including completed ones
     const url = clientId
       ? `${base}/api/browse-jobs?clientId=${encodeURIComponent(clientId)}&status=all`
       : `${base}/api/browse-jobs`;
@@ -142,31 +146,16 @@ export default function PostedJobs() {
         setErr('');
 
         const res = await fetch(url, { headers: { Accept: 'application/json' } });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status} at ${url}`);
-
-        const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-          const text = await res.text();
-          throw new Error(`Expected JSON, got '${ct}'. First bytes: ${text.slice(0, 80)}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
         if (ignore) return;
 
         const normalized = (Array.isArray(data) ? data : []).map((j) => {
-          // Extract MongoDB _id properly
           let mongoId = null;
           if (j._id) {
-            if (typeof j._id === 'string') {
-              mongoId = j._id;
-            } else if (j._id.$oid) {
-              mongoId = j._id.$oid;
-            } else if (j._id.toString) {
-              mongoId = j._id.toString();
-            }
+            mongoId = typeof j._id === 'string' ? j._id : j._id.$oid || j._id.toString();
           }
-          
           return {
             ...j,
             id: j.id ?? mongoId ?? String(j._id || ''),
@@ -179,10 +168,8 @@ export default function PostedJobs() {
 
         setJobs(normalized);
       } catch (e) {
-        // Ignore AbortError noise from StrictMode
         if (e?.name !== 'AbortError') {
           setErr(e.message || 'Failed to load jobs');
-          console.error(e);
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -192,19 +179,17 @@ export default function PostedJobs() {
     return () => { ignore = true; };
   }, [clientId]);
 
-  // Sent offers: private jobs where clientId is the current user
+  // Handle worker names for sent offers
   const sentOffers = (jobs || []).filter((j) => j.isPrivate === true);
-  const pendingSentOffers = sentOffers.filter((j) => String(j.offerStatus || '').toLowerCase() === 'pending');
-
-  // Fetch worker display names for sent offers
   const sentOfferWorkerIds = [...new Set(sentOffers.map((j) => j.targetWorkerId).filter(Boolean))];
+  
   useEffect(() => {
     const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     if (sentOfferWorkerIds.length === 0) return;
     let ignore = false;
     sentOfferWorkerIds.forEach((workerId) => {
       if (workerNames[workerId]) return;
-      fetch(`${base}/api/users/${encodeURIComponent(workerId)}/public`, { headers: { Accept: 'application/json' } })
+      fetch(`${base}/api/users/${encodeURIComponent(workerId)}/public`)
         .then((res) => res.ok ? res.json() : null)
         .then((data) => {
           if (ignore || !data) return;
@@ -216,424 +201,364 @@ export default function PostedJobs() {
     return () => { ignore = true; };
   }, [sentOfferWorkerIds.join(',')]);
 
-  const filteredJobs =
-    filter === 'sent-offers'
-      ? sentOffers
-      : filter === 'all'
-        ? jobs
-        : jobs.filter((job) => {
-            const jobStatus = String(job.status || 'active').toLowerCase();
-            const filterStatus = String(filter).toLowerCase();
-            if (filterStatus === 'in-progress' || filterStatus === 'in progress') {
-              return jobStatus === 'in-progress' || jobStatus === 'in progress';
-            }
-            return jobStatus === filterStatus;
-          });
+  // Dropdown Management State
+  const [openDropdownMap, setOpenDropdownMap] = useState({});
+  const toggleDropdown = (id) => {
+    setOpenDropdownMap(prev => ({ [id]: !prev[id] })); // close others, toggle this
+  };
 
-  // Handle status change
+  // Status Change function
   const handleStatusChange = async (jobId, newStatus) => {
-    // Show confirmation for destructive status changes
-    if (newStatus === 'cancelled' || newStatus === 'completed') {
-      const confirmed = window.confirm(
-        `Are you sure you want to mark this job as ${newStatus}? This action may affect active applications.`
-      );
-      if (!confirmed) return;
-    }
-
     try {
       const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
       const response = await fetch(`${base}/api/browse-jobs/${jobId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          clientId: clientId
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, clientId })
       });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error || 'Failed to update status');
-      }
+      if (!response.ok) throw new Error('Failed to update status');
 
-      // Update local state
-      setJobs(prevJobs =>
-        prevJobs.map(j =>
-          (j.mongoId || j.id) === jobId
-            ? { ...j, status: newStatus }
-            : j
-        )
-      );
-
-      // Refresh jobs list to ensure we have all statuses
-      const refreshResponse = await fetch(`${base}/api/browse-jobs?clientId=${encodeURIComponent(clientId)}&status=all`, {
-        headers: { Accept: 'application/json' }
-      });
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        const normalized = (Array.isArray(refreshData) ? refreshData : []).map((j) => {
-          let mongoId = null;
-          if (j._id) {
-            if (typeof j._id === 'string') {
-              mongoId = j._id;
-            } else if (j._id.$oid) {
-              mongoId = j._id.$oid;
-            } else if (j._id.toString) {
-              mongoId = j._id.toString();
-            }
-          }
-          return {
-            ...j,
-            id: j.id ?? mongoId ?? String(j._id || ''),
-            mongoId: mongoId || j.id || String(j._id || ''),
-            images: j.images || [],
-            applicants: j.applicants || [],
-            status: j.status || 'active',
-          };
-        });
-        setJobs(normalized);
-      }
+      setJobs(prevJobs => prevJobs.map(j => (j.mongoId || j.id) === jobId ? { ...j, status: newStatus } : j));
+      toast.success(`Job marked as ${newStatus}`);
+      setOpenDropdownMap({}); // Close dropdown
     } catch (err) {
-      console.error('Failed to update job status:', err);
-      alert(err.message || 'Failed to update job status. Please try again.');
+      toast.error('Failed to update job status.');
     }
   };
 
-  // Calculate stats for header
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter(job => String(job.status || 'active').toLowerCase() === 'active').length;
-  const inProgressJobs = jobs.filter(job => {
-    const status = String(job.status || '').toLowerCase();
-    return status === 'in-progress' || status === 'in progress';
-  }).length;
+  const inProgressJobs = jobs.filter(job => ['in-progress', 'in progress'].includes(String(job.status || '').toLowerCase())).length;
   const completedJobs = jobs.filter(job => String(job.status || '').toLowerCase() === 'completed').length;
-  const totalApplicants = jobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0);
+  const draftJobs = jobs.filter(job => String(job.status || '').toLowerCase() === 'draft').length;
 
-  // Filter options with counts
-  const filterOptions = [
-    { key: 'all', label: 'All Jobs', count: totalJobs, icon: '📋' },
-    { key: 'sent-offers', label: 'Sent Offers', count: sentOffers.length, icon: '✉️' },
-    { key: 'active', label: 'Active', count: activeJobs, icon: '🟢' },
-    { key: 'in-progress', label: 'In Progress', count: inProgressJobs, icon: '🟡' },
-    { key: 'completed', label: 'Completed', count: completedJobs, icon: '🔵' }
-  ];
-
-  const getStatusColor = (status) => {
-    switch (String(status).toLowerCase()) {
-      case 'active':
-        return 'badge-success';
-      case 'in-progress':
-        return 'badge-warning';
-      case 'completed':
-        return 'badge-info';
-      default:
-        return 'badge-neutral';
-    }
-  };
+  const filteredJobs = 
+    filter === 'sent-offers' ? sentOffers :
+    filter === 'all' ? jobs :
+    jobs.filter(job => {
+      const st = String(job.status || 'active').toLowerCase();
+      const fl = String(filter).toLowerCase();
+      if (fl === 'in progress' || fl === 'in-progress') return st === 'in-progress' || st === 'in progress';
+      if (fl === 'drafts') return st === 'draft';
+      return st === fl;
+    });
 
   if (loading) {
     return (
-      <div className="min-h-screen page-bg transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
-          <div className="text-center mb-8">
-            <div className="h-12 w-64 mx-auto rounded-lg mb-4 bg-base-300 animate-pulse"></div>
-            <div className="h-6 w-96 mx-auto rounded bg-base-300 animate-pulse"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl overflow-hidden bg-base-200">
-                <div className="h-48 bg-base-300 animate-pulse"></div>
-                <div className="p-6">
-                  <div className="h-6 w-3/4 rounded mb-2 bg-base-300 animate-pulse"></div>
-                  <div className="h-4 w-1/2 rounded mb-4 bg-base-300 animate-pulse"></div>
-                  <div className="h-8 w-full rounded bg-base-300 animate-pulse"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#111621] text-slate-100 flex items-center justify-center">
+        <span className="loading loading-spinner text-[#1754cf] loading-lg"></span>
       </div>
     );
   }
 
   if (err) {
     return (
-      <div className="min-h-screen flex items-center justify-center page-bg">
-        <div className="text-center">
-          <div className="text-6xl mb-4">😞</div>
-          <h2 className="text-2xl font-bold mb-2 text-base-content">Oops! Something went wrong</h2>
-          <p className="text-lg opacity-70">{err}</p>
+      <div className="min-h-screen bg-[#111621] text-slate-100 flex items-center justify-center">
+        <div className="bg-[#1a2232] p-8 rounded-2xl border border-red-500/20 text-center">
+          <i className="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+          <h2 className="text-xl font-bold mb-2">Error Loading Jobs</h2>
+          <p className="text-slate-400">{err}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen page-bg transition-colors duration-300">
-      {/* Enhanced Header Section */}
-      <div className="relative overflow-hidden bg-base-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
-          {/* Header Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-base-content">
-              📋 My Posted Jobs
-            </h1>
-            <p className="text-lg opacity-70">
-              Manage your job postings and track applications
+    <div className="min-h-screen bg-[#111621] text-slate-100 font-['Inter',sans-serif] pb-20">
+      <style>{`
+        .glass-panel {
+          background: rgba(26, 34, 50, 0.7);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      `}</style>
+      
+      {/* Top Header logic is typically in a separate layout, but we'll adapt the main content block from Stitch */}
+      <main className="px-6 lg:px-20 py-8 max-w-[1400px] mx-auto w-full">
+        {/* Welcome Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">My Posted Jobs</h1>
+            <p className="text-slate-400 text-lg">
+              You have <span className="text-[#1754cf] font-bold">{activeJobs} active</span> projects requiring attention.
             </p>
           </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-base-content">{totalJobs}</div>
-              <div className="text-sm opacity-70">Total Jobs</div>
-            </div>
-            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-primary">{activeJobs}</div>
-              <div className="text-sm opacity-70">Active</div>
-            </div>
-            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-warning">{inProgressJobs}</div>
-              <div className="text-sm opacity-70">In Progress</div>
-            </div>
-            <div className="card bg-base-300 border border-base-300 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105">
-              <div className="text-2xl font-bold text-info">{totalApplicants}</div>
-              <div className="text-sm opacity-70">Total Applicants</div>
-            </div>
-          </div>
-
-          {/* CTA Button */}
-          <div className="text-center">
-            <Link 
-              to="/post-job" 
-              className="btn btn-primary btn-lg gap-2"
-            >
-              <span className="text-xl">➕</span>
+          <div className="flex gap-3">
+            {/* The filter options on mobile could be mapped to this filter button, handled mostly by tabs below */}
+            <Link to="/post-job" className="hidden sm:flex items-center gap-2 bg-[#1754cf] hover:bg-[#1754cf]/90 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-[#1754cf]/20">
+              <i className="fas fa-plus text-sm"></i>
               Post New Job
+            </Link>
+            <Link to="/post-job" className="sm:hidden flex items-center justify-center bg-[#1754cf] text-white w-10 h-10 rounded-xl">
+              <i className="fas fa-plus"></i>
             </Link>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
-
-        {/* Modern Filter System */}
-        <div className="mb-8">
-          <div className="flex flex-wrap justify-center gap-3">
-            {filterOptions.map((option) => (
-              <button
-                key={option.key}
-                onClick={() => setFilter(option.key)}
-                className={`btn ${filter === option.key ? 'btn-primary' : 'btn-outline'} gap-2`}
-              >
-                <span className="text-lg">{option.icon}</span>
-                <span>{option.label}</span>
-                <span className="badge badge-sm">{option.count}</span>
-              </button>
-            ))}
+        {/* Stats Dashboard Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-1">
+            <div className="flex justify-between items-start mb-2">
+              <div className="p-2 bg-[#1754cf]/10 rounded-lg text-[#1754cf]">
+                <i className="fas fa-briefcase"></i>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm font-medium">Total Jobs</p>
+            <p className="text-3xl font-bold text-white">{totalJobs}</p>
+          </div>
+          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-1">
+            <div className="flex justify-between items-start mb-2">
+              <div className="p-2 bg-[#0bda5e]/10 rounded-lg text-[#0bda5e]">
+                <i className="fas fa-bolt"></i>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm font-medium">Active</p>
+            <p className="text-3xl font-bold text-white">{activeJobs}</p>
+          </div>
+          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-1">
+            <div className="flex justify-between items-start mb-2">
+              <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500">
+                <i className="fas fa-tools"></i>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm font-medium">In Progress</p>
+            <p className="text-3xl font-bold text-white">{inProgressJobs}</p>
+          </div>
+          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-1">
+            <div className="flex justify-between items-start mb-2">
+              <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                <i className="fas fa-check-double"></i>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm font-medium">Completed</p>
+            <p className="text-3xl font-bold text-white">{completedJobs}</p>
           </div>
         </div>
 
-        {/* Enhanced Job Cards */}
-        {filteredJobs.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-8xl mb-6">📋</div>
-            <h3 className="text-2xl font-bold mb-4 text-base-content">
-              {filter === 'sent-offers' ? 'No sent offers' : filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs found`}
-            </h3>
-            <p className="text-lg mb-8 opacity-70">
-              {filter === 'sent-offers'
-                ? 'Job offers you send from a worker profile will appear here. You can withdraw pending offers.'
-                : filter === 'all'
-                  ? 'Start by posting your first job to find skilled workers'
-                  : 'Try switching to a different filter or post a new job'
-              }
-            </p>
-            {filter === 'all' && (
-              <Link 
-                to="/post-job" 
-                className="btn btn-primary btn-lg gap-2"
-              >
-                <span className="text-xl">➕</span>
-                Post Your First Job
-              </Link>
-            )}
-          </div>
-        ) : filter === 'sent-offers' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredJobs.map((job) => {
-              const offerStatus = (job.offerStatus || 'pending').toLowerCase();
-              const isPending = offerStatus === 'pending';
-              const workerName = job.targetWorkerId ? (workerNames[job.targetWorkerId] || 'Loading...') : 'Worker';
-              return (
-                <div
-                  key={job.id || job.mongoId}
-                  className="card bg-base-200 border border-base-300 shadow-xl"
-                >
-                  <div className="card-body">
-                    <h3 className="card-title line-clamp-2">{job.title}</h3>
-                    <p className="text-sm opacity-70">{job.category}</p>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium">To:</span>
-                      <span>{workerName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-bold text-primary">{job.budget} {job.currency || '৳'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`badge badge-sm ${isPending ? 'badge-warning' : offerStatus === 'accepted' ? 'badge-success' : 'badge-ghost'}`}>
-                        {offerStatus}
-                      </span>
-                      {job.expiresAt && new Date(job.expiresAt) > new Date() && (
-                        <span className="text-xs opacity-70">
-                          Expires {new Date(job.expiresAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                    <div className="card-actions justify-end mt-2">
-                      {isPending && (
-                        <WithdrawOfferButton
-                          jobId={job.mongoId || job.id}
-                          jobTitle={job.title}
-                          clientId={clientId}
-                          onWithdrawn={() => {
-                            setJobs((prev) => prev.map((j) => (j.mongoId || j.id) === (job.mongoId || job.id) ? { ...j, offerStatus: 'withdrawn', status: 'cancelled' } : j));
-                          }}
-                        />
-                      )}
-                      <Link to={`/My-Posted-Job-Details/${job.mongoId || job.id}`} className="btn btn-sm btn-ghost">View</Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredJobs.map((job) => {
+        {/* Tabs Navigation */}
+        <div className="flex border-b border-slate-800 mb-8 overflow-x-auto no-scrollbar">
+          {[
+            { id: 'all', label: 'All Jobs' },
+            { id: 'active', label: `Active (${activeJobs})` },
+            { id: 'in progress', label: `In Progress (${inProgressJobs})` },
+            { id: 'completed', label: `Completed (${completedJobs})` },
+            { id: 'drafts', label: `Drafts (${draftJobs})` },
+            { id: 'sent-offers', label: `Sent Offers (${sentOffers.length})` }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setFilter(tab.id)}
+              className={`px-6 py-4 text-sm font-bold border-b-2 whitespace-nowrap transition-colors ${
+                (filter === tab.id || (filter === 'in-progress' && tab.id === 'in progress'))
+                  ? 'border-[#1754cf] text-[#1754cf]'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Job Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredJobs.length === 0 ? (
+            <div className="col-span-full text-center py-20 bg-[#1a2232] rounded-2xl border border-slate-800 border-dashed">
+               <i className="fas fa-folder-open text-6xl text-slate-600 mb-4"></i>
+               <h3 className="text-2xl font-bold text-white mb-2">No Jobs Found</h3>
+               <p className="text-slate-400 mb-6">You don't have any jobs matching this filter.</p>
+               <Link to="/post-job" className="bg-[#1754cf] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl inline-flex items-center gap-2">
+                 <i className="fas fa-plus text-sm"></i> Post a Job
+               </Link>
+            </div>
+          ) : (
+            filteredJobs.map(job => {
               const jobId = job.mongoId || job.id;
-              const thumb = job.images?.[0] || null;
-              const applicantCount = job.applicants?.length || 0;
-              const isExpired = job.expiresAt && new Date(job.expiresAt) <= new Date();
-              const expiresSoon = job.expiresAt && !isExpired &&
-                new Date(job.expiresAt) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+              const status = String(job.status || 'active').toLowerCase();
+              const offerStatus = (job.offerStatus || 'pending').toLowerCase();
+              const isPrivate = job.isPrivate;
+              
+              // Formatting Badges
+              let badgeColor = 'bg-slate-500';
+              let badgeLabel = status;
+              
+              if (status === 'active') { badgeColor = 'bg-[#1754cf]'; }
+              if (status === 'completed') { badgeColor = 'bg-[#0bda5e]'; }
+              if (status === 'draft') { badgeColor = 'bg-slate-600'; badgeLabel = 'Draft'; }
+              if (status === 'cancelled') { badgeColor = 'bg-red-500'; }
+              if (isPrivate) { 
+                badgeColor = offerStatus === 'accepted' ? 'bg-[#0bda5e]' : offerStatus === 'pending' ? 'bg-orange-500' : 'bg-red-500';
+                badgeLabel = `Offer ${offerStatus}`;
+              }
+
+              // Application Count Avatars
+              const applicantsCount = job.applicants?.length || 0;
+              const hasApplicants = applicantsCount > 0;
+              const firstTwoApplicants = job.applicants?.slice(0, 2) || [];
+              
+              const isDropdownOpen = openDropdownMap[jobId] || false;
 
               return (
-                <div
-                  key={jobId}
-                  className="flex flex-col bg-base-200 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  {/* Image */}
-                  <div className="relative h-44 bg-base-300 flex-shrink-0">
-                    {thumb ? (
-                      <img src={thumb} alt={job.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                        <i className="fas fa-briefcase text-5xl text-primary/20" />
-                      </div>
-                    )}
-                    {/* Category badge — top right */}
-                    {job.category && (
-                      <span className="absolute top-3 right-3 bg-primary text-primary-content text-xs font-semibold px-3 py-1 rounded-full shadow">
-                        {job.category}
-                      </span>
-                    )}
-                    {/* Status badge — top left */}
-                    <span className={`absolute top-3 left-3 badge badge-sm ${getStatusColor(job.status)} gap-1`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                      {job.status}
-                    </span>
-                  </div>
-
-                  {/* Body */}
-                  <div className="flex flex-col flex-1 p-4">
-                    {/* Title */}
-                    <h3 className="font-bold text-base text-primary leading-snug line-clamp-1 mb-2">
-                      {job.title}
-                    </h3>
-
-                    {/* Meta */}
-                    <div className="space-y-1.5 text-sm text-base-content/70 flex-1">
-                      {job.location && (
-                        <div className="flex items-start gap-2">
-                          <i className="fas fa-map-marker-alt text-primary mt-0.5 w-3.5 shrink-0" />
-                          <span className="line-clamp-2 leading-snug">{job.location}</span>
-                        </div>
-                      )}
-                      {job.date && (
-                        <div className="flex items-center gap-2">
-                          <i className="fas fa-calendar-alt text-primary w-3.5 shrink-0" />
-                          <span>Posted: {job.date}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <i className="fas fa-users text-primary w-3.5 shrink-0" />
-                        <span>
-                          {applicantCount} applicant{applicantCount !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                      {job.expiresAt && (
-                        <div className={`flex items-center gap-2 text-xs font-medium ${isExpired ? 'text-error' : expiresSoon ? 'text-warning' : 'text-base-content/50'}`}>
-                          <i className="fas fa-clock w-3.5 shrink-0" />
-                          <span>
-                            {isExpired
-                              ? 'Expired'
-                              : `Expires ${new Date(job.expiresAt).toLocaleDateString()} (${Math.ceil((new Date(job.expiresAt) - new Date()) / 86400000)}d left)`}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Price */}
-                    {job.budget && (
-                      <p className="text-primary font-extrabold text-2xl mt-3">
-                        ৳{job.budget}
-                      </p>
-                    )}
-
-                    {/* View Details */}
-                    <div className="mt-3 pt-3 border-t border-base-300">
-                      <Link
-                        to={`/My-Posted-Job-Details/${jobId}`}
-                        className="flex items-center justify-center gap-2 font-bold text-sm text-base-content hover:text-primary transition-colors"
-                      >
-                        View Details <i className="fas fa-arrow-right" />
-                      </Link>
-                    </div>
-
-                    {/* Management strip */}
-                    <div className="mt-3 pt-3 border-t border-base-300 flex items-center gap-1.5">
-                      <select
-                        className="select select-bordered select-xs flex-1 min-w-0"
-                        value={job.status || 'active'}
-                        onChange={(e) => handleStatusChange(jobId, e.target.value)}
-                      >
-                        <option value="active">Active</option>
-                        <option value="on-hold">On Hold</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                      <ShareButton jobId={jobId} jobTitle={job.title} jobDescription={job.description} isClient={true} />
-                      <Link to={`/edit-job/${jobId}`} className="btn btn-xs btn-ghost px-2" title="Edit">
-                        <i className="fas fa-pen" />
-                      </Link>
-                      <DeleteJobButton
-                        jobId={jobId}
-                        jobTitle={job.title}
-                        onDelete={() => setJobs(prev => prev.filter(j => (j.mongoId || j.id) !== jobId))}
+                <div key={jobId} className="glass-panel rounded-2xl overflow-visible hover:border-[#1754cf]/40 transition-all group flex flex-col relative z-0">
+                  <div className="relative h-40 overflow-hidden rounded-t-2xl z-0">
+                    {job.images && job.images.length > 0 ? (
+                      <img 
+                        src={job.images[0]} 
+                        alt={job.title} 
+                        className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${status === 'draft' ? 'opacity-60' : ''}`} 
                       />
+                    ) : (
+                      <div className="w-full h-full bg-[#1e293b] flex items-center justify-center">
+                        <i className="fas fa-hard-hat text-5xl text-slate-700 opacity-60"></i>
+                      </div>
+                    )}
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      <span className={`${badgeColor} text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider`}>
+                        {badgeLabel}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 flex flex-col flex-1 relative z-10 bg-[#1a2232] rounded-b-2xl">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col gap-1 pr-4">
+                        <h3 className="text-xl font-bold text-white line-clamp-1">{job.title}</h3>
+                        <p className="text-slate-400 text-xs font-medium uppercase tracking-widest">
+                          {job.date ? `Posted ${job.date}` : 'Recently Created'}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[#1754cf] font-bold text-lg">৳{job.budget || 'N/A'}</p>
+                        <p className="text-[10px] text-slate-400 font-medium uppercase">{job.paymentType === 'hourly' ? 'Rate/Hr' : 'Budget'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 mb-6 mt-auto">
+                      {isPrivate ? (
+                        <>
+                           <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-800 text-slate-400">
+                             <i className="fas fa-user text-sm"></i>
+                           </div>
+                           <p className="text-xs text-slate-400">Sent to: <span className="text-white font-bold">{workerNames[job.targetWorkerId] || 'Worker'}</span></p>
+                        </>
+                      ) : status === 'completed' ? (
+                         <>
+                           <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[#0bda5e]/20 text-[#0bda5e]">
+                             <i className="fas fa-check-circle text-sm"></i>
+                           </div>
+                           <p className="text-xs text-slate-400 flex items-center gap-1">Marked as Completed</p>
+                         </>
+                      ) : status === 'draft' ? (
+                          <>
+                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 text-slate-400">
+                              <i className="fas fa-edit text-sm"></i>
+                            </div>
+                            <p className="text-xs text-slate-400 italic">Complete description to post</p>
+                          </>
+                      ) : hasApplicants ? (
+                         <>
+                           <div className="flex -space-x-2 overflow-hidden">
+                             {firstTwoApplicants.map((app, idx) => (
+                               <div key={idx} className="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-[#111621] bg-[#1754cf]/20 text-[#1754cf] font-bold text-[10px]">
+                                 A
+                               </div>
+                             ))}
+                             {applicantsCount > 2 && (
+                               <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 ring-2 ring-[#111621] text-[10px] font-bold text-white">
+                                 +{applicantsCount - 2}
+                               </div>
+                             )}
+                           </div>
+                           <p className="text-xs text-slate-400"><span className="text-white font-bold">{applicantsCount}</span> Applicants</p>
+                         </>
+                      ) : (
+                         <>
+                           <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                             <i className="fas fa-user-times text-sm"></i>
+                           </div>
+                           <p className="text-xs text-slate-400">No applicants yet</p>
+                         </>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {/* Main Action Button */}
+                      {status === 'draft' ? (
+                        <Link to={`/edit-job/${jobId}`} className="flex-1 bg-transparent border border-[#1754cf] text-[#1754cf] hover:bg-[#1754cf]/10 font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                          Finish Listing <i className="fas fa-edit text-sm"></i>
+                        </Link>
+                      ) : status === 'completed' ? (
+                        <Link to={`/My-Posted-Job-Details/${jobId}`} className="flex-1 bg-slate-800 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                          View Details <i className="fas fa-file-invoice text-sm"></i>
+                        </Link>
+                      ) : hasApplicants && !isPrivate ? (
+                        <Link to={`/applications/${jobId}`} className="flex-1 bg-[#1754cf] hover:bg-[#1754cf]/90 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                           Review Apps <i className="fas fa-arrow-right text-sm"></i>
+                        </Link>
+                      ) : (
+                        <Link to={`/My-Posted-Job-Details/${jobId}`} className="flex-1 bg-[#1754cf] hover:bg-[#1754cf]/90 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                           View Details <i className="fas fa-arrow-right text-sm"></i>
+                        </Link>
+                      )}
+
+                      {/* Ellipsis Dropdown for actions */}
+                      <div className="relative">
+                        <button 
+                          onClick={() => toggleDropdown(jobId)} 
+                          onBlur={() => setTimeout(() => setOpenDropdownMap(prev => ({...prev, [jobId]: false})), 200)}
+                          className="p-2.5 bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors flex items-center justify-center"
+                        >
+                          <i className="fas fa-ellipsis-h text-lg"></i>
+                        </button>
+                        
+                        {isDropdownOpen && (
+                          <div className="absolute bottom-12 right-0 w-48 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl py-2 z-50 overflow-hidden transform origin-bottom-right">
+                            <Link to={`/edit-job/${jobId}`} className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 text-sm font-medium text-slate-200">
+                              <i className="fas fa-edit text-sm"></i> Edit Job
+                            </Link>
+
+                            {/* Status Adjustments */}
+                            {status !== 'completed' && status !== 'cancelled' && !isPrivate && (
+                               <button 
+                                 onMouseDown={() => handleStatusChange(jobId, 'completed')}
+                                 className="w-full flex items-center gap-3 px-4 py-2 hover:bg-slate-700 text-sm font-medium text-[#0bda5e] text-left"
+                               >
+                                 <i className="fas fa-check-circle text-sm"></i> Mark Completed
+                               </button>
+                            )}
+
+                            {isPrivate && (job.offerStatus || 'pending').toLowerCase() === 'pending' ? (
+                              <div className="px-1 pt-1 pb-1">
+                                <WithdrawOfferButton 
+                                  jobId={jobId} 
+                                  jobTitle={job.title} 
+                                  clientId={clientId}
+                                  onWithdrawn={() => setJobs(prev => prev.map(j => j.mongoId === jobId ? { ...j, offerStatus: 'withdrawn', status: 'cancelled'} : j))}
+                                />
+                              </div>
+                            ) : (
+                              <div className="mt-1 border-t border-slate-700 pt-1 w-full text-left">
+                                <DeleteJobButton 
+                                  jobId={jobId} 
+                                  jobTitle={job.title} 
+                                  isIconOnly={'dropdown'}
+                                  onDelete={() => setJobs(prev => prev.filter(j => (j.mongoId || j.id) !== jobId))}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              )
+            })
+          )}
+        </div>
+      </main>
     </div>
   );
 }

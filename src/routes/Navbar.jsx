@@ -10,7 +10,7 @@ export default function Navbar() {
   const [showCategories, setShowCategories] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
-  const { user, logOut } = useContext(AuthContext); // ✅ access user state
+  const { user, logOut } = useContext(AuthContext); 
   const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -59,7 +59,6 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await logOut();
-      alert("You have been logged out!");
       navigate('/login'); 
     } catch (error) {
       console.error("Logout error:", error.message);
@@ -67,119 +66,135 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full sticky top-0 z-50 bg-[#0b1121]/95 backdrop-blur-md border-b border-slate-800/80 transition-colors duration-300 font-sans shadow-lg">
+      
       {/* Main Navbar */}
-      <div className="navbar bg-base-200 text-base-content px-4 md:px-6 shadow-sm justify-between items-center transition-colors duration-300">
+      <div className="flex justify-between items-center px-4 md:px-8 py-3">
 
-        <div className="flex gap-6">
-          <Link to="/" className="text-4xl font-heading font-bold text-base-content">
-            Hire<span className="text-primary">Mistri</span>
+        <div className="flex items-center gap-8">
+          <Link to="/" className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2 drop-shadow-sm">
+            <span className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xl shadow-[0_0_15px_rgba(37,99,235,0.5)]">
+              <i className="fas fa-hammer"></i>
+            </span>
+            Hire<span className="text-blue-500">Mistri</span>
           </Link>
 
-          {/* Desktop Search Bar - reduced width */}
-          <div className="hidden lg:flex">
+          {/* Desktop Search Bar */}
+          <div className="hidden lg:flex items-center relative">
             <input
               type="text"
-              placeholder="Find Workers"
-              className="input input-bordered bg-base-100 text-base-content w-64 xl:w-80 rounded-l-full"
+              placeholder="Find Expert Workers..."
+              className="bg-[#121a2f] text-slate-200 border border-slate-700/60 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 rounded-l-xl px-5 py-2.5 w-72 xl:w-96 outline-none transition-all placeholder:text-slate-500 text-sm font-medium"
             />
-            <button className="btn rounded-r-full border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
+            <button className="bg-[#2563eb] hover:bg-blue-600 border border-[#2563eb] text-white px-5 py-2.5 rounded-r-xl transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.2)]">
               <i className="fas fa-search"></i>
             </button>
           </div>
         </div>
 
-        {/* Desktop Menu - gap-4, fewer visible links (My Jobs in dropdown only) */}
-        <div className="hidden lg:flex items-center gap-4 text-sm">
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex items-center gap-6 text-sm">
           {user ? (
             <>
-              <Link to="/dashboard" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+              <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Dashboard
               </Link>
-              <Link to="/post-job" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+              <Link to="/post-job" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Post Job
               </Link>
-              <Link to="/applications" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+              <Link to="/applications" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Applications
               </Link>
-              <Link to="/chats" className="text-base-content hover:text-primary transition-colors font-medium py-2">
+              <Link to="/chats" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Messages
               </Link>
-              <Link to="/support" className="text-base-content hover:text-primary transition-colors font-medium py-2">
-                Support
-              </Link>
               
-              {/* Notifications */}
-              <div className="relative">
-                <button 
-                  className="btn btn-ghost btn-circle relative"
-                  onClick={() => setShowNotifications(true)}
-                >
-                  <i className="far fa-bell text-lg text-base-content"></i>
-                  {notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-error text-error-content text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notificationCount > 9 ? '9+' : notificationCount}
-                    </span>
-                  )}
-                </button>
-              </div>
+              <div className="h-6 w-px bg-slate-700/50 mx-2"></div>
 
-              {/* Theme Toggle */}
+              {/* Notifications */}
               <button 
-                onClick={toggleTheme}
-                className="btn btn-ghost btn-circle"
-                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="relative text-slate-300 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-colors"
+                onClick={() => setShowNotifications(true)}
               >
-                <i className={`text-lg text-base-content ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
+                <i className="far fa-bell text-lg"></i>
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-sm">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </span>
+                )}
               </button>
 
-              {/* User Profile */}
-              <div className="dropdown dropdown-end">
-                <div tabIndex={0} role="button" className="flex items-center gap-2 text-base-content hover:text-primary transition-colors cursor-pointer">
-                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary/20">
-                    <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-full h-full object-cover" />
+              {/* User Profile Dropdown */}
+              <div className="dropdown dropdown-end relative">
+                <div tabIndex={0} role="button" className="flex items-center gap-3 pl-2 py-1 bg-transparent hover:bg-slate-800/50 rounded-full transition-all cursor-pointer border border-transparent hover:border-slate-700">
+                  <div className="text-right hidden xl:block">
+                    <p className="font-bold text-sm text-white">{user?.displayName || user?.email?.split('@')[0] || 'My Account'}</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest leading-none">Client</p>
                   </div>
-                  <div className="text-left">
-                    <p className="font-medium text-sm text-base-content">{user?.email?.split('@')[0] || 'Client'}</p>
-                    <p className="text-xs text-muted">01990444882</p>
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-700 shadow-sm relative">
+                    <img src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || 'User')}&background=1754cf&color=fff`} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-[#0b1121] rounded-full"></div>
                   </div>
-                  <i className="fas fa-chevron-down text-xs text-base-content"></i>
                 </div>
-                <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl rounded-xl w-48 bg-surface border border-base-300">
-                  <li><Link to="/My-Posted-Jobs" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Posted Jobs</Link></li>
-                  <li><Link to="/my-profile" className="rounded-lg text-base-content hover:bg-primary/10 hover:text-primary">My Profile</Link></li>
-                  <div className="divider my-1"></div>
-                  <li><button onClick={handleLogout} className="rounded-lg text-base-content hover:bg-error/10 hover:text-error">Logout</button></li>
+                
+                <ul tabIndex={0} className="dropdown-content absolute top-full mt-3 right-0 z-50 p-2 shadow-2xl rounded-2xl w-56 bg-[#172136] border border-slate-700/80 backdrop-blur-xl">
+                  <li className="px-4 py-3 border-b border-slate-700/50 mb-1">
+                    <p className="font-bold text-white text-sm truncate">{user.email}</p>
+                  </li>
+                  <li><Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-home w-4"></i> Dashboard</Link></li>
+                  <li><Link to="/post-job" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-plus-circle w-4"></i> Post a Job</Link></li>
+                  <li><Link to="/My-Posted-Jobs" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-list w-4"></i> My Posted Jobs</Link></li>
+                  <li><Link to="/my-profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-user w-4"></i> Profile Settings</Link></li>
+                  <div className="h-px bg-slate-700/50 my-1 mx-2"></div>
+                  <li><button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition-colors"><i className="fas fa-sign-out-alt w-4"></i> Logout</button></li>
                 </ul>
               </div>
             </>
           ) : (
-            <Link to="/login" className="btn border-none font-medium px-6 bg-[#1DC66C] hover:bg-[#17A858] text-white">
-              Login
-            </Link>
+            <div className="flex gap-3">
+              <Link to="/signup" className="text-slate-300 hover:text-white font-semibold py-2.5 px-4 transition-colors">
+                Sign Up
+              </Link>
+              <Link to="/login" className="bg-[#2563eb] hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]">
+                Login
+              </Link>
+            </div>
           )}
         </div>
 
         {/* Mobile Hamburger */}
-        <div className="lg:hidden">
+        <div className="lg:hidden flex items-center gap-4">
+          {user && (
+            <button 
+              className="relative text-slate-300 hover:text-white"
+              onClick={() => setShowNotifications(true)}
+            >
+              <i className="far fa-bell text-xl"></i>
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {notificationCount}
+                </span>
+              )}
+            </button>
+          )}
           <button
-            className="btn btn-ghost btn-circle"
+            className="text-slate-300 hover:text-white outline-none"
             onClick={() => setIsMenuOpen(true)}
           >
-            <i className="fas fa-bars text-base-content text-xl"></i>
+            <i className="fas fa-bars text-2xl"></i>
           </button>
         </div>
       </div>
 
       {/* Mobile Search Bar */}
-      <div className="lg:hidden px-4 py-2 shadow-sm transition-colors duration-300 bg-base-200">
-        <div className="flex">
+      <div className="lg:hidden px-4 pb-4 bg-[#0b1121]">
+        <div className="flex relative">
           <input
             type="text"
-            placeholder="Find Workers"
-            className="input input-bordered bg-base-100 text-base-content w-full rounded-l-full"
+            placeholder="Search workers..."
+            className="bg-[#121a2f] text-slate-200 border border-slate-700/80 rounded-l-xl px-4 py-3 w-full outline-none placeholder:text-slate-500 text-sm font-medium"
           />
-          <button className="btn rounded-r-full border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
+          <button className="bg-[#2563eb] text-white px-5 rounded-r-xl border border-[#2563eb]">
             <i className="fas fa-search"></i>
           </button>
         </div>
@@ -187,98 +202,106 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {isMenuOpen && (
-        <>
+        <div className="fixed inset-0 z-[100] flex justify-end">
           <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsMenuOpen(false)}
           />
-          <div className="fixed top-0 right-0 max-w-sm w-full h-full z-50 px-6 py-6 overflow-y-auto animate-fadeSlideIn rounded-l-xl shadow-lg transition-colors duration-300 bg-base-200 text-base-content">
-            <div className="flex items-center justify-between mb-6">
+          <div className="relative w-[80%] max-w-sm h-full bg-[#121a2f] border-l border-slate-800 p-6 flex flex-col shadow-2xl overflow-y-auto animate-slideInRight">
+            <div className="flex items-center justify-between mb-8">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <img
-                    src="https://i.pravatar.cc/100?img=3"
-                    alt="User"
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="font-semibold text-base-content">{user.email}</div>
+                  <div className="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden">
+                    <img src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || 'User')}&background=1754cf&color=fff`} alt="User" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-white leading-snug">{user.displayName || 'Client'}</div>
+                    <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider">My Account</div>
+                  </div>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn border-none bg-[#1DC66C] hover:bg-[#17A858] text-white">
-                  Login
-                </Link>
+                <span className="text-xl font-bold text-white">Menu</span>
               )}
-              <button className="text-xl text-base-content" onClick={() => setIsMenuOpen(false)}>✕</button>
+              <button className="text-slate-400 hover:text-white w-8 h-8 flex items-center justify-center bg-slate-800 rounded-full" onClick={() => setIsMenuOpen(false)}>
+                <i className="fas fa-times"></i>
+              </button>
             </div>
 
+            <nav className="flex flex-col gap-2 text-[15px] font-semibold flex-1">
+              {!user && (
+                <div className="flex flex-col gap-3 mb-6">
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)} className="bg-[#2563eb] text-center text-white py-3 rounded-xl shadow-lg shadow-blue-500/30">Login</Link>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="bg-slate-800 text-center text-white py-3 rounded-xl border border-slate-700">Sign Up</Link>
+                </div>
+              )}
+              
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-home w-5 text-slate-400"></i> Home</Link>
+              {user && (
+                <>
+                  <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-chart-line w-5 text-slate-400"></i> Dashboard</Link>
+                  <Link to="/post-job" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-plus-circle w-5 text-slate-400"></i> Post a Job</Link>
+                  <Link to="/My-Posted-Jobs" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-list w-5 text-slate-400"></i> Posted Jobs</Link>
+                  <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-file-alt w-5 text-slate-400"></i> Applications</Link>
+                  <Link to="/chats" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-comment shadow-sm w-5 text-slate-400"></i> Messages</Link>
+                  <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-user-cog w-5 text-slate-400"></i> Profile Settings</Link>
+                </>
+              )}
+            </nav>
+
             {user && (
-              <nav className="flex flex-col gap-4 text-sm">
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Dashboard</Link>
-                <Link to="/post-job" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Post a Job</Link>
-                <Link to="/My-Posted-Jobs" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Posted Jobs</Link>
-                <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Applications</Link>
-                <Link to="/chats" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Messages</Link>
-                <Link to="/support" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">Support Center</Link>
-                <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="py-2 text-base-content transition-colors hover:text-primary">My Profile</Link>
-                
-                {/* Mobile Theme Toggle */}
-                <button 
-                  onClick={toggleTheme}
-                  className="flex items-center gap-2 text-base-content transition-colors text-left hover:text-primary"
-                >
-                  <i className={`text-lg ${isDarkMode ? 'fas fa-sun' : 'far fa-moon'}`}></i>
-                  {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+              <div className="mt-8 border-t border-slate-700 pt-6">
+                <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center gap-4 py-3 px-4 w-full text-red-400 hover:bg-red-500/10 rounded-xl transition-colors font-bold">
+                  <i className="fas fa-sign-out-alt w-5"></i> Logout
                 </button>
-                
-                <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="text-base-content transition-colors text-left hover:text-error">Logout</button>
-              </nav>
+              </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
-      {/* Notifications Modal */}
+      {/* Notifications Modal Wrapper */}
       {showNotifications && (
-        <Notifications 
-          onClose={() => {
-            setShowNotifications(false);
-            fetchNotificationCount(); // Refresh count when closing
-          }} 
-        />
+        <div className="fixed inset-0 z-[120] flex justify-end">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowNotifications(false)}></div>
+          <div className="relative w-full max-w-sm h-full bg-[#121a2f] border-l border-slate-800 shadow-2xl animate-slideInRight">
+             <div className="h-full overflow-y-auto">
+               <Notifications onClose={() => { setShowNotifications(false); fetchNotificationCount(); }} />
+             </div>
+          </div>
+        </div>
       )}
 
-
-      {/* Desktop Category Bar - dropdown on lg, horizontal scroll on xl only */}
-      <div className="border-t border-base-300 px-4 py-2 hidden xl:flex gap-4 overflow-x-auto whitespace-nowrap transition-colors duration-300 bg-base-200">
+      {/* Categories Bar */}
+      <div className="border-t border-slate-800/80 bg-[#0b1121] px-4 md:px-8 py-2.5 hidden xl:flex items-center gap-6 overflow-x-auto no-scrollbar scroll-smooth">
         {categories.map((cat, idx) => (
           <NavLink
             key={idx}
             to={`/services/${cat.toLowerCase().replace(/\s|\(|\)/g, '-')}`}
             className={({ isActive }) =>
-              `text-base hover:underline transition-colors ${isActive ? 'font-semibold text-primary' : 'text-base-content hover:text-base-content'}`
+              `text-[13px] whitespace-nowrap tracking-wide transition-all ${isActive ? 'font-bold text-blue-500 border-b-2 border-blue-500 pb-0.5' : 'text-slate-400 font-medium hover:text-white hover:border-b-2 hover:border-slate-500 pb-0.5 border-b-2 border-transparent'}`
             }
           >
             {cat}
           </NavLink>
         ))}
       </div>
-      {/* Categories dropdown for lg (when horizontal bar is hidden) */}
-      <div className="border-t border-base-300 px-4 py-2 hidden lg:flex xl:hidden transition-colors duration-300 bg-base-200">
-        <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost btn-sm gap-2 text-base-content">
-            <i className="fas fa-th-large"></i> Categories
-          </label>
-          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-base-300 mt-2">
-            {categories.map((cat, idx) => (
-              <li key={idx}>
-                <Link to={`/services/${cat.toLowerCase().replace(/\s|\(|\)/g, '-')}`} className="text-base-content">
-                  {cat}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+
+      <style>{`
+        .animate-slideInRight {
+          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

@@ -14,18 +14,18 @@ export default function Applications() {
   const { user } = useContext(AuthContext);
   const { jobId } = useParams(); // Get jobId from URL
   const navigate = useNavigate();
-  
+
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('accepted');
   const [searchTerm, setSearchTerm] = useState('');
   const [updating, setUpdating] = useState(null);
   const [workerDetails, setWorkerDetails] = useState({});
   const [negotiatingAppId, setNegotiatingAppId] = useState(null);
   const [counterPrice, setCounterPrice] = useState('');
   const [negotiating, setNegotiating] = useState(false);
-  
+
   // Rating modal state
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedApplicationForRating, setSelectedApplicationForRating] = useState(null);
@@ -80,13 +80,14 @@ export default function Applications() {
     const workerData = workerDetails[applicant.workerId];
     const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
     return {
-      name: workerData?.displayName || 
-            workerData?.name || 
-            [workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ') ||
-            applicant.workerName || 
-            'Unknown Worker',
+      name: workerData?.displayName ||
+        workerData?.name ||
+        [workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ') ||
+        applicant.workerName ||
+        'Unknown Worker',
       email: isAccepted ? (applicant.workerEmail || workerData?.email || '') : '',
-      phone: isAccepted ? (applicant.workerPhone || workerData?.phone || '') : ''
+      phone: isAccepted ? (applicant.workerPhone || workerData?.phone || '') : '',
+      photo: workerData?.profileCover || workerData?.photoURL || workerData?.profileImage || applicant.workerImage || ''
     };
   };
 
@@ -95,10 +96,10 @@ export default function Applications() {
     try {
       setLoading(true);
       setError('');
-      
+
       const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
       let response;
-      
+
       if (jobId) {
         // Fetch applications for specific job
         response = await fetch(`${base}/api/job-applications/${jobId}`, {
@@ -124,7 +125,7 @@ export default function Applications() {
 
       const data = await response.json();
       setApplications(data || []);
-      
+
       // Fetch worker details for each application if not already provided
       if (data && data.length > 0) {
         const workerIds = [...new Set(data.map(app => app.workerId).filter(Boolean))];
@@ -154,13 +155,13 @@ export default function Applications() {
         const response = await fetch(`${base}/api/notifications/${user.uid}`, {
           headers: { 'Accept': 'application/json' }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           const withdrawnNotifications = (data.notifications || []).filter(
             n => n.type === 'application_withdrawn' && !n.read
           );
-          
+
           // If there are new withdrawal notifications, refresh applications
           if (withdrawnNotifications.length > 0) {
             fetchApplications();
@@ -180,7 +181,7 @@ export default function Applications() {
     const workerInfo = getWorkerInfo(applicant);
     const matchesFilter = filter === 'all' || applicant.status === filter;
     const matchesSearch = workerInfo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         applicant.proposalText?.toLowerCase().includes(searchTerm.toLowerCase());
+      applicant.proposalText?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -199,7 +200,7 @@ export default function Applications() {
     const applicant = applications.find(a => a._id === applicationId);
     try {
       setUpdating(applicationId);
-      
+
       const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
       const response = await fetch(`${base}/api/applications/${applicationId}/status`, {
         method: 'PATCH',
@@ -214,7 +215,7 @@ export default function Applications() {
       }
 
       const updatedApplication = await response.json();
-      
+
       // Update the local state
       const updatedApp = {
         ...applicant,
@@ -222,8 +223,8 @@ export default function Applications() {
         status: updatedApplication.status || newStatus,
         updatedAt: updatedApplication.updatedAt
       };
-      setApplications(prev => 
-        prev.map(app => 
+      setApplications(prev =>
+        prev.map(app =>
           app._id === applicationId ? updatedApp : app
         )
       );
@@ -248,7 +249,7 @@ export default function Applications() {
         };
         setAcceptSuccessModal({ applicant: updatedApp, workerInfo });
       }
-      
+
     } catch (err) {
       console.error('Failed to update application status:', err);
       toast.error('Failed to update application status. Please try again.');
@@ -260,39 +261,31 @@ export default function Applications() {
   const getStatusColor = (status) => {
     const s = (status || '').toLowerCase();
     switch (s) {
-      case 'accepted':
-        return 'badge-success';
-      case 'completed':
-        return 'badge-info';
-      case 'rejected':
-        return 'badge-error';
-      default:
-        return 'badge-warning';
+      case 'accepted': return 'bg-green-500/20 text-green-400 border border-green-500/30';
+      case 'completed': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+      case 'rejected': return 'bg-red-500/20 text-red-400 border border-red-500/30';
+      default: return 'bg-orange-500/20 text-orange-400 border border-orange-500/30';
     }
   };
 
   const getStatusIcon = (status) => {
     const s = (status || '').toLowerCase();
     switch (s) {
-      case 'accepted':
-        return 'fas fa-check-circle';
-      case 'completed':
-        return 'fas fa-check-double';
-      case 'rejected':
-        return 'fas fa-times-circle';
-      default:
-        return 'fas fa-clock';
+      case 'accepted': return 'fas fa-check-circle';
+      case 'completed': return 'fas fa-check-double';
+      case 'rejected': return 'fas fa-times-circle';
+      default: return 'fas fa-clock';
     }
   };
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen page-bg transition-colors duration-300">
+      <div className="min-h-screen bg-[#0b1121] text-slate-300 transition-colors duration-300 font-sans">
         <PageContainer>
-          <div className="text-center py-10">
-            <div className="loading loading-spinner loading-lg text-primary"></div>
-            <p className="mt-4 text-lg text-base-content">Loading applications...</p>
+          <div className="text-center py-20">
+            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+            <p className="mt-6 text-lg text-slate-400 font-medium tracking-wide">Gathering applications...</p>
           </div>
         </PageContainer>
       </div>
@@ -302,12 +295,14 @@ export default function Applications() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen page-bg transition-colors duration-300">
+      <div className="min-h-screen bg-[#0b1121] text-slate-300 transition-colors duration-300 font-sans">
         <PageContainer>
-          <div className="text-center py-10">
-            <div className="text-6xl mb-4">😞</div>
-            <h2 className="text-2xl font-bold mb-2 text-base-content">Failed to load applications</h2>
-            <p className="text-lg opacity-70">{error}</p>
+          <div className="text-center py-20 bg-[#121a2f] border border-red-500/20 rounded-3xl shadow-xl mt-8">
+            <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i className="fas fa-exclamation-triangle text-4xl text-red-500 outline-none"></i>
+            </div>
+            <h2 className="text-3xl font-extrabold text-white mb-3">Failed to load applications</h2>
+            <p className="text-lg text-slate-400 font-medium max-w-sm mx-auto">{error}</p>
           </div>
         </PageContainer>
       </div>
@@ -315,698 +310,310 @@ export default function Applications() {
   }
 
   return (
-    <div className="min-h-screen page-bg transition-colors duration-300">
-      <PageContainer>
-        <PageHeader
-          title={jobId ? 'Job Applications' : 'All Applications'}
-          subtitle={jobId
-            ? 'Review and manage applications for this specific job posting'
-            : 'Review and manage all applications across your job postings'
-          }
-          icon={<i className="fas fa-file-alt"></i>}
-        />
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted">Total</p>
-                <p className="text-3xl font-bold text-base-content">{applications.length}</p>
-              </div>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-info/20">
-                <i className="fas fa-briefcase text-info text-xl"></i>
-              </div>
+    <div className="bg-[#111621] text-slate-100 min-h-screen font-sans">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <div className="w-full px-6 sm:px-8 lg:px-14">
+          <div className="py-10">
+            {/* Header Section */}
+            <div className="mb-10">
+              <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+                {jobId ? 'Job Applications' : 'Worker Applications'}
+              </h1>
+              <p className="text-slate-400 text-lg">
+                You have <span className="text-[#1754cf] font-semibold">{applications.filter(a => (a.status || '').toLowerCase() === 'accepted').length} active hire{applications.filter(a => (a.status || '').toLowerCase() === 'accepted').length !== 1 ? 's' : ''}</span> and <span className="text-orange-400 font-semibold">{applications.filter(a => (a.status || '').toLowerCase() === 'pending').length} pending</span> request{applications.filter(a => (a.status || '').toLowerCase() === 'pending').length !== 1 ? 's' : ''}.
+              </p>
             </div>
-          </div>
 
-          <div className="card bg-base-200 border-l-4 border-warning p-4 lg:p-6 transition-colors duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted">Pending</p>
-                <p className="text-3xl font-bold text-base-content">
-                  {applications.filter(a => a.status === 'pending').length}
-                </p>
+            {/* Tabs Section */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 border-b border-white/5 gap-4 md:gap-0">
+              <div className="flex gap-6 md:gap-10 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+                <button
+                  onClick={() => setFilter('accepted')}
+                  className={`pb-4 ${filter === 'accepted' ? 'border-b-2 border-[#1754cf] text-white font-semibold' : 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium'} flex items-center gap-2 whitespace-nowrap transition-all`}
+                >
+                  <i className="fas fa-user-check text-xl"></i>
+                  Active Hires
+                </button>
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`pb-4 ${filter === 'all' ? 'border-b-2 border-[#1754cf] text-white font-semibold' : 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium'} flex items-center gap-2 whitespace-nowrap transition-all`}
+                >
+                  <i className="fas fa-list text-xl"></i>
+                  All
+                </button>
+                <button
+                  onClick={() => setFilter('pending')}
+                  className={`pb-4 ${filter === 'pending' ? 'border-b-2 border-[#1754cf] text-white font-semibold' : 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium'} flex items-center gap-2 whitespace-nowrap transition-all`}
+                >
+                  <i className="fas fa-clock text-xl"></i>
+                  Pending
+                </button>
+                <button
+                  onClick={() => setFilter('completed')}
+                  className={`pb-4 ${filter === 'completed' ? 'border-b-2 border-[#1754cf] text-white font-semibold' : 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium'} flex items-center gap-2 whitespace-nowrap transition-all`}
+                >
+                  <i className="fas fa-check-double text-xl"></i>
+                  Completed
+                </button>
+                <button
+                  onClick={() => setFilter('rejected')}
+                  className={`pb-4 ${filter === 'rejected' ? 'border-b-2 border-[#1754cf] text-white font-semibold' : 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium'} flex items-center gap-2 whitespace-nowrap transition-all`}
+                >
+                  <i className="fas fa-times-circle text-xl"></i>
+                  Rejected
+                </button>
               </div>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-warning/20">
-                <i className="fas fa-clock text-warning text-xl"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className={`card bg-base-200 border-l-4 border-primary p-4 lg:p-6 transition-colors duration-300`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted">Accepted</p>
-                <p className={`text-3xl font-bold text-base-content`}>
-                  {applications.filter(a => a.status === 'accepted').length}
-                </p>
-              </div>
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center bg-primary/20`}>
-                <i className="fas fa-check-circle text-primary text-xl"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="card bg-base-200 border-l-4 border-info p-4 lg:p-6 transition-colors duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted">Completed</p>
-                <p className="text-3xl font-bold text-base-content">
-                  {applications.filter(a => (a.status || '').toLowerCase() === 'completed').length}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-info/20">
-                <i className="fas fa-check-double text-info text-xl"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="card bg-base-200 border-l-4 border-error p-4 lg:p-6 transition-colors duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted">Rejected</p>
-                <p className="text-3xl font-bold text-base-content">
-                  {applications.filter(a => (a.status || '').toLowerCase() === 'rejected').length}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-error/20">
-                <i className="fas fa-times-circle text-error text-xl"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="card bg-base-200 shadow-sm p-6 mb-8 transition-colors duration-300">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-2 text-base-content">Search by Name or Proposal</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search by worker name or proposal text..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`input input-bordered w-full pl-10`}
-                />
-                <i className="fas fa-search absolute left-3 top-3 text-muted"></i>
-              </div>
-            </div>
-            <div className="lg:w-64">
-              <label className="block text-sm font-medium mb-2 text-base-content">Status</label>
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className={`select select-bordered w-full`}
-              >
-                <option value="all">All</option>
-                <option value="pending">Pending</option>
-                <option value="accepted">Accepted</option>
-                <option value="completed">Completed</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Hires - Quick access when there are accepted applications */}
-        {acceptedCount > 0 && filter === 'all' && (
-          <div className="card bg-gradient-to-r from-success/10 to-emerald-500/10 border-2 border-success/30 shadow-lg mb-8 transition-colors duration-300">
-            <div className="card-body">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
-                  <i className="fas fa-user-check text-success text-xl"></i>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-base-content">Active Hires</h2>
-                  <p className="text-sm opacity-70">Call your accepted workers to coordinate</p>
+              <div className="flex gap-3 mb-3 shrink-0 w-full md:w-auto">
+                <div className="relative flex-1 md:flex-none">
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search applications..."
+                    className="w-full bg-[#1a2232] border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1754cf] md:w-64 text-slate-200 placeholder:text-slate-500"
+                  />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {groupedApplicants.accepted.slice(0, 5).map((applicant) => {
-                  const info = getWorkerInfo(applicant);
+            </div>
+
+            {/* List of Cards */}
+            <div className="grid grid-cols-1 gap-4">
+              {filteredApplicants.length === 0 ? (
+                <div className="text-center py-20 bg-[#1a2232]/50 backdrop-blur-md rounded-2xl border border-white/5">
+                  <div className="w-20 h-20 bg-[#243047] rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i className="fas fa-inbox text-4xl text-slate-400"></i>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">No applications found</h3>
+                  <p className="text-slate-500 font-medium max-w-md mx-auto">
+                    {applications.length === 0
+                      ? 'No applications have been submitted for this job yet.'
+                      : "We couldn't find any applications matching your search or filters."}
+                  </p>
+                </div>
+              ) : (
+                filteredApplicants.map((applicant) => {
+                  const workerInfo = getWorkerInfo(applicant);
+                  const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
+                  const isPending = (applicant.status || '').toLowerCase() === 'pending';
+                  const isCompleted = (applicant.status || '').toLowerCase() === 'completed';
+                  const isRejected = (applicant.status || '').toLowerCase() === 'rejected';
+
+                  // Dynamic icon/color logic based on status
+                  let statusColor = "bg-slate-700 text-slate-300";
+                  if (isPending) statusColor = "bg-orange-500/10 text-orange-400";
+                  if (isAccepted) statusColor = "bg-[#1754cf]/10 text-[#1754cf]";
+                  if (isCompleted) statusColor = "bg-purple-500/10 text-purple-400";
+                  if (isRejected) statusColor = "bg-red-500/10 text-red-400";
+
                   return (
-                    <div key={applicant._id} className="flex items-center gap-3 bg-base-100/80 rounded-xl p-4 border border-success/20 min-w-[200px]">
-                      <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center text-success font-bold">
-                        {info.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-base-content truncate">{info.name}</p>
-                        <p className="text-xs opacity-70 truncate">{applicant.title || applicant.jobTitle || 'Job'}</p>
-                        {info.phone && info.phone !== 'No phone' && (
-                          <a href={`tel:${info.phone.replace(/\s/g, '')}`} className="btn btn-success btn-sm mt-2">
-                            <i className="fas fa-phone mr-1"></i>Call
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Applications List - Grouped by status */}
-        <div className="space-y-8">
-          {['pending', 'accepted', 'completed', 'rejected'].map((statusKey) => {
-            const group = groupedApplicants[statusKey];
-            if (group.length === 0) return null;
-            const sectionLabels = { pending: 'Pending Review', accepted: 'Active Hires', completed: 'Completed', rejected: 'Rejected' };
-            const sectionIcons = { pending: 'fa-clock', accepted: 'fa-user-check', completed: 'fa-check-double', rejected: 'fa-times-circle' };
-            const sectionClass = { pending: 'text-warning', accepted: 'text-success', completed: 'text-info', rejected: 'text-error' };
-            return (
-              <div key={statusKey}>
-                <h3 className={`flex items-center gap-2 text-lg font-semibold mb-4 ${sectionClass[statusKey]}`}>
-                  <i className={`fas ${sectionIcons[statusKey]} ${sectionClass[statusKey]}`}></i>
-                  {sectionLabels[statusKey]} ({group.length})
-                </h3>
-                <div className="space-y-6">
-                  {group.map((applicant) => {
-                    const workerInfo = getWorkerInfo(applicant);
-                    const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
-                    return (
-              <div key={applicant._id} className={`card shadow-sm overflow-hidden transition-colors duration-300 ${isAccepted ? 'bg-success/5 border-l-4 border-success' : 'bg-base-200 border border-base-300'}`}>
-                <div className="card-body">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-content font-bold text-xl">
-                        {workerInfo.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold text-base-content">
-                            {workerInfo.name}
-                          </h3>
-                            <span className={`badge ${getStatusColor(applicant.status)} gap-1`}>
-                            <i className={`${getStatusIcon(applicant.status)}`}></i>
-                            {(applicant.status || '').toLowerCase() === 'accepted' ? 'Active' : (applicant.status || 'pending')}
-                          </span>
-                        </div>
-                        
-                        {(applicant.status || '').toLowerCase() === 'accepted' && (workerInfo.phone || workerInfo.email) && (
-                          <div className="flex flex-wrap items-center gap-4 text-sm mb-3 opacity-80 space-y-0">
-                            {workerInfo.email && (
-                              <span className="flex items-center gap-1">
-                                <i className="fas fa-envelope text-primary"></i>
-                                {workerInfo.email}
-                              </span>
-                            )}
-                            {workerInfo.phone && (
-                              <span className="flex items-center gap-1">
-                                <i className="fas fa-phone text-primary"></i>
-                                {workerInfo.phone}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2 mb-4">
-                          <span className="text-sm opacity-70">
-                            Applied {new Date(applicant.createdAt).toLocaleDateString()}
-                          </span>
-                          {applicant.updatedAt && applicant.updatedAt !== applicant.createdAt && (
-                            <span className="text-sm opacity-70">
-                              • Updated {new Date(applicant.updatedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Collapsible Proposal */}
-                        <div className="space-y-4">
-                          {expandedProposal[applicant._id] ? (
-                            <div className="card bg-base-300 p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-base-content">Proposal</h4>
-                                <button type="button" className="btn btn-ghost btn-xs" onClick={() => toggleProposal(applicant._id)}>Collapse</button>
-                              </div>
-                              <p className="text-base-content opacity-80 leading-relaxed">
-                                {applicant.proposalText || 'No proposal text provided.'}
-                              </p>
-                            </div>
+                    <div key={applicant._id} className="bg-[#1a2232]/70 backdrop-blur-xl rounded-2xl p-5 border border-white/5 flex flex-wrap lg:flex-nowrap flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:border-[#1754cf]/30 transition-all group shadow-sm">
+                      <div className="flex items-start lg:items-center gap-5 w-full lg:w-auto">
+                        <div className="h-16 w-16 min-w-[64px] rounded-2xl bg-gradient-to-br from-[#1754cf] to-indigo-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shrink-0 ring-2 ring-white/5 overflow-hidden">
+                          {workerInfo.photo ? (
+                            <img src={workerInfo.photo} alt={workerInfo.name} className="w-full h-full object-cover" />
                           ) : (
-                            <button type="button" className="btn btn-ghost btn-sm gap-2 text-primary" onClick={() => toggleProposal(applicant._id)}>
-                              <i className="fas fa-file-alt"></i> View proposal
-                            </button>
+                            workerInfo.name.charAt(0).toUpperCase()
                           )}
                         </div>
-
-                        {/* Price Negotiation Section - Collapsible */}
-                        {applicant.proposedPrice && (
-                          <div className="mt-4 space-y-4">
-                            {expandedNegotiation[applicant._id] ? (
-                          <div className="card bg-gradient-to-r from-primary/10 to-primary-focus/10 border border-primary/20 p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-semibold text-base-content">
-                                <i className="fas fa-money-bill-wave mr-2"></i>
-                                Price Negotiation
-                              </h4>
-                              <div className="flex items-center gap-2">
-                                {applicant.negotiationStatus && (
-                                <span className={`badge badge-sm ${
-                                  applicant.negotiationStatus === 'accepted' ? 'badge-success' :
-                                  applicant.negotiationStatus === 'countered' ? 'badge-warning' :
-                                  applicant.negotiationStatus === 'pending' ? 'badge-info' :
-                                  'badge-ghost'
-                                }`}>
-                                  {applicant.negotiationStatus}
-                                </span>
-                                )}
-                                <button type="button" className="btn btn-ghost btn-xs" onClick={() => toggleNegotiation(applicant._id)}>Hide</button>
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between p-2 bg-base-200 rounded">
-                                <span className="text-sm opacity-70">Worker Proposed:</span>
-                                <span className="font-bold text-primary text-lg">
-                                  ৳{applicant.proposedPrice.toLocaleString()}
-                                </span>
-                              </div>
-                              
-                              {applicant.counterPrice && (
-                                <div className="flex items-center justify-between p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded">
-                                  <span className="text-sm opacity-70">Your Counter:</span>
-                                  <span className="font-bold text-yellow-700 dark:text-yellow-300 text-lg">
-                                    ৳{applicant.counterPrice.toLocaleString()}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {applicant.finalPrice && (
-                                <div className="flex items-center justify-between p-2 bg-green-100 dark:bg-green-900/30 rounded">
-                                  <span className="text-sm opacity-70">Final Agreed Price:</span>
-                                  <span className="font-bold text-green-700 dark:text-green-300 text-lg">
-                                    ৳{applicant.finalPrice.toLocaleString()}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {applicant.negotiationStatus !== 'accepted' && applicant.negotiationStatus !== 'cancelled' && (
-                                <div className="mt-3">
-                                  {negotiatingAppId === applicant._id ? (
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium">৳</span>
-                                        <input
-                                          type="number"
-                                          value={counterPrice}
-                                          onChange={(e) => setCounterPrice(e.target.value)}
-                                          placeholder="Enter counter price"
-                                          className="flex-1 input input-sm input-bordered"
-                                          min="0"
-                                          step="100"
-                                        />
-                                      </div>
-                                      <div className="flex gap-2">
-                                        <button
-                                          className="btn btn-sm btn-primary"
-                                          onClick={async () => {
-                                            if (!counterPrice || isNaN(parseFloat(counterPrice)) || parseFloat(counterPrice) <= 0) {
-                                              alert('Please enter a valid price');
-                                              return;
-                                            }
-                                            try {
-                                              setNegotiating(true);
-                                              const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-                                              const response = await fetch(`${base}/api/applications`, {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                  jobId: applicant.jobId,
-                                                  workerId: applicant.workerId,
-                                                  counterPrice: parseFloat(counterPrice),
-                                                  negotiationStatus: 'countered'
-                                                })
-                                              });
-                                              if (response.ok) {
-                                                const data = await response.json();
-                                                setApplications(prev => prev.map(app => 
-                                                  app._id === applicant._id 
-                                                    ? { ...app, counterPrice: parseFloat(counterPrice), negotiationStatus: 'countered' }
-                                                    : app
-                                                ));
-                                                setNegotiatingAppId(null);
-                                                setCounterPrice('');
-                                                alert('Counter-offer sent!');
-                                              } else {
-                                                throw new Error('Failed to send counter-offer');
-                                              }
-                                            } catch (err) {
-                                              console.error('Failed to send counter-offer:', err);
-                                              alert('Failed to send counter-offer. Please try again.');
-                                            } finally {
-                                              setNegotiating(false);
-                                            }
-                                          }}
-                                          disabled={negotiating}
-                                        >
-                                          {negotiating ? (
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                          ) : (
-                                            <>
-                                              <i className="fas fa-handshake mr-1"></i>
-                                              Send Counter
-                                            </>
-                                          )}
-                                        </button>
-                                        <button
-                                          className="btn btn-sm btn-ghost"
-                                          onClick={() => {
-                                            setNegotiatingAppId(null);
-                                            setCounterPrice('');
-                                          }}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="flex gap-2">
-                                      <button
-                                        className="btn btn-sm btn-primary"
-                                        onClick={() => {
-                                          setNegotiatingAppId(applicant._id);
-                                          setCounterPrice(applicant.counterPrice?.toString() || '');
-                                        }}
-                                      >
-                                        <i className="fas fa-handshake mr-1"></i>
-                                        {applicant.counterPrice ? 'Update Counter' : 'Counter Offer'}
-                                      </button>
-                                      <button
-                                        className="btn btn-sm btn-success"
-                                        onClick={async () => {
-                                          if (!confirm(`Accept worker's proposed price of ৳${applicant.proposedPrice.toLocaleString()}?`)) return;
-                                          try {
-                                            setNegotiating(true);
-                                            const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-                                            const response = await fetch(`${base}/api/applications`, {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({
-                                                jobId: applicant.jobId,
-                                                workerId: applicant.workerId,
-                                                finalPrice: applicant.proposedPrice,
-                                                negotiationStatus: 'accepted'
-                                              })
-                                            });
-                                            if (response.ok) {
-                                              setApplications(prev => prev.map(app => 
-                                                app._id === applicant._id 
-                                                  ? { ...app, finalPrice: applicant.proposedPrice, negotiationStatus: 'accepted' }
-                                                  : app
-                                              ));
-                                              alert('Price accepted!');
-                                            } else {
-                                              throw new Error('Failed to accept price');
-                                            }
-                                          } catch (err) {
-                                            console.error('Failed to accept price:', err);
-                                            alert('Failed to accept price. Please try again.');
-                                          } finally {
-                                            setNegotiating(false);
-                                          }
-                                        }}
-                                        disabled={negotiating}
-                                      >
-                                        <i className="fas fa-check mr-1"></i>
-                                        Accept Price
-                                      </button>
-                                      <button
-                                        className="btn btn-sm btn-ghost"
-                                        onClick={async () => {
-                                          if (!confirm('Cancel price negotiation?')) return;
-                                          try {
-                                            setNegotiating(true);
-                                            const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-                                            const response = await fetch(`${base}/api/applications`, {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({
-                                                jobId: applicant.jobId,
-                                                workerId: applicant.workerId,
-                                                negotiationStatus: 'cancelled'
-                                              })
-                                            });
-                                            if (response.ok) {
-                                              setApplications(prev => prev.map(app => 
-                                                app._id === applicant._id 
-                                                  ? { ...app, negotiationStatus: 'cancelled' }
-                                                  : app
-                                              ));
-                                            }
-                                          } catch (err) {
-                                            console.error('Failed to cancel negotiation:', err);
-                                          } finally {
-                                            setNegotiating(false);
-                                          }
-                                        }}
-                                        disabled={negotiating}
-                                      >
-                                        <i className="fas fa-times mr-1"></i>
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                            ) : (
-                              <button type="button" className="btn btn-ghost btn-sm gap-2 text-primary" onClick={() => toggleNegotiation(applicant._id)}>
-                                <i className="fas fa-money-bill-wave"></i> View price details
-                              </button>
+                        <div className="w-full">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 className="text-lg font-bold text-white group-hover:text-[#1754cf] transition-colors cursor-pointer" onClick={() => navigate(`/worker/${applicant.workerId}`)}>
+                              {workerInfo.name}
+                            </h3>
+                            <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${statusColor}`}>
+                              {applicant.status || 'Pending'}
+                            </span>
+                            {applicant.proposedPrice && isPending && (
+                              <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full">
+                                ৳{applicant.proposedPrice.toLocaleString()} Offer
+                              </span>
                             )}
                           </div>
+                          <p className="text-slate-300 text-sm font-medium mb-1 line-clamp-1">
+                            {applicant.title || applicant.jobTitle || 'Job Application'}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-500 text-xs">
+                            <span className="flex items-center gap-1">
+                              Applied {new Date(applicant.createdAt).toLocaleDateString()}
+                            </span>
+                            {isAccepted && (workerInfo.phone && workerInfo.phone !== 'No phone') && (
+                              <span className="flex items-center gap-1 text-[#1754cf]">
+                                <i className="fas fa-phone-alt text-[14px]"></i> {workerInfo.phone}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto lg:shrink-0 justify-end mt-2 lg:mt-0">
+                        {/* Action buttons */}
+                        <button
+                          className="px-4 py-2.5 rounded-xl bg-[#243047] text-white text-sm font-semibold hover:bg-[#243047]/80 transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none"
+                          onClick={() => navigate(`/worker/${applicant.workerId}`)}
+                        >
+                          <i className="fas fa-user-circle text-lg"></i>
+                          <span className="hidden sm:inline">Profile</span>
+                        </button>
+
+                        {isPending && (
+                          <>
+                            <button
+                              className="px-4 py-2.5 rounded-xl bg-[#1754cf]/10 text-[#1754cf] border border-[#1754cf]/20 font-semibold text-sm hover:bg-[#1754cf] hover:text-white transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none"
+                              onClick={() => {
+                                toggleProposal(applicant._id);
+                              }}
+                            >
+                              <i className="fas fa-file-alt text-lg"></i>
+                              <span className="hidden sm:inline">Proposal</span>
+                            </button>
+                            <button
+                              className="px-4 py-2.5 rounded-xl bg-green-500/10 text-green-500 font-semibold text-sm hover:bg-green-500 hover:text-white transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none disabled:opacity-50"
+                              onClick={() => updateApplicationStatus(applicant._id, 'accepted')}
+                              disabled={updating === applicant._id}
+                            >
+                              {updating === applicant._id ? <i className="fas fa-spinner fa-spin text-lg"></i> : <i className="fas fa-check-circle text-lg"></i>}
+                              <span className="hidden sm:inline">Accept</span>
+                            </button>
+                            <button
+                              className="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-500 font-semibold text-sm hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none disabled:opacity-50"
+                              onClick={() => updateApplicationStatus(applicant._id, 'rejected')}
+                              disabled={updating === applicant._id}
+                            >
+                              {updating === applicant._id ? <i className="fas fa-spinner fa-spin text-lg"></i> : <i className="fas fa-times-circle text-lg"></i>}
+                              <span className="hidden sm:inline">Reject</span>
+                            </button>
+                          </>
                         )}
 
-                        {/* Application Notes */}
-                        <ApplicationNotes
-                          applicationId={applicant._id}
-                          userId={user?.uid}
-                          userName={user?.displayName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User'}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row gap-2 ml-0 md:ml-4 mt-4 md:mt-0">
-                      <button 
-                        className="btn btn-sm btn-outline border-none bg-base-300 hover:bg-base-200 text-base-content"
-                        onClick={() => {
-                          const wid = applicant.workerId;
-                          if (!wid) return;
-                          navigate(`/worker/${wid}`);
-                        }}
-                      >
-                        <i className="fas fa-eye mr-1"></i>
-                        View Profile
-                      </button>
-                      {(applicant.status || '').toLowerCase() === 'pending' && (
-                        <>
-                          <button 
-                            className="btn btn-sm btn-primary border-none"
-                            onClick={() => updateApplicationStatus(applicant._id, 'accepted')}
-                            disabled={updating === applicant._id}
-                          >
-                            {updating === applicant._id ? (
-                              <i className="fas fa-spinner fa-spin mr-1"></i>
-                            ) : (
-                              <i className="fas fa-check mr-1"></i>
-                            )}
-                            Accept
-                          </button>
-                          <button 
-                            className="btn btn-sm btn-error border-none"
-                            onClick={() => updateApplicationStatus(applicant._id, 'rejected')}
-                            disabled={updating === applicant._id}
-                          >
-                            {updating === applicant._id ? (
-                              <i className="fas fa-spinner fa-spin mr-1"></i>
-                            ) : (
-                              <i className="fas fa-times mr-1"></i>
-                            )}
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {(applicant.status || '').toLowerCase() === 'accepted' && (() => {
-                        const info = getWorkerInfo(applicant);
-                        return (
-                          <div className="flex flex-col gap-2">
-                            {(info.phone || info.email) && (
-                              <>
-                                {info.phone && info.phone !== 'No phone' && (
-                                  <a
-                                    href={`tel:${info.phone.replace(/\s/g, '')}`}
-                                    className="btn btn-sm btn-success"
-                                  >
-                                    <i className="fas fa-phone mr-1"></i>Call Worker
-                                  </a>
-                                )}
-                                {info.email && info.email !== 'No email' && (
-                                  <a
-                                    href={`mailto:${info.email}`}
-                                    className="btn btn-sm btn-outline"
-                                  >
-                                    <i className="fas fa-envelope mr-1"></i>Email
-                                  </a>
-                                )}
-                              </>
-                            )}
+                        {isAccepted && (
+                          <>
                             <button
-                              className="btn btn-sm btn-info border-none"
+                              className="px-4 py-2.5 rounded-xl bg-green-500/10 text-green-500 font-semibold text-sm hover:bg-green-500 hover:text-white transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none disabled:opacity-50"
                               onClick={() => updateApplicationStatus(applicant._id, 'completed')}
                               disabled={updating === applicant._id}
                             >
-                              {updating === applicant._id ? (
-                                <i className="fas fa-spinner fa-spin mr-1"></i>
-                              ) : (
-                                <i className="fas fa-check-double mr-1"></i>
-                              )}
-                              Mark as Completed
+                              {updating === applicant._id ? <i className="fas fa-spinner fa-spin text-lg"></i> : <i className="fas fa-check-double text-lg"></i>}
+                              Mark Done
                             </button>
-                          </div>
-                        );
-                      })()}
-                      {(applicant.status || '').toLowerCase() === 'completed' && (
-                        <button
-                          className="btn btn-sm btn-primary border-none"
-                          onClick={() => {
-                            setSelectedApplicationForRating(applicant);
-                            setRatingModalOpen(true);
-                          }}
-                        >
-                          <i className="fas fa-star mr-1"></i>
-                          Rate Worker
-                        </button>
+                          </>
+                        )}
+
+                        {isCompleted && (
+                          <button
+                            className="px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-500 font-semibold text-sm hover:bg-yellow-500 hover:text-white transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none"
+                            onClick={() => {
+                              setSelectedApplicationForRating(applicant);
+                              setRatingModalOpen(true);
+                            }}
+                          >
+                            <i className="fas fa-star text-lg"></i>
+                            Rate
+                          </button>
+                        )}
+
+                        {isRejected && (
+                          <button
+                            className="px-4 py-2.5 rounded-xl bg-[#243047] text-white font-semibold text-sm hover:bg-[#243047]/80 transition-all flex items-center justify-center gap-2 flex-1 lg:flex-none disabled:opacity-50"
+                            onClick={() => updateApplicationStatus(applicant._id, 'pending')}
+                            disabled={updating === applicant._id}
+                          >
+                            {updating === applicant._id ? <i className="fas fa-spinner fa-spin text-lg"></i> : <i className="fas fa-undo text-lg"></i>}
+                            Reconsider
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Expandable Proposal block */}
+                      {expandedProposal[applicant._id] && isPending && (
+                        <div className="w-full mt-4 p-4 bg-[#111621] rounded-xl border border-white/5 shadow-inner">
+                          <h4 className="font-bold text-white text-sm mb-2 flex items-center gap-2">
+                            <i className="fas fa-file-alt text-[#1754cf] text-sm"></i> Proposal
+                          </h4>
+                          <p className="text-slate-300 text-sm whitespace-pre-wrap">
+                            {applicant.proposalText || 'No proposal text provided.'}
+                          </p>
+                        </div>
                       )}
-                      {(applicant.status || '').toLowerCase() === 'rejected' && (
-                        <button 
-                          className="btn btn-sm bg-base-300 hover:bg-base-200 text-base-content border-none"
-                          onClick={() => updateApplicationStatus(applicant._id, 'pending')}
-                          disabled={updating === applicant._id}
-                        >
-                          {updating === applicant._id ? (
-                            <i className="fas fa-spinner fa-spin mr-1"></i>
-                          ) : (
-                            <i className="fas fa-undo mr-1"></i>
-                          )}
-                          Reconsider
-                        </button>
-                      )}
+
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Pagination Area */}
+          <div className="mt-12 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-slate-500 text-sm">Showing <span className="text-slate-200 font-medium">{filteredApplicants.length}</span> of <span className="text-slate-200 font-medium">{applications.length}</span> applications</p>
+          </div>
+        </div>
+
+        {ratingModalOpen && selectedApplicationForRating && (
+          <RatingModal
+            isOpen={ratingModalOpen}
+            onClose={() => {
+              setRatingModalOpen(false);
+              setSelectedApplicationForRating(null);
+            }}
+            jobId={jobId || selectedApplicationForRating.jobId}
+            applicationId={selectedApplicationForRating._id?.toString() || selectedApplicationForRating._id}
+            workerId={selectedApplicationForRating.workerId}
+            workerName={getWorkerInfo(selectedApplicationForRating).name}
+            jobTitle={selectedApplicationForRating.title || selectedApplicationForRating.jobTitle || 'Job'}
+            onSuccess={() => {
+              fetchApplications();
+            }}
+          />
+        )}
+
+        {/* Accept Success Modal */}
+        {acceptSuccessModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setAcceptSuccessModal(null)}></div>
+            <div className="bg-[#1a2232] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl relative z-10 overflow-hidden transform transition-all">
+              <div className="px-8 pt-10 pb-6 text-center border-b border-white/5 relative">
+                <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5 text-green-500">
+                  <i className="fas fa-check-circle text-5xl"></i>
+                </div>
+                <h3 className="text-2xl font-extrabold text-white mb-2">Worker Accepted!</h3>
+                <p className="text-slate-400 font-medium">You can contact the worker now to coordinate time and location details.</p>
+              </div>
+
+              <div className="p-8 space-y-5 bg-[#111621]">
+                <div className="bg-[#1a2232] rounded-2xl p-5 border border-white/5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Worker Name</p>
+                      <p className="font-extrabold text-xl text-white">{acceptSuccessModal.workerInfo.name}</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-                  })}
+
+                <div className="bg-[#1a2232] rounded-2xl p-5 border border-white/5 space-y-3">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Contact Info</p>
+                  {acceptSuccessModal.workerInfo.phone && acceptSuccessModal.workerInfo.phone !== 'No phone' && (
+                    <a href={`tel:${acceptSuccessModal.workerInfo.phone.replace(/\s/g, '')}`} className="w-full bg-[#1754cf] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
+                      <i className="fas fa-phone-alt"></i> Call {acceptSuccessModal.workerInfo.phone}
+                    </a>
+                  )}
+                  {acceptSuccessModal.workerInfo.email && acceptSuccessModal.workerInfo.email !== 'No email' && (
+                    <a href={`mailto:${acceptSuccessModal.workerInfo.email}`} className="w-full bg-[#243047] hover:bg-[#243047]/80 text-white font-bold py-3 px-4 rounded-xl transition-all flex justify-center items-center gap-2">
+                      <i className="fas fa-envelope"></i> Send Email
+                    </a>
+                  )}
+                </div>
+
+                <div className="pt-2">
+                  <button className="w-full bg-transparent border border-slate-700 text-slate-300 hover:bg-slate-800 font-bold py-3 rounded-xl transition-all" onClick={() => setAcceptSuccessModal(null)}>
+                    Close
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {filteredApplicants.length === 0 && (
-          <div className="text-center py-12">
-            <i className="fas fa-inbox text-6xl mb-4 opacity-30"></i>
-            <h3 className="text-xl font-semibold mb-2 text-base-content">No applications found</h3>
-            <p className="opacity-70">
-              {applications.length === 0 
-                ? 'No applications have been submitted for this job yet.' 
-                : 'Try adjusting your search or filter criteria.'
-              }
-            </p>
+            </div>
           </div>
         )}
-      </PageContainer>
-
-      {ratingModalOpen && selectedApplicationForRating && (
-        <RatingModal
-          isOpen={ratingModalOpen}
-          onClose={() => {
-            setRatingModalOpen(false);
-            setSelectedApplicationForRating(null);
-          }}
-          jobId={jobId || selectedApplicationForRating.jobId}
-          applicationId={selectedApplicationForRating._id?.toString() || selectedApplicationForRating._id}
-          workerId={selectedApplicationForRating.workerId}
-          workerName={getWorkerInfo(selectedApplicationForRating).name}
-          jobTitle={selectedApplicationForRating.title || selectedApplicationForRating.jobTitle || 'Job'}
-          onSuccess={() => {
-            fetchApplications();
-          }}
-        />
-      )}
-
-      {/* Accept Success Modal - show worker contact after accepting */}
-      {acceptSuccessModal && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-lg p-0 overflow-hidden border border-success/40 shadow-2xl">
-            <div className="bg-gradient-to-r from-success/20 via-success/10 to-transparent px-6 py-5 border-b border-success/20">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-success/20 text-success flex items-center justify-center">
-                  <i className="fas fa-check-circle text-2xl"></i>
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl text-base-content">Worker Accepted</h3>
-                  <p className="text-sm text-base-content/70">You can contact the worker now to coordinate time and location.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="rounded-xl border border-base-300 bg-base-200 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-base-content/70 text-xs uppercase tracking-wide mb-1">Worker</p>
-                    <p className="font-semibold text-lg text-base-content">{acceptSuccessModal.workerInfo.name}</p>
-                  </div>
-                  <div className="badge badge-success badge-outline">Accepted</div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-base-300">
-                  <p className="text-base-content/70 text-xs uppercase tracking-wide mb-1">Job</p>
-                  <p className="text-sm text-base-content">
-                    {acceptSuccessModal.applicant.title || acceptSuccessModal.applicant.jobTitle || 'Job'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-base-300 bg-base-200 p-4 space-y-3">
-                <p className="text-base-content/70 text-xs uppercase tracking-wide">Contact</p>
-                {acceptSuccessModal.workerInfo.phone && acceptSuccessModal.workerInfo.phone !== 'No phone' && (
-                  <>
-                    <a
-                      href={`tel:${acceptSuccessModal.workerInfo.phone.replace(/\s/g, '')}`}
-                      className="btn btn-success w-full"
-                    >
-                      <i className="fas fa-phone mr-2"></i>Call Now
-                    </a>
-                    <p className="text-xs text-base-content/70 text-center">{acceptSuccessModal.workerInfo.phone}</p>
-                  </>
-                )}
-                {acceptSuccessModal.workerInfo.email && acceptSuccessModal.workerInfo.email !== 'No email' && (
-                  <a
-                    href={`mailto:${acceptSuccessModal.workerInfo.email}`}
-                    className="btn btn-outline w-full"
-                  >
-                    <i className="fas fa-envelope mr-2"></i>Send Email
-                  </a>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-2 pt-1">
-                <button className="btn btn-ghost" onClick={() => setAcceptSuccessModal(null)}>
-                  Close
-                </button>
-                <button className="btn btn-primary" onClick={() => setAcceptSuccessModal(null)}>
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => setAcceptSuccessModal(null)}></div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
