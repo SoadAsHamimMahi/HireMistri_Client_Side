@@ -17,7 +17,7 @@ const Banner = () => {
       {/* Decorative Glow Elements */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] z-0 pointer-events-none"></div>
 
-      <div className="relative z-20 flex flex-col lg:flex-row items-center justify-between h-full max-w-7xl mx-auto px-4 md:px-8">
+      <div className="relative z-20 flex flex-col lg:flex-row items-center justify-between h-full w-full px-4 md:px-8">
         
         {/* Image Section - Always Left */}
         <div className="w-full lg:w-1/2 flex justify-center lg:justify-start order-1 lg:order-none relative">

@@ -53,7 +53,7 @@ const PopularWarkers = () => {
 
             return {
               id: worker.uid,
-              name: worker.displayName || 'Worker',
+              name: [worker.firstName, worker.lastName].filter(Boolean).join(' ') || 'Worker',
               roles: roles,
               rating: worker.stats?.averageRating || 0,
               jobs: worker.stats?.workerCompletedJobs || 0,
@@ -85,7 +85,7 @@ const PopularWarkers = () => {
 
   if (loading) {
     return (
-      <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mt-20 w-full mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-3xl md:text-4xl font-extrabold mb-10 text-white tracking-tight">
           Most Popular Workers
         </h2>
@@ -99,7 +99,7 @@ const PopularWarkers = () => {
 
   if (error) {
     return (
-      <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mt-20 w-full mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-3xl md:text-4xl font-extrabold mb-10 text-white tracking-tight">
           Most Popular Workers
         </h2>
@@ -116,7 +116,7 @@ const PopularWarkers = () => {
 
   if (workers.length === 0) {
     return (
-      <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mt-20 w-full mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-3xl md:text-4xl font-extrabold mb-10 text-white tracking-tight">
           Most Popular Workers
         </h2>
@@ -129,7 +129,7 @@ const PopularWarkers = () => {
   }
 
   return (
-    <div className="mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+    <div className="mt-24 w-full mx-auto px-4 sm:px-6 lg:px-8 pb-10">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-extrabold mb-3 text-white tracking-tight">
           Most Popular Workers

@@ -193,7 +193,7 @@ export default function PostedJobs() {
         .then((res) => res.ok ? res.json() : null)
         .then((data) => {
           if (ignore || !data) return;
-          const name = data.displayName || [data.firstName, data.lastName].filter(Boolean).join(' ') || data.email || 'Worker';
+          const name = [data.firstName, data.lastName].filter(Boolean).join(' ') || data.email || 'Worker';
           setWorkerNames((prev) => ({ ...prev, [workerId]: name }));
         })
         .catch(() => {});
@@ -246,7 +246,7 @@ export default function PostedJobs() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111621] text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen text-slate-100 flex items-center justify-center">
         <span className="loading loading-spinner text-[#1754cf] loading-lg"></span>
       </div>
     );
@@ -254,7 +254,7 @@ export default function PostedJobs() {
 
   if (err) {
     return (
-      <div className="min-h-screen bg-[#111621] text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen text-slate-100 flex items-center justify-center">
         <div className="bg-[#1a2232] p-8 rounded-2xl border border-red-500/20 text-center">
           <i className="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Error Loading Jobs</h2>
@@ -265,7 +265,7 @@ export default function PostedJobs() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111621] text-slate-100 font-['Inter',sans-serif] pb-20">
+    <div className="min-h-screen text-slate-100 font-['Inter',sans-serif] pb-20">
       <style>{`
         .glass-panel {
           background: rgba(26, 34, 50, 0.7);
@@ -276,7 +276,7 @@ export default function PostedJobs() {
       `}</style>
       
       {/* Top Header logic is typically in a separate layout, but we'll adapt the main content block from Stitch */}
-      <main className="px-6 lg:px-20 py-8 max-w-[1400px] mx-auto w-full">
+      <main className="px-6 lg:px-20 py-8 w-full">
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>

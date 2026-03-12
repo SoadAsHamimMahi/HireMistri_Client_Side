@@ -88,7 +88,7 @@ export default function WorkerProfile() {
 
   const displayName = useMemo(() => {
     if (!profile) return 'Worker';
-    return profile.displayName || [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Worker';
+    return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Worker';
   }, [profile]);
 
   const skills = Array.isArray(profile?.skills) ? profile.skills : [];

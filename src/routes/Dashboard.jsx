@@ -161,7 +161,7 @@ export default function Dashboard() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#0b1121] text-slate-300 pb-16 font-sans">
+    <div className="min-h-screen text-slate-300 pb-16 font-sans">
       <PageContainer>
         <div className="pt-8 mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

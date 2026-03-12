@@ -442,7 +442,7 @@ export default function Messages({
         recipientId: recipientId,
         jobId: jobId || null,
         message: newMessage.trim(),
-        senderName: user.displayName || user.email || 'Client',
+        senderName: 'Client', // Name should be handled by backend/socket anyway
         recipientName: recipientName,
       };
 

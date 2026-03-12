@@ -11,6 +11,7 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const { user, logOut } = useContext(AuthContext); 
+  const [dbUser, setDbUser] = useState(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -47,11 +48,23 @@ export default function Navbar() {
     }
   };
 
-  // Poll for notifications
+  // Poll for notifications and user data
   useEffect(() => {
     if (!user?.uid) return;
 
     fetchNotificationCount();
+    
+    // Also fetch user profile for real name
+    const fetchDbUser = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/api/users/${user.uid}`);
+        setDbUser(response.data);
+      } catch (err) {
+        console.error('Failed to fetch user profile in Navbar:', err);
+      }
+    };
+    fetchDbUser();
+
     const interval = setInterval(fetchNotificationCount, 10000); // Poll every 10 seconds
     return () => clearInterval(interval);
   }, [user?.uid]);
@@ -102,6 +115,9 @@ export default function Navbar() {
               <Link to="/post-job" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Post Job
               </Link>
+              <Link to="/My-Posted-Jobs" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
+                My Posted Jobs
+              </Link>
               <Link to="/applications" className="text-slate-300 hover:text-white transition-colors font-semibold tracking-wide">
                 Applications
               </Link>
@@ -128,7 +144,9 @@ export default function Navbar() {
               <div className="dropdown dropdown-end relative">
                 <div tabIndex={0} role="button" className="flex items-center gap-3 pl-2 py-1 bg-transparent hover:bg-slate-800/50 rounded-full transition-all cursor-pointer border border-transparent hover:border-slate-700">
                   <div className="text-right hidden xl:block">
-                    <p className="font-bold text-sm text-white">{user?.displayName || user?.email?.split('@')[0] || 'My Account'}</p>
+                    <p className="font-bold text-sm text-white">
+                      {dbUser ? [dbUser.firstName, dbUser.lastName].filter(Boolean).join(' ') : (user?.displayName || user?.email?.split('@')[0] || 'My Account')}
+                    </p>
                     <p className="text-[10px] text-slate-400 uppercase tracking-widest leading-none">Client</p>
                   </div>
                   <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-700 shadow-sm relative">
@@ -141,10 +159,8 @@ export default function Navbar() {
                   <li className="px-4 py-3 border-b border-slate-700/50 mb-1">
                     <p className="font-bold text-white text-sm truncate">{user.email}</p>
                   </li>
-                  <li><Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-home w-4"></i> Dashboard</Link></li>
-                  <li><Link to="/post-job" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-plus-circle w-4"></i> Post a Job</Link></li>
-                  <li><Link to="/My-Posted-Jobs" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-list w-4"></i> My Posted Jobs</Link></li>
                   <li><Link to="/my-profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-user w-4"></i> Profile Settings</Link></li>
+                  <li><Link to="/support" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-blue-600/10 hover:text-blue-400 font-medium transition-colors"><i className="fas fa-headset w-4"></i> Support / Help Center</Link></li>
                   <div className="h-px bg-slate-700/50 my-1 mx-2"></div>
                   <li><button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition-colors"><i className="fas fa-sign-out-alt w-4"></i> Logout</button></li>
                 </ul>
@@ -215,7 +231,9 @@ export default function Navbar() {
                     <img src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || 'User')}&background=1754cf&color=fff`} alt="User" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <div className="font-bold text-white leading-snug">{user.displayName || 'Client'}</div>
+                    <div className="font-bold text-white leading-snug">
+                      {dbUser ? [dbUser.firstName, dbUser.lastName].filter(Boolean).join(' ') : (user.displayName || 'Client')}
+                    </div>
                     <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider">My Account</div>
                   </div>
                 </div>
@@ -244,6 +262,7 @@ export default function Navbar() {
                   <Link to="/applications" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-file-alt w-5 text-slate-400"></i> Applications</Link>
                   <Link to="/chats" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-comment shadow-sm w-5 text-slate-400"></i> Messages</Link>
                   <Link to="/my-profile" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-user-cog w-5 text-slate-400"></i> Profile Settings</Link>
+                  <Link to="/support" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"><i className="fas fa-headset w-5 text-slate-400"></i> Support / Help Center</Link>
                 </>
               )}
             </nav>

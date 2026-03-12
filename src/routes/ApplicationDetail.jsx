@@ -91,7 +91,7 @@ export default function ApplicationDetail() {
         .glass { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); backdrop-filter: blur(12px); }
       `}</style>
 
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="w-full px-6 py-10">
 
         {/* Back button */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-8 transition-colors group">

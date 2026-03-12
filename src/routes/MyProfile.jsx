@@ -1,121 +1,138 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../Authentication/AuthProvider';
-import { useTheme } from '../contexts/ThemeContext';
-import axios from 'axios';
-import PageContainer from '../components/layout/PageContainer';
+import React, { useState, useContext, useEffect } from "react";
+import { AuthContext } from "../Authentication/AuthProvider";
+import { useTheme } from "../contexts/ThemeContext";
+import axios from "axios";
+import PageContainer from "../components/layout/PageContainer";
+import { toast } from "react-hot-toast";
 
 export default function MyProfile() {
   const { user, sendVerificationEmail, reloadUser } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
 
-  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+  const base = (
+    import.meta.env.VITE_API_URL || "http://localhost:5000"
+  ).replace(/\/$/, "");
 
   const normalizeProfileImageUrl = (value) => {
-    if (!value || typeof value !== 'string') return '';
+    if (!value || typeof value !== "string") return "";
     const raw = value.trim();
-    if (!raw) return '';
+    if (!raw) return "";
     try {
       const parsed = new URL(raw);
-      if (parsed.pathname.startsWith('/uploads/')) {
+      if (parsed.pathname.startsWith("/uploads/")) {
         return `${base}${parsed.pathname}`;
       }
       return raw;
     } catch {
-      if (raw.startsWith('/uploads/')) return `${base}${raw}`;
+      if (raw.startsWith("/uploads/")) return `${base}${raw}`;
       return raw;
     }
   };
 
   // Client data from API
   const [clientData, setClientData] = useState({
-    firstName: '',
-    lastName: '',
-    displayName: '',
-    phone: '',
-    email: user?.email || '',
-    address1: '',
-    address2: '',
-    city: '',
-    country: '',
-    zip: '',
-    workExperience: '',
-    headline: '',
-    bio: '',
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: user?.email || "",
+    address1: "",
+    address2: "",
+    city: "",
+    country: "",
+    zip: "",
+    workExperience: "",
+    headline: "",
+    bio: "",
     skills: [],
-    profileCover: '',
-    createdAt: '',
-    updatedAt: '',
-    lastActiveAt: '',
+    profileCover: "",
+    createdAt: "",
+    updatedAt: "",
+    lastActiveAt: "",
     emailVerified: false,
     // Computed fields
     totalJobsPosted: 0,
     averageRating: 0,
     stats: null,
     // Client-specific fields
-    preferences: { categories: [], budgetMin: null, budgetMax: null, currency: 'BDT' }
+    preferences: {
+      categories: [],
+      budgetMin: null,
+      budgetMax: null,
+      currency: "BDT",
+    },
   });
 
   const [editForm, setEditForm] = useState(clientData);
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Fetch user profile data
   const fetchUserProfile = async () => {
     if (!user?.uid) return;
-    
+
     try {
       setLoading(true);
-      
+
       // First, sync the user to ensure they exist in the database
       await axios.post(`${base}/api/auth/sync`, {
         uid: user.uid,
         email: user.email,
-        role: 'client'
+        role: "client",
       });
 
       // Then fetch the user profile
       const response = await axios.get(`${base}/api/users/${user.uid}`);
       const userData = response.data;
-      
+
       // Update client data with API response
-      setClientData(prev => ({
+      setClientData((prev) => ({
         ...prev,
         ...userData,
         // Ensure profileCover is preserved if it exists and is valid
-        profileCover: (userData.profileCover && userData.profileCover.trim())
-          ? normalizeProfileImageUrl(userData.profileCover)
-          : (prev.profileCover || ''),
+        profileCover:
+          userData.profileCover && userData.profileCover.trim()
+            ? normalizeProfileImageUrl(userData.profileCover)
+            : prev.profileCover || "",
         // Ensure computed fields have defaults
         totalJobsPosted: userData.totalJobsPosted || 0,
         averageRating: userData.averageRating || 0,
         stats: userData.stats || null,
-        preferences: userData.preferences || { categories: [], budgetMin: null, budgetMax: null, currency: 'BDT' },
+        preferences: userData.preferences || {
+          categories: [],
+          budgetMin: null,
+          budgetMax: null,
+          currency: "BDT",
+        },
         emailVerified: userData.emailVerified || false,
         lastActiveAt: userData.lastActiveAt || null,
       }));
-      
+
       // Update edit form with the fetched data
-      setEditForm(prev => ({
+      setEditForm((prev) => ({
         ...prev,
         ...userData,
-        profileCover: (userData.profileCover && userData.profileCover.trim())
-          ? normalizeProfileImageUrl(userData.profileCover)
-          : (prev.profileCover || ''),
-        preferences: userData.preferences || { categories: [], budgetMin: null, budgetMax: null, currency: 'BDT' }
+        profileCover:
+          userData.profileCover && userData.profileCover.trim()
+            ? normalizeProfileImageUrl(userData.profileCover)
+            : prev.profileCover || "",
+        preferences: userData.preferences || {
+          categories: [],
+          budgetMin: null,
+          budgetMax: null,
+          currency: "BDT",
+        },
       }));
-      
-      
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+      console.error("Failed to fetch user profile:", error);
       // Keep default values if fetch fails
     } finally {
       setLoading(false);
@@ -125,22 +142,25 @@ export default function MyProfile() {
   // Update user profile
   const updateUserProfile = async (profileData) => {
     if (!user?.uid) return;
-    
+
     try {
       setSaving(true);
-      
-      const response = await axios.patch(`${base}/api/users/${user.uid}`, profileData);
+
+      const response = await axios.patch(
+        `${base}/api/users/${user.uid}`,
+        profileData,
+      );
       const updatedData = response.data;
-      
+
       // Update local state with the response
-      setClientData(prev => ({
+      setClientData((prev) => ({
         ...prev,
-        ...updatedData
+        ...updatedData,
       }));
-      
+
       return updatedData;
     } catch (error) {
-      console.error('Failed to update user profile:', error);
+      console.error("Failed to update user profile:", error);
       throw error;
     } finally {
       setSaving(false);
@@ -150,20 +170,23 @@ export default function MyProfile() {
   // Upload avatar
   const uploadAvatar = async (file) => {
     if (!user?.uid || !file) return;
-    
+
     try {
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append("avatar", file);
 
       // Do not force Content-Type for FormData; browser sets correct boundary.
-      const response = await axios.post(`${base}/api/users/${user.uid}/avatar`, formData);
+      const response = await axios.post(
+        `${base}/api/users/${user.uid}/avatar`,
+        formData,
+      );
 
       // Server returns absolute URL, use it directly
       const url = normalizeProfileImageUrl(response.data?.url);
-      if (!url) throw new Error('No URL returned from server');
+      if (!url) throw new Error("No URL returned from server");
       return url;
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
+      console.error("Failed to upload avatar:", error);
       throw error;
     }
   };
@@ -175,12 +198,12 @@ export default function MyProfile() {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswordForm(prev => ({ ...prev, [name]: value }));
+    setPasswordForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSaveProfile = async () => {
@@ -189,7 +212,6 @@ export default function MyProfile() {
       const updateData = {
         firstName: editForm.firstName,
         lastName: editForm.lastName,
-        displayName: editForm.displayName,
         phone: editForm.phone,
         email: editForm.email,
         workExperience: editForm.workExperience,
@@ -201,42 +223,60 @@ export default function MyProfile() {
         city: editForm.city,
         country: editForm.country,
         zip: editForm.zip,
-        preferences: editForm.preferences || { categories: [], budgetMin: null, budgetMax: null, currency: 'BDT' }
+        preferences: editForm.preferences || {
+          categories: [],
+          budgetMin: null,
+          budgetMax: null,
+          currency: "BDT",
+        },
       };
 
       await updateUserProfile(updateData);
-      alert('Profile updated successfully!');
-      setActiveTab('overview'); // Switch back to overview tab
+      toast.success("Profile updated successfully!");
+      setActiveTab("overview"); // Switch back to overview tab
     } catch (error) {
-      console.error('Failed to save profile:', error);
-      alert('Failed to update profile. Please try again.');
+      console.error("Failed to save profile:", error);
+      toast.error("Failed to update profile. Please try again.");
     }
   };
 
   const handlePasswordUpdate = () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('New passwords do not match!');
+      toast.error("New passwords do not match!");
       return;
     }
     // Here you would call API to update password
-    alert('Password updated successfully!');
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    toast.success("Password updated successfully!");
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
     setIsChangingPassword(false);
+  };
+
+  const handleShareProfile = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Profile link copied!");
+    } catch (err) {
+      toast.error("Failed to copy link");
+    }
   };
 
   const addSkill = (skill) => {
     if (skill.trim() && !editForm.skills.includes(skill.trim())) {
-      setEditForm(prev => ({
+      setEditForm((prev) => ({
         ...prev,
-        skills: [...prev.skills, skill.trim()]
+        skills: [...prev.skills, skill.trim()],
       }));
     }
   };
 
   const removeSkill = (skillToRemove) => {
-    setEditForm(prev => ({
+    setEditForm((prev) => ({
       ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
   };
 
@@ -244,10 +284,10 @@ export default function MyProfile() {
     try {
       setSendingVerification(true);
       await sendVerificationEmail();
-      alert('Verification email sent! Please check your inbox.');
+      alert("Verification email sent! Please check your inbox.");
     } catch (e) {
       console.error(e);
-      alert(e.message || 'Failed to send verification email');
+      alert(e.message || "Failed to send verification email");
     } finally {
       setSendingVerification(false);
     }
@@ -258,15 +298,19 @@ export default function MyProfile() {
       await reloadUser();
       if (user?.emailVerified) {
         // Sync to server
-        await axios.patch(`${base}/api/users/${user.uid}`, { emailVerified: true });
-        setClientData(prev => ({ ...prev, emailVerified: true }));
-        alert('Email verified!');
+        await axios.patch(`${base}/api/users/${user.uid}`, {
+          emailVerified: true,
+        });
+        setClientData((prev) => ({ ...prev, emailVerified: true }));
+        alert("Email verified!");
       } else {
-        alert('Email not verified yet. Please check your inbox and click the verification link.');
+        alert(
+          "Email not verified yet. Please check your inbox and click the verification link.",
+        );
       }
     } catch (e) {
       console.error(e);
-      alert('Failed to check verification status');
+      alert("Failed to check verification status");
     }
   };
 
@@ -276,201 +320,279 @@ export default function MyProfile() {
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      alert("File size must be less than 5MB");
       return;
     }
 
     try {
       setSaving(true);
       const url = await uploadAvatar(file);
-      
+
       // Update both states immediately with the new URL
-      setClientData(prev => ({ ...prev, profileCover: url }));
-      setEditForm(prev => ({ ...prev, profileCover: url }));
-      
+      setClientData((prev) => ({ ...prev, profileCover: url }));
+      setEditForm((prev) => ({ ...prev, profileCover: url }));
+
       // Refresh profile data without showing loading screen
       // Use a separate fetch that doesn't set loading state
       try {
         const response = await axios.get(`${base}/api/users/${user.uid}`);
         const userData = response.data;
-        const normalizedServerUrl = normalizeProfileImageUrl(userData.profileCover);
+        const normalizedServerUrl = normalizeProfileImageUrl(
+          userData.profileCover,
+        );
         // Only update profileCover if server has it, otherwise keep our uploaded URL
         if (normalizedServerUrl) {
-          setClientData(prev => ({ ...prev, ...userData, profileCover: normalizedServerUrl }));
-          setEditForm(prev => ({ ...prev, ...userData, profileCover: normalizedServerUrl }));
+          setClientData((prev) => ({
+            ...prev,
+            ...userData,
+            profileCover: normalizedServerUrl,
+          }));
+          setEditForm((prev) => ({
+            ...prev,
+            ...userData,
+            profileCover: normalizedServerUrl,
+          }));
         } else {
           // Server might not have it yet, keep our local URL
-          setClientData(prev => ({ ...prev, ...userData, profileCover: url }));
-          setEditForm(prev => ({ ...prev, ...userData, profileCover: url }));
+          setClientData((prev) => ({
+            ...prev,
+            ...userData,
+            profileCover: url,
+          }));
+          setEditForm((prev) => ({ ...prev, ...userData, profileCover: url }));
         }
       } catch (refreshError) {
-        console.warn('Failed to refresh profile after upload:', refreshError);
+        console.warn("Failed to refresh profile after upload:", refreshError);
         // Continue anyway - we already have the URL
       }
-      
-      alert('Avatar updated successfully!');
+
+      alert("Avatar updated successfully!");
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      alert('Failed to upload avatar. Please try again.');
+      console.error("Failed to upload avatar:", error);
+      alert("Failed to upload avatar. Please try again.");
     } finally {
-      e.target.value = '';
+      e.target.value = "";
       setSaving(false);
     }
   };
 
   const renderOverview = () => {
     const stats = clientData.stats || {};
-    const fullAddress = [clientData.address1, clientData.address2, clientData.city, clientData.country].filter(Boolean).join(', ');
-    const publicLocation = [clientData.city, clientData.country].filter(Boolean).join(', ') || '—';
+    const fullAddress = [
+      clientData.address1,
+      clientData.address2,
+      clientData.city,
+      clientData.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const publicLocation =
+      [clientData.city, clientData.country].filter(Boolean).join(", ") || "—";
 
     return (
-      <div className="space-y-6">
-        {/* Hiring Credibility */}
-        {stats && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-base-content">Hiring Credibility</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-                <div className="text-2xl font-bold text-primary">{clientData.totalJobsPosted || 0}</div>
-                <div className="text-sm text-muted">Jobs Posted</div>
-              </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-                <div className="text-2xl font-bold text-primary">{stats.clientJobsCompleted || 0}</div>
-                <div className="text-sm text-muted">Jobs Completed</div>
-              </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-                <div className="text-2xl font-bold text-primary">{stats.clientHireRate || 0}%</div>
-                <div className="text-sm text-muted">Hire Rate</div>
-              </div>
-              <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-                <div className="text-2xl font-bold text-primary">{stats.clientCancellationRate || 0}%</div>
-                <div className="text-sm text-muted">Cancellation Rate</div>
-              </div>
+      <div className="space-y-8">
+        {/* STATS ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Total Jobs */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                Total Jobs
+              </p>
+              <h4 className="text-2xl font-bold text-white">
+                {clientData.totalJobsPosted || 0}
+              </h4>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+              <i className="fas fa-briefcase"></i>
             </div>
           </div>
-        )}
 
-        {/* Account Transparency */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-base-content">Account Information</h3>
-          <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-            <div className="space-y-2">
-              {clientData.createdAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted">Member Since:</span>
-                  <span className="text-base-content font-medium">{new Date(clientData.createdAt).toLocaleDateString()}</span>
-                </div>
-              )}
-              {clientData.lastActiveAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted">Last Active:</span>
-                  <span className="text-base-content font-medium">{new Date(clientData.lastActiveAt).toLocaleDateString()}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span className="text-muted">Email Verified:</span>
-                <div className="flex items-center gap-2">
-                  <span className={`badge ${(user?.emailVerified || clientData.emailVerified) ? 'badge-success' : 'badge-warning'}`}>
-                    {(user?.emailVerified || clientData.emailVerified) ? 'Verified' : 'Not Verified'}
-                  </span>
-                  {!(user?.emailVerified || clientData.emailVerified) && (
-                    <button
-                      type="button"
-                      className="btn btn-xs btn-primary"
-                      onClick={handleSendVerificationEmail}
-                      disabled={sendingVerification}
-                    >
-                      {sendingVerification ? 'Sending...' : 'Verify'}
-                    </button>
-                  )}
-                </div>
-              </div>
-              {!(user?.emailVerified || clientData.emailVerified) && (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline w-full"
-                    onClick={handleCheckVerification}
-                  >
-                    Check Verification Status
-                  </button>
-                </div>
-              )}
+          {/* Completed Jobs */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                Completed
+              </p>
+              <h4 className="text-2xl font-bold text-white">
+                {stats.clientJobsCompleted || 0}
+              </h4>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
+              <i className="fas fa-check-circle"></i>
+            </div>
+          </div>
+
+          {/* Hire Rate */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                Hire Rate
+              </p>
+              <h4 className="text-2xl font-bold text-white">
+                {stats.clientHireRate || 0}%
+              </h4>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center text-blue-400">
+              <i className="fas fa-chart-line"></i>
+            </div>
+          </div>
+
+          {/* Cancellation Rate */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                Cancellations
+              </p>
+              <h4 className="text-2xl font-bold text-white">
+                {stats.clientCancellationRate || 0}%
+              </h4>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
+              <i className="fas fa-times-circle"></i>
             </div>
           </div>
         </div>
 
-        {/* Preferences */}
-        {clientData.preferences && (clientData.preferences.categories?.length > 0 || clientData.preferences.budgetMin || clientData.preferences.budgetMax) && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-base-content">Job Preferences</h3>
-            <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-              {clientData.preferences.categories?.length > 0 && (
-                <div className="mb-3">
-                  <span className="text-sm text-muted">Preferred Categories: </span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {clientData.preferences.categories.map((cat, i) => (
-                      <span key={i} className="badge badge-outline">{cat}</span>
-                    ))}
+        {/* DETAILS SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Saved Properties */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <i className="far fa-building text-blue-500"></i> Saved Properties
+            </h3>
+
+            <div className="space-y-3">
+              {/* Note: In a real app, this would map over an array of saved properties */}
+              <div
+                onClick={() => setActiveTab("edit")}
+                className="flex items-center justify-between p-4 bg-[#0b1121] rounded-lg border border-slate-800 hover:border-slate-600 cursor-pointer transition-colors group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+                    <i className="fas fa-home text-slate-400 text-xl"></i>
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
+                      Primary Address
+                    </h5>
+                    <p className="text-xs text-slate-400">{publicLocation}</p>
                   </div>
                 </div>
-              )}
-              {(clientData.preferences.budgetMin || clientData.preferences.budgetMax) && (
-                <div>
-                  <span className="text-sm text-muted">Budget Range: </span>
-                  <span className="text-base-content font-medium">
-                    {clientData.preferences.currency} {clientData.preferences.budgetMin || '0'} - {clientData.preferences.budgetMax || '∞'}
-                  </span>
+                <i className="fas fa-chevron-right text-slate-600 group-hover:text-blue-500"></i>
+              </div>
+
+              <div
+                onClick={() => setActiveTab("edit")}
+                className="flex items-center justify-between p-4 bg-[#0b1121] rounded-lg border border-slate-800 cursor-pointer opacity-50 hover:opacity-100 hover:border-slate-600 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-slate-800/50 flex items-center justify-center border border-dashed border-slate-600">
+                    <i className="fas fa-plus text-slate-500"></i>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-slate-300 border-b border-transparent inline-block">
+                      Add Property
+                    </h5>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* About / Bio */}
+          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <i className="far fa-user text-blue-500"></i> About
+            </h3>
+            <div className="p-4 bg-[#0b1121] rounded-lg border border-slate-800 min-h-[120px]">
+              {clientData.bio ? (
+                <p className="text-slate-300 leading-relaxed text-sm">
+                  {clientData.bio}
+                </p>
+              ) : (
+                <p className="italic text-slate-500 text-sm">
+                  This client hasn't written an about section yet.
+                </p>
               )}
             </div>
           </div>
-        )}
-
-        {/* About Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-base-content">About</h3>
-          <div className={`rounded-lg p-4 transition-colors duration-300 ${'bg-base-300'}`}>
-            {clientData.bio ? (
-              <p className="text-base-content opacity-80">{clientData.bio}</p>
-            ) : (
-              <p className="italic text-base-content opacity-60">
-                This client hasn't written an about section yet. Add a short intro in Edit Profile.
-              </p>
-            )}
-          </div>
         </div>
 
-        {/* Profile Details */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-base-content">Profile Details</h3>
-          <div className="space-y-3">
-            {[
-              { label: 'Full Name', value: `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || '—' },
-              { label: 'Phone', value: clientData.phone || '—' },
-              { label: 'Email', value: clientData.email || '—' },
-              { label: 'Location', value: publicLocation, note: 'Public view shows city/area only' },
-              { label: 'Full Address', value: fullAddress || '—', note: 'Private - only visible to you' },
-              { label: 'Work Experience', value: clientData.workExperience || '—' },
-              { label: 'Headline', value: clientData.headline || '—' },
-              { label: 'Skills', value: clientData.skills && clientData.skills.length > 0 ? clientData.skills.join(', ') : '—' },
-            ].map((item, index) => (
-              <div key={index} className={`flex justify-between items-center py-2 border-b last:border-b-0 ${'border-base-300'}`}>
-                <div className="flex-1">
-                  <span className="font-medium text-base-content opacity-80">{item.label}:</span>
-                  {item.note && <span className="text-xs text-base-content opacity-50 ml-2">({item.note})</span>}
+        {/* REVIEWS SECTION */}
+        <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
+          <div className="flex justify-between items-end mb-6 border-b border-slate-800 pb-4">
+            <h3 className="text-lg font-bold text-white">What Workers Say</h3>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="flex items-center gap-1 justify-end">
+                  <span className="text-2xl font-bold text-white">
+                    {clientData.averageRating || "0.0"}
+                  </span>
+                  <i className="fas fa-star text-yellow-500 text-lg"></i>
                 </div>
-                <span className="text-base-content">{item.value}</span>
+                <span className="text-xs text-slate-400">
+                  Based on past jobs
+                </span>
               </div>
-            ))}
+            </div>
           </div>
+
+          {/* Reviews List */}
+          {clientData.reviews && clientData.reviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {clientData.reviews.map((review, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 bg-[#0b1121] rounded-xl border border-slate-800 relative group hover:border-slate-700 transition-colors"
+                >
+                  <i className="fas fa-quote-right absolute top-4 right-4 text-slate-800 text-4xl group-hover:text-slate-700 transition-colors"></i>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+                      <i className="fas fa-user text-slate-400"></i>
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-sm text-slate-200">
+                        {review.authorName || "Worker"}
+                      </h5>
+                      <div className="flex text-yellow-500 text-[10px]">
+                        {[...Array(5)].map((_, i) => (
+                          <i
+                            key={i}
+                            className={
+                              i < review.rating ? "fas fa-star" : "far fa-star"
+                            }
+                          ></i>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-400 italic">
+                    "{review.comment}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 px-4 bg-[#0b1121] rounded-xl border border-slate-800 text-center relative overflow-hidden">
+              <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                <i className="far fa-comment-alt text-3xl text-slate-500"></i>
+              </div>
+              <h4 className="text-white font-bold mb-1">No Reviews Yet</h4>
+              <p className="text-slate-400 text-sm max-w-sm">
+                This client hasn't received any reviews from workers yet. Check
+                back later.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -478,12 +600,13 @@ export default function MyProfile() {
 
   const renderEditProfile = () => (
     <div className="space-y-6">
-      {/* Account Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-base-content">Account</h3>
+      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6 mt-6">
+        <h3 className="text-lg font-bold text-white mb-4">Account</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">First Name</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              First Name
+            </label>
             <input
               type="text"
               name="firstName"
@@ -493,7 +616,9 @@ export default function MyProfile() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Last Name</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Last Name
+            </label>
             <input
               type="text"
               name="lastName"
@@ -502,233 +627,104 @@ export default function MyProfile() {
               className="input input-bordered w-full"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Display Name</label>
-            <input
-              type="text"
-              name="displayName"
-              value={editForm.displayName}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Work Experience (years)</label>
-            <input
-              type="text"
-              name="workExperience"
-              value={editForm.workExperience}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Phone Number</label>
-            <input
-              type="tel"
-              name="phone"
-              value={editForm.phone}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={editForm.email}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
-          </div>
         </div>
       </div>
-
       {/* Headline */}
-      <div>
-        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Headline (optional)</label>
-        <input
-          type="text"
-          name="headline"
-          value={editForm.headline}
-          onChange={handleEditChange}
-          placeholder="e.g., Professional Client | 5+ years"
-          className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
+      <div className="grid grid-cols-1 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-base-content opacity-80 mb-1">
+            Headline (optional)
+          </label>
+          <input
+            type="text"
+            name="headline"
+            value={editForm.headline}
+            onChange={handleEditChange}
+            placeholder="e.g., Property Manager"
+            className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+        </div>
       </div>
 
       {/* Bio */}
       <div>
-        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Bio (optional)</label>
+        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">
+          About Me (Bio)
+        </label>
         <textarea
           name="bio"
           value={editForm.bio}
           onChange={handleEditChange}
           rows={4}
-          placeholder="Tell workers about your experience and specialties..."
+          placeholder="Write a little about yourself or the types of properties you manage..."
           className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
-      {/* Skills */}
-      <div>
-        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">Skills (optional)</label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            placeholder="e.g., Project Management, Quality Control"
-            className="flex-1 px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                addSkill(e.target.value);
-                e.target.value = '';
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={(e) => {
-              const input = e.target.previousElementSibling;
-              addSkill(input.value);
-              input.value = '';
-            }}
-            className="btn btn-primary"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {editForm.skills.map((skill, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-base-200 text-base-content rounded-full text-sm"
-            >
-              {skill}
-              <button
-                onClick={() => removeSkill(skill)}
-                className="text-base-content opacity-60 hover:text-error"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Preferences */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-base-content">Job Preferences</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2 text-base-content opacity-80">Preferred Job Categories</label>
-            <div className="flex flex-wrap gap-2">
-              {['Plumber', 'Electrician', 'Carpenter', 'Painter', 'Mechanic', 'AC Repair', 'Appliance Repair', 'Mason', 'Welder', 'Other'].map(cat => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => {
-                    const cats = editForm.preferences?.categories || [];
-                    const newCats = cats.includes(cat)
-                      ? cats.filter(c => c !== cat)
-                      : [...cats, cat];
-                    setEditForm(prev => ({
-                      ...prev,
-                      preferences: { ...prev.preferences, categories: newCats }
-                    }));
-                  }}
-                  className={`btn btn-sm ${(editForm.preferences?.categories || []).includes(cat) ? 'btn-primary' : 'btn-outline'}`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Minimum Budget ({editForm.preferences?.currency || 'BDT'})</label>
-              <input
-                type="number"
-                value={editForm.preferences?.budgetMin || ''}
-                onChange={(e) => setEditForm(prev => ({
-                  ...prev,
-                  preferences: { ...prev.preferences, budgetMin: e.target.value ? Number(e.target.value) : null }
-                }))}
-                placeholder="e.g., 500"
-                className="input input-bordered w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Maximum Budget ({editForm.preferences?.currency || 'BDT'})</label>
-              <input
-                type="number"
-                value={editForm.preferences?.budgetMax || ''}
-                onChange={(e) => setEditForm(prev => ({
-                  ...prev,
-                  preferences: { ...prev.preferences, budgetMax: e.target.value ? Number(e.target.value) : null }
-                }))}
-                placeholder="e.g., 5000"
-                className="input input-bordered w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Address */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-base-content">Address</h3>
-        <p className="text-sm text-muted mb-3">
+      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6">
+        <h3 className="text-lg font-bold text-white mb-4">Address</h3>
+        <p className="text-sm text-slate-400 mb-3">
           <i className="fas fa-info-circle mr-1"></i>
-          Public profiles show only city/area. Full address is private and only shared after booking.
+          Public profiles show only city/area. Full address is private and only
+          shared after booking.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Address Line 1</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Address Line 1
+            </label>
             <input
               type="text"
               name="address1"
-              value={editForm.address1 || ''}
+              value={editForm.address1 || ""}
               onChange={handleEditChange}
               className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Address Line 2</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Address Line 2
+            </label>
             <input
               type="text"
               name="address2"
-              value={editForm.address2 || ''}
+              value={editForm.address2 || ""}
               onChange={handleEditChange}
               className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">City</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              City
+            </label>
             <input
               type="text"
               name="city"
-              value={editForm.city || ''}
+              value={editForm.city || ""}
               onChange={handleEditChange}
               className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Country</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Country
+            </label>
             <input
               type="text"
               name="country"
-              value={editForm.country || ''}
+              value={editForm.country || ""}
               onChange={handleEditChange}
               className="input input-bordered w-full"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">ZIP Code</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              ZIP Code
+            </label>
             <input
               type="text"
               name="zip"
-              value={editForm.zip || ''}
+              value={editForm.zip || ""}
               onChange={handleEditChange}
               className="input input-bordered w-full"
             />
@@ -738,10 +734,7 @@ export default function MyProfile() {
 
       {/* Save Button */}
       <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setIsEditing(false)}
-          className="btn btn-ghost"
-        >
+        <button onClick={() => setIsEditing(false)} className="btn btn-ghost">
           Cancel
         </button>
         <button
@@ -750,7 +743,7 @@ export default function MyProfile() {
           className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {saving && <i className="fas fa-spinner fa-spin"></i>}
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
     </div>
@@ -758,11 +751,13 @@ export default function MyProfile() {
 
   const renderChangePassword = () => (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-base-content">Change Password</h3>
+      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6">
+        <h3 className="text-lg font-bold text-white mb-4">Change Password</h3>
         <div className="space-y-4 max-w-md">
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Current Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Current Password
+            </label>
             <input
               type="password"
               name="currentPassword"
@@ -772,7 +767,9 @@ export default function MyProfile() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">New Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              New Password
+            </label>
             <input
               type="password"
               name="newPassword"
@@ -782,7 +779,9 @@ export default function MyProfile() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">Confirm New Password</label>
+            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
+              Confirm New Password
+            </label>
             <input
               type="password"
               name="confirmPassword"
@@ -795,10 +794,7 @@ export default function MyProfile() {
       </div>
 
       <div className="flex justify-end">
-        <button
-          onClick={handlePasswordUpdate}
-          className="btn btn-primary"
-        >
+        <button onClick={handlePasswordUpdate} className="btn btn-primary">
           Update Password
         </button>
       </div>
@@ -818,190 +814,180 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="min-h-screen transition-colors duration-300 page-bg">
-      {/* Header */}
-      <div className={`shadow-sm border-b transition-colors duration-300 ${'bg-base-200 border-base-300'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-base-content">My Profile</h1>
-            <p className="mt-2 text-muted">
-              Manage your professional information and showcase your skills to potential workers.
-            </p>
+    <>
+      {/* Background container to match Stitch dark blue UI */}
+      <div className="min-h-screen pb-12">
+        {/* Header - Transparent/Minimal */}
+        <div className="pt-8 pb-4">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+              Client Hub
+            </h1>
+          </div>
+        </div>
+
+        <div className="w-full px-4 sm:px-6 lg:px-8 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+            {/* Left Sidebar - Profile Card (Stitch Inspired) */}
+            <div className="lg:col-span-1">
+              <div className="bg-[#121a2f] border border-slate-700/50 rounded-2xl p-6 sticky top-24 shadow-xl flex flex-col items-center">
+                {/* Profile Picture & Online Dot */}
+                <div className="relative mb-5 group pt-4">
+                  <div className="w-28 h-28 rounded-full rounded-tl-none rounded-tr-3xl overflow-hidden border-4 border-[#0b1121] shadow-lg relative bg-slate-800">
+                    <img
+                      src={
+                        clientData.profileCover &&
+                        clientData.profileCover.trim()
+                          ? clientData.profileCover
+                          : "https://i.pravatar.cc/150?img=3"
+                      }
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        if (
+                          e.target.src !== "https://i.pravatar.cc/150?img=3"
+                        ) {
+                          e.target.src = "https://i.pravatar.cc/150?img=3";
+                        }
+                      }}
+                    />
+                    {/* Hover Upload Overlay */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={saving}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      />
+                      <i className="fas fa-camera text-white text-xl"></i>
+                    </div>
+                  </div>
+                  {/* Status Dot */}
+                  <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 border-4 border-[#121a2f] rounded-full shadow-md z-10"></div>
+                  {saving && (
+                    <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg z-20 animate-pulse">
+                      <i className="fas fa-spinner fa-spin text-white text-xs"></i>
+                    </div>
+                  )}
+                </div>
+
+                {/* Name & Role */}
+                <h2 className="text-2xl font-bold text-white text-center tracking-tight leading-tight">
+                  {`${clientData.firstName || ""} ${clientData.lastName || ""}`.trim() ||
+                    "Client Profile"}
+                </h2>
+                <p className="text-blue-500 font-semibold text-sm mt-1 uppercase tracking-wider mb-2">
+                  Client Profile
+                </p>
+                <p className="text-slate-500 text-xs mb-6">
+                  {clientData.createdAt
+                    ? `Member since ${new Date(clientData.createdAt).toLocaleDateString("default", { month: "short", year: "numeric" })}`
+                    : ""}
+                </p>
+
+                {/* Actions */}
+                <div className="w-full space-y-3 mb-8">
+                  <button
+                    onClick={() => setActiveTab("edit")}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                  >
+                    <i className="fas fa-pen text-sm"></i> Edit Profile
+                  </button>
+                  <button
+                    onClick={handleShareProfile}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-700"
+                  >
+                    <i className="fas fa-share-alt text-sm"></i> Share Profile
+                  </button>
+                </div>
+
+                {/* Verification Badges */}
+                <div className="w-full bg-[#0b1121] rounded-xl p-4 border border-slate-800">
+                  <h4 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 text-center">
+                    Verification Status
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Email Status */}
+                    <div
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold ${user?.emailVerified || clientData.emailVerified ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 cursor-pointer hover:bg-slate-700"}`}
+                      onClick={
+                        !(user?.emailVerified || clientData.emailVerified)
+                          ? handleSendVerificationEmail
+                          : undefined
+                      }
+                    >
+                      <i
+                        className={`fas ${user?.emailVerified || clientData.emailVerified ? "fa-check-circle" : "fa-envelope"}`}
+                      ></i>{" "}
+                      Email
+                    </div>
+
+                    {/* Phone Status - Mock */}
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      <i className="fas fa-check-circle"></i> Phone
+                    </div>
+
+                    {/* Payment Status - Mock */}
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-500 border border-slate-700">
+                      <i className="fas fa-minus-circle"></i> Payment
+                    </div>
+
+                    {/* ID Status - Mock */}
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      <i className="fas fa-id-card"></i> ID
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel - Main Content Areas */}
+            <div className="lg:col-span-1 border border-slate-800 rounded-2xl bg-[#0b1121]/50 overflow-hidden">
+              {/* Minimal horizontal nav */}
+              <div className="flex border-b border-slate-800 bg-[#121a2f]">
+                <button
+                  onClick={() => setActiveTab("overview")}
+                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "overview" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
+                >
+                  {" "}
+                  Overview{" "}
+                </button>
+                <button
+                  onClick={() => setActiveTab("edit")}
+                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "edit" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
+                >
+                  {" "}
+                  Update Details{" "}
+                </button>
+                <button
+                  onClick={() => setActiveTab("password")}
+                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "password" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
+                >
+                  {" "}
+                  Security{" "}
+                </button>
+              </div>
+
+              {/* Rendering active section */}
+              <div className="p-6">
+                {activeTab === "overview" && renderOverview()}
+                {/* Provide basic styling wrapper so the generated edit forms fit in */}
+                {activeTab === "edit" && (
+                  <div className="p-4 bg-[#121a2f] border border-slate-800 rounded-xl">
+                    {renderEditProfile()}
+                  </div>
+                )}
+                {activeTab === "password" && (
+                  <div className="p-4 bg-[#121a2f] border border-slate-800 rounded-xl">
+                    {renderChangePassword()}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <PageContainer>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Panel - Profile Summary */}
-          <div className="lg:col-span-1">
-            <div className={`rounded-xl shadow-sm p-6 sticky top-8 transition-colors duration-300 ${'bg-base-200'}`}>
-              <div className="text-center">
-                {/* Profile Picture */}
-                <div className="relative inline-block mb-4">
-                  <img
-                    src={(clientData.profileCover && clientData.profileCover.trim()) ? clientData.profileCover : "https://i.pravatar.cc/150?img=3"}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-base-300"
-                    onError={(e) => {
-                      console.error('Failed to load profile image:', clientData.profileCover);
-                      // Only set fallback if it's not already the fallback
-                      if (e.target.src !== "https://i.pravatar.cc/150?img=3") {
-                        e.target.src = "https://i.pravatar.cc/150?img=3";
-                      }
-                    }}
-                    onLoad={() => {
-                      console.log('Profile image loaded successfully:', clientData.profileCover);
-                    }}
-                  />
-                  {saving && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center z-10">
-                      <i className="fas fa-spinner fa-spin text-white text-xl"></i>
-                    </div>
-                  )}
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                    <i className="fas fa-check text-white text-sm"></i>
-                  </div>
-                  {/* Upload Button */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer group">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      disabled={saving}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                    />
-                    <i className="fas fa-camera text-white text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
-                  </div>
-                </div>
-
-                {/* Name and Phone */}
-                <h2 className="text-xl font-bold mb-1 text-base-content">
-                  {clientData.displayName || `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || 'Client'}
-                </h2>
-                <p className="mb-6 text-muted">{clientData.phone || 'No phone number'}</p>
-
-                {/* Trust Badges */}
-                <div className="flex flex-wrap gap-2 justify-center mb-4">
-                  {user?.emailVerified || clientData.emailVerified ? (
-                    <span className="badge badge-success gap-1">
-                      <i className="fas fa-check-circle"></i>Email Verified
-                    </span>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="badge badge-warning gap-1">
-                        <i className="fas fa-exclamation-triangle"></i>Email Not Verified
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-primary"
-                        onClick={handleSendVerificationEmail}
-                        disabled={sendingVerification}
-                        title="Send verification email"
-                      >
-                        {sendingVerification ? (
-                          <>
-                            <i className="fas fa-spinner fa-spin"></i> Sending...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fas fa-envelope"></i> Verify
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                  {clientData.createdAt && (
-                    <span className="badge badge-outline gap-1 text-xs">
-                      <i className="fas fa-calendar"></i>Member since {new Date(clientData.createdAt).getFullYear()}
-                    </span>
-                  )}
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
-                    <p className="text-2xl font-bold text-primary">{clientData.averageRating || '0.0'}</p>
-                    <p className="text-sm text-muted">Rating</p>
-                  </div>
-                  <div className="rounded-lg p-3 transition-colors duration-300 bg-base-200">
-                    <p className="text-2xl font-bold text-base-content">{clientData.totalJobsPosted || 0}</p>
-                    <p className="text-sm text-muted">Jobs Posted</p>
-                  </div>
-                  {clientData.stats && (
-                    <>
-                      {clientData.stats.clientJobsCompleted !== undefined && (
-                        <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
-                          <p className="text-2xl font-bold text-primary">{clientData.stats.clientJobsCompleted || 0}</p>
-                          <p className="text-sm text-muted">Completed</p>
-                        </div>
-                      )}
-                      {clientData.stats.clientHireRate !== undefined && (
-                        <div className={`rounded-lg p-3 transition-colors duration-300 ${'bg-base-300'}`}>
-                          <p className="text-2xl font-bold text-primary">{clientData.stats.clientHireRate || 0}%</p>
-                          <p className="text-sm text-muted">Hire Rate</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel - Profile Management */}
-          <div className="lg:col-span-2">
-            <div className={`rounded-xl shadow-sm transition-colors duration-300 ${'bg-base-200'}`}>
-              {/* Navigation Tabs */}
-              <div className={`border-b ${'border-base-300'}`}>
-                <div className="flex">
-                  <button
-                    onClick={() => setActiveTab('overview')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === 'overview'
-                        ? `border-primary text-primary bg-primary/20`
-                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
-                    }`}
-                  >
-                    <i className="fas fa-eye"></i>
-                    Overview
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('edit')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === 'edit'
-                        ? `border-primary text-primary bg-primary/20`
-                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
-                    }`}
-                  >
-                    <i className="fas fa-edit"></i>
-                    Edit Profile
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('password')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === 'password'
-                        ? `border-primary text-primary bg-primary/20`
-                        : `border-transparent text-base-content opacity-60 hover:opacity-80`
-                    }`}
-                  >
-                    <i className="fas fa-key"></i>
-                    Change Password
-                  </button>
-                </div>
-              </div>
-
-              {/* Tab Content */}
-              <div className="p-6">
-                {activeTab === 'overview' && renderOverview()}
-                {activeTab === 'edit' && renderEditProfile()}
-                {activeTab === 'password' && renderChangePassword()}
-              </div>
-            </div>
-          </div>
-        </div>
-      </PageContainer>
-    </div>
+    </>
   );
 }

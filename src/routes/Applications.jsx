@@ -80,8 +80,7 @@ export default function Applications() {
     const workerData = workerDetails[applicant.workerId];
     const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
     return {
-      name: workerData?.displayName ||
-        workerData?.name ||
+      name: workerData?.name ||
         [workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ') ||
         applicant.workerName ||
         'Unknown Worker',
@@ -243,7 +242,7 @@ export default function Applications() {
           fetchWorkerContact(applicant.workerId)
         ]);
         const workerInfo = {
-          name: data?.displayName || [data?.firstName, data?.lastName].filter(Boolean).join(' ') || applicant.workerName || 'Unknown Worker',
+          name: data?.name || [data?.firstName, data?.lastName].filter(Boolean).join(' ') || applicant.workerName || 'Unknown Worker',
           email: contact?.email || applicant.workerEmail || '',
           phone: contact?.phone || applicant.workerPhone || ''
         };
@@ -281,7 +280,7 @@ export default function Applications() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b1121] text-slate-300 transition-colors duration-300 font-sans">
+      <div className="min-h-screen text-slate-300 transition-colors duration-300 font-sans">
         <PageContainer>
           <div className="text-center py-20">
             <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
@@ -295,7 +294,7 @@ export default function Applications() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0b1121] text-slate-300 transition-colors duration-300 font-sans">
+      <div className="min-h-screen text-slate-300 transition-colors duration-300 font-sans">
         <PageContainer>
           <div className="text-center py-20 bg-[#121a2f] border border-red-500/20 rounded-3xl shadow-xl mt-8">
             <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -310,7 +309,7 @@ export default function Applications() {
   }
 
   return (
-    <div className="bg-[#111621] text-slate-100 min-h-screen font-sans">
+    <div className="text-slate-100 min-h-screen font-sans">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <div className="w-full px-6 sm:px-8 lg:px-14">
           <div className="py-10">

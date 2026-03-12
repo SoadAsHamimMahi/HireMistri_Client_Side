@@ -92,7 +92,7 @@ export default function SupportInbox() {
   };
 
   return (
-    <div className="min-h-screen page-bg">
+    <div className="min-h-screen">
       <div className="flex h-screen">
         <div className="flex flex-col w-full md:w-80 lg:w-96 border-r border-base-300 bg-base-200">
           <div className="p-4 border-b border-base-300 bg-base-100">
