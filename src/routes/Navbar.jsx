@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Authentication/AuthProvider';
 import { useTheme } from '../contexts/ThemeContext';
@@ -223,7 +224,7 @@ export default function Navbar() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsMenuOpen(false)}
           />
-          <div className="relative w-[80%] max-w-sm h-full bg-[#121a2f] border-l border-slate-800 p-6 flex flex-col shadow-2xl overflow-y-auto animate-slideInRight">
+          <div className="relative w-[80%] h-full bg-[#121a2f] border-l border-slate-800 p-6 flex flex-col shadow-2xl overflow-y-auto animate-slideInRight">
             <div className="flex items-center justify-between mb-8">
               {user ? (
                 <div className="flex items-center gap-3">
@@ -278,16 +279,10 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Notifications Modal Wrapper */}
-      {showNotifications && (
-        <div className="fixed inset-0 z-[120] flex justify-end">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowNotifications(false)}></div>
-          <div className="relative w-full max-w-sm h-full bg-[#121a2f] border-l border-slate-800 shadow-2xl animate-slideInRight">
-             <div className="h-full overflow-y-auto">
-               <Notifications onClose={() => { setShowNotifications(false); fetchNotificationCount(); }} />
-             </div>
-          </div>
-        </div>
+      {/* Notifications Drawer */}
+      {showNotifications && createPortal(
+        <Notifications onClose={() => { setShowNotifications(false); fetchNotificationCount(); }} />,
+        document.body
       )}
 
       {/* Categories Bar */}

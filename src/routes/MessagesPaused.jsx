@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function MessagesPaused() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="card bg-base-200 shadow-lg border border-base-300 max-w-md w-full">
+      <div className="card bg-base-200 shadow-lg border border-base-300 w-full">
         <div className="card-body text-center">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
             <i className="fas fa-phone-alt text-2xl text-primary"></i>

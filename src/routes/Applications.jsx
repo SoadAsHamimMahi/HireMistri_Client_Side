@@ -80,8 +80,9 @@ export default function Applications() {
     const workerData = workerDetails[applicant.workerId];
     const isAccepted = (applicant.status || '').toLowerCase() === 'accepted';
     return {
-      name: workerData?.name ||
-        [workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ') ||
+      name: ([workerData?.firstName, workerData?.lastName].filter(Boolean).join(' ').trim()) ||
+        workerData?.displayName ||
+        workerData?.name ||
         applicant.workerName ||
         'Unknown Worker',
       email: isAccepted ? (applicant.workerEmail || workerData?.email || '') : '',
@@ -301,7 +302,7 @@ export default function Applications() {
               <i className="fas fa-exclamation-triangle text-4xl text-red-500 outline-none"></i>
             </div>
             <h2 className="text-3xl font-extrabold text-white mb-3">Failed to load applications</h2>
-            <p className="text-lg text-slate-400 font-medium max-w-sm mx-auto">{error}</p>
+            <p className="text-lg text-slate-400 font-medium mx-auto">{error}</p>
           </div>
         </PageContainer>
       </div>
@@ -384,7 +385,7 @@ export default function Applications() {
                     <i className="fas fa-inbox text-4xl text-slate-400"></i>
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">No applications found</h3>
-                  <p className="text-slate-500 font-medium max-w-md mx-auto">
+                  <p className="text-slate-500 font-medium mx-auto">
                     {applications.length === 0
                       ? 'No applications have been submitted for this job yet.'
                       : "We couldn't find any applications matching your search or filters."}
@@ -570,7 +571,7 @@ export default function Applications() {
         {acceptSuccessModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setAcceptSuccessModal(null)}></div>
-            <div className="bg-[#1a2232] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl relative z-10 overflow-hidden transform transition-all">
+            <div className="bg-[#1a2232] border border-white/10 rounded-3xl w-full shadow-2xl relative z-10 overflow-hidden transform transition-all">
               <div className="px-8 pt-10 pb-6 text-center border-b border-white/5 relative">
                 <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5 text-green-500">
                   <i className="fas fa-check-circle text-5xl"></i>

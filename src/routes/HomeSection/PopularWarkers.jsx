@@ -103,7 +103,7 @@ const PopularWarkers = () => {
         <h2 className="text-center text-3xl md:text-4xl font-extrabold mb-10 text-white tracking-tight">
           Most Popular Workers
         </h2>
-        <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl flex items-center justify-center gap-4 max-w-2xl mx-auto">
+        <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl flex items-center justify-center gap-4 mx-auto">
           <i className="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
           <div>
             <h3 className="font-bold text-white mb-1">Error Loading Workers</h3>
@@ -120,7 +120,7 @@ const PopularWarkers = () => {
         <h2 className="text-center text-3xl md:text-4xl font-extrabold mb-10 text-white tracking-tight">
           Most Popular Workers
         </h2>
-        <div className="text-center py-20 bg-[#121a2f] border border-slate-800 rounded-2xl max-w-4xl mx-auto">
+        <div className="text-center py-20 bg-[#121a2f] border border-slate-800 rounded-2xl mx-auto">
           <i className="fas fa-users text-7xl text-slate-600 mb-6 drop-shadow-lg"></i>
           <p className="text-slate-400 font-medium text-lg">No popular workers found at the moment.</p>
         </div>
@@ -214,7 +214,7 @@ const PopularWarkers = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <i className="fas fa-map-marker-alt text-slate-400"></i>
-                    <span className="truncate max-w-[100px]">{worker.location}</span>
+                    <span className="truncate ">{worker.location}</span>
                   </div>
                 </div>
               </div>

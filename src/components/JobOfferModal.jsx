@@ -145,7 +145,7 @@ export default function JobOfferModal({ workerId, workerName, workerCategories =
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-lg">
+      <div className="modal-box w-full">
         <h3 className="font-bold text-lg mb-2">Send Job Offer to {workerName || 'Worker'}</h3>
         <p className="text-sm text-muted mb-4">Only this worker will see this offer. They can accept or propose a different budget.</p>
         <form onSubmit={handleSubmit} className="space-y-4">

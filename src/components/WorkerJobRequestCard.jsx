@@ -14,10 +14,10 @@ export default function WorkerJobRequestCard({
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: 'badge-warning',
-      accepted: 'badge-success',
-      rejected: 'badge-error',
-      expired: 'badge-ghost'
+      pending: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+      accepted: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+      rejected: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+      expired: 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
     };
     return badges[status] || 'badge-ghost';
   };
@@ -71,69 +71,69 @@ export default function WorkerJobRequestCard({
   };
 
   return (
-    <div className="bg-base-200 p-4 rounded-lg border border-base-300 space-y-3">
+    <div className="glass border border-white/10 p-5 rounded-2xl space-y-4 shadow-lg backdrop-blur-xl">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-bold text-lg text-base-content">{request.title}</h3>
-            <span className={`badge ${getStatusBadge(request.status)}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <h3 className="font-bold text-xl text-white tracking-tight">{request.title}</h3>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(request.status)}`}>
               {request.status || 'pending'}
             </span>
-            <span className="badge badge-info badge-sm">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
               <i className="fas fa-user-tie mr-1"></i>
               Worker Request
             </span>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 text-sm text-base-content/70 mb-2">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 mb-4 font-medium">
             {request.category && (
-              <span className="badge badge-outline">
-                <i className="fas fa-folder mr-1"></i>
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                <i className="fas fa-folder text-blue-400/70"></i>
                 {request.category}
               </span>
             )}
             {request.proposedPrice && (
-              <span>
-                <i className="fas fa-money-bill-wave mr-1"></i>
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                <i className="fas fa-money-bill-wave text-emerald-400/70"></i>
                 {request.proposedPrice} {request.currency || 'BDT'}
               </span>
             )}
             {request.location && (
-              <span>
-                <i className="fas fa-map-marker-alt mr-1"></i>
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                <i className="fas fa-map-marker-alt text-rose-400/70"></i>
                 {request.location}
               </span>
             )}
             {request.createdAt && (
-              <span>
-                <i className="fas fa-calendar mr-1"></i>
+              <span className="flex items-center gap-1.5">
+                <i className="far fa-calendar opacity-50"></i>
                 {formatDate(request.createdAt)}
               </span>
             )}
           </div>
 
           {request.description && (
-            <p className="text-sm text-base-content/80 line-clamp-3">
-              {request.description}
-            </p>
+            <div className="text-[13.5px] text-white/70 bg-white/5 p-4 rounded-xl border border-white/10 leading-relaxed italic border-l-4 border-l-blue-500/50">
+              <p className="line-clamp-3">"{request.description}"</p>
+            </div>
           )}
         </div>
       </div>
 
       {/* Action buttons for client */}
       {userRole === 'client' && request.status === 'pending' && (
-        <div className="flex gap-2 pt-2 border-t border-base-300">
+        <div className="flex gap-3 pt-2">
           <button
             onClick={handleAccept}
-            className="btn btn-sm btn-success flex-1"
+            className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold flex-1 rounded-xl shadow-lg shadow-emerald-600/10 active:scale-95 transition-all"
           >
             Accept Request
           </button>
           <button
             onClick={handleReject}
-            className="btn btn-sm btn-error flex-1"
+            className="btn btn-sm bg-rose-600/10 hover:bg-rose-600/20 border border-rose-600/20 text-rose-400 font-bold flex-1 rounded-xl active:scale-95 transition-all"
           >
-            Reject
+            Decline
           </button>
         </div>
       )}

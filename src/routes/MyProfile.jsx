@@ -385,211 +385,141 @@ export default function MyProfile() {
 
   const renderOverview = () => {
     const stats = clientData.stats || {};
-    const fullAddress = [
-      clientData.address1,
-      clientData.address2,
-      clientData.city,
-      clientData.country,
-    ]
-      .filter(Boolean)
-      .join(", ");
-    const publicLocation =
-      [clientData.city, clientData.country].filter(Boolean).join(", ") || "—";
+    const publicLocation = [clientData.city, clientData.country].filter(Boolean).join(", ") || "—";
 
     return (
-      <div className="space-y-8">
-        {/* STATS ROW */}
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* ✨ PRIME STATS GRID */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total Jobs */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
-                Total Jobs
-              </p>
-              <h4 className="text-2xl font-bold text-white">
-                {clientData.totalJobsPosted || 0}
-              </h4>
+          {[
+            { label: 'Total Jobs', value: clientData.totalJobsPosted || 0, icon: 'fa-briefcase', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+            { label: 'Completed', value: stats.clientJobsCompleted || 0, icon: 'fa-circle-check', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+            { label: 'Hire Rate', value: `${stats.clientHireRate || 0}%`, icon: 'fa-chart-line', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+            { label: 'Cancelled', value: `${stats.clientCancellationRate || 0}%`, icon: 'fa-circle-xmark', color: 'text-rose-400', bg: 'bg-rose-500/10' }
+          ].map((stat, i) => (
+            <div key={i} className="glass-card p-5 group hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+              <div className="relative z-10">
+                <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                <h4 className="text-2xl font-black text-white tracking-tighter">{stat.value}</h4>
+              </div>
+              <div className={`absolute top-1/2 -right-4 -translate-y-1/2 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-700`}>
+                <i className={`fas ${stat.icon} text-6xl`}></i>
+              </div>
+              <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center text-xs absolute top-4 right-4`}>
+                <i className={`fas ${stat.icon}`}></i>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-              <i className="fas fa-briefcase"></i>
-            </div>
-          </div>
-
-          {/* Completed Jobs */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
-                Completed
-              </p>
-              <h4 className="text-2xl font-bold text-white">
-                {stats.clientJobsCompleted || 0}
-              </h4>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
-              <i className="fas fa-check-circle"></i>
-            </div>
-          </div>
-
-          {/* Hire Rate */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
-                Hire Rate
-              </p>
-              <h4 className="text-2xl font-bold text-white">
-                {stats.clientHireRate || 0}%
-              </h4>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center text-blue-400">
-              <i className="fas fa-chart-line"></i>
-            </div>
-          </div>
-
-          {/* Cancellation Rate */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-5 flex items-center justify-between shadow-lg shadow-black/20 hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">
-                Cancellations
-              </p>
-              <h4 className="text-2xl font-bold text-white">
-                {stats.clientCancellationRate || 0}%
-              </h4>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
-              <i className="fas fa-times-circle"></i>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* DETAILS SECTION */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Saved Properties */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <i className="far fa-building text-blue-500"></i> Saved Properties
+          {/* 🏠 PROPERTIES CARD */}
+          <div className="glass-card p-6">
+            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+              <i className="fas fa-building-user text-blue-500"></i> My Properties
             </h3>
 
-            <div className="space-y-3">
-              {/* Note: In a real app, this would map over an array of saved properties */}
+            <div className="space-y-4">
               <div
                 onClick={() => setActiveTab("edit")}
-                className="flex items-center justify-between p-4 bg-[#0b1121] rounded-lg border border-slate-800 hover:border-slate-600 cursor-pointer transition-colors group"
+                className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.05] cursor-pointer transition-all group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
-                    <i className="fas fa-home text-slate-400 text-xl"></i>
+                  <div className="w-12 h-12 mask mask-squircle bg-blue-600/10 flex items-center justify-center text-blue-400 text-xl group-hover:scale-110 transition-transform">
+                    <i className="fas fa-house-chimney"></i>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
-                      Primary Address
-                    </h5>
-                    <p className="text-xs text-slate-400">{publicLocation}</p>
+                    <h5 className="font-bold text-sm text-white tracking-tight">Primary Residence</h5>
+                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-tighter">{publicLocation}</p>
                   </div>
                 </div>
-                <i className="fas fa-chevron-right text-slate-600 group-hover:text-blue-500"></i>
+                <i className="fas fa-arrow-right-long text-white/20 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
               </div>
 
-              <div
+              <button
                 onClick={() => setActiveTab("edit")}
-                className="flex items-center justify-between p-4 bg-[#0b1121] rounded-lg border border-slate-800 cursor-pointer opacity-50 hover:opacity-100 hover:border-slate-600 transition-colors"
+                className="w-full flex items-center gap-4 p-4 bg-dashed border-2 border-dashed border-white/5 rounded-2xl hover:border-white/20 hover:bg-white/[0.02] transition-all group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-slate-800/50 flex items-center justify-center border border-dashed border-slate-600">
-                    <i className="fas fa-plus text-slate-500"></i>
-                  </div>
-                  <div>
-                    <h5 className="font-medium text-slate-300 border-b border-transparent inline-block">
-                      Add Property
-                    </h5>
-                  </div>
+                <div className="w-12 h-12 mask mask-squircle bg-white/5 flex items-center justify-center text-white/20 text-xl group-hover:text-white/40">
+                  <i className="fas fa-plus"></i>
                 </div>
-              </div>
+                <span className="font-bold text-xs text-white/20 group-hover:text-white/40 uppercase tracking-widest">Add New Property</span>
+              </button>
             </div>
           </div>
 
-          {/* About / Bio */}
-          <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <i className="far fa-user text-blue-500"></i> About
+          {/* 📜 ABOUT SECTION */}
+          <div className="glass-card p-6">
+            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+              <i className="fas fa-id-badge text-indigo-500"></i> Personal Bio
             </h3>
-            <div className="p-4 bg-[#0b1121] rounded-lg border border-slate-800 min-h-[120px]">
+            <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 min-h-[140px] relative overflow-hidden group">
+              <i className="fas fa-quote-left absolute top-4 right-4 text-white/[0.02] text-5xl group-hover:text-white/[0.05] transition-all"></i>
               {clientData.bio ? (
-                <p className="text-slate-300 leading-relaxed text-sm">
-                  {clientData.bio}
+                <p className="text-sm text-white/70 leading-relaxed font-medium relative z-10 italic">
+                  "{clientData.bio}"
                 </p>
               ) : (
-                <p className="italic text-slate-500 text-sm">
-                  This client hasn't written an about section yet.
+                <p className="text-xs text-white/20 italic font-medium leading-relaxed">
+                  You haven't added a bio yet. Tell workers a bit about yourself to build trust.
                 </p>
               )}
             </div>
           </div>
         </div>
 
-        {/* REVIEWS SECTION */}
-        <div className="bg-[#121a2f] border border-slate-700/50 rounded-xl p-6 shadow-lg">
-          <div className="flex justify-between items-end mb-6 border-b border-slate-800 pb-4">
-            <h3 className="text-lg font-bold text-white">What Workers Say</h3>
+        {/* ⭐ WORKER REVIEWS */}
+        <div className="glass-card p-6">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-3">
+              <i className="fas fa-star text-yellow-500"></i> Worker Feedback
+            </h3>
 
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="flex items-center gap-1 justify-end">
-                  <span className="text-2xl font-bold text-white">
-                    {clientData.averageRating || "0.0"}
-                  </span>
-                  <i className="fas fa-star text-yellow-500 text-lg"></i>
+            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-black text-white">{clientData.averageRating || "0.0"}</span>
+                <div className="flex text-yellow-500 text-[10px]">
+                  {[...Array(5)].map((_, i) => (
+                    <i key={i} className={i < Math.floor(clientData.averageRating || 0) ? "fas fa-star" : "far fa-star"}></i>
+                  ))}
                 </div>
-                <span className="text-xs text-slate-400">
-                  Based on past jobs
-                </span>
               </div>
+              <div className="h-4 w-px bg-white/10"></div>
+              <span className="text-[10px] text-white/30 font-black uppercase tracking-tight">Global Rating</span>
             </div>
           </div>
 
-          {/* Reviews List */}
           {clientData.reviews && clientData.reviews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {clientData.reviews.map((review, idx) => (
-                <div
-                  key={idx}
-                  className="p-5 bg-[#0b1121] rounded-xl border border-slate-800 relative group hover:border-slate-700 transition-colors"
-                >
-                  <i className="fas fa-quote-right absolute top-4 right-4 text-slate-800 text-4xl group-hover:text-slate-700 transition-colors"></i>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
-                      <i className="fas fa-user text-slate-400"></i>
+                <div key={idx} className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/15 transition-all group relative overflow-hidden">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-10 h-10 mask mask-squircle bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-all">
+                      <i className="fas fa-user"></i>
                     </div>
                     <div>
-                      <h5 className="font-bold text-sm text-slate-200">
-                        {review.authorName || "Worker"}
-                      </h5>
-                      <div className="flex text-yellow-500 text-[10px]">
+                      <h5 className="font-bold text-sm text-white tracking-tight">{review.authorName || "Worker"}</h5>
+                      <div className="flex text-yellow-500 text-[8px] mt-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <i
-                            key={i}
-                            className={
-                              i < review.rating ? "fas fa-star" : "far fa-star"
-                            }
-                          ></i>
+                          <i key={i} className={i < review.rating ? "fas fa-star" : "far fa-star"}></i>
                         ))}
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-400 italic">
+                  <p className="text-xs text-white/50 italic leading-relaxed line-clamp-2">
                     "{review.comment}"
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-10 px-4 bg-[#0b1121] rounded-xl border border-slate-800 text-center relative overflow-hidden">
-              <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                <i className="far fa-comment-alt text-3xl text-slate-500"></i>
+            <div className="flex flex-col items-center justify-center py-12 px-4 bg-white/[0.01] rounded-3xl border border-dashed border-white/10 text-center">
+              <div className="w-16 h-16 mask mask-squircle bg-white/5 flex items-center justify-center mb-4">
+                <i className="far fa-comments text-2xl text-white/10"></i>
               </div>
-              <h4 className="text-white font-bold mb-1">No Reviews Yet</h4>
-              <p className="text-slate-400 text-sm max-w-sm">
-                This client hasn't received any reviews from workers yet. Check
-                back later.
+              <h4 className="text-white font-bold tracking-tight mb-1">No Reviews Yet</h4>
+              <p className="text-white/20 text-[11px]  leading-relaxed font-medium">
+                Complete more jobs to receive feedback from the community.
               </p>
             </div>
           )}
@@ -599,204 +529,211 @@ export default function MyProfile() {
   };
 
   const renderEditProfile = () => (
-    <div className="space-y-6">
-      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6 mt-6">
-        <h3 className="text-lg font-bold text-white mb-4">Account</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              First Name
-            </label>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
+      
+      {/* 👤 PERSONAL INFO GLASS CARD */}
+      <div className="glass-card p-8">
+        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+          <i className="fas fa-user-circle text-blue-500"></i> Personal Details
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="relative group">
             <input
               type="text"
               name="firstName"
+              placeholder="First Name"
               value={editForm.firstName}
               onChange={handleEditChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              id="firstName"
             />
+            <label htmlFor="firstName" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">First Name</label>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Last Name
-            </label>
+
+          <div className="relative group">
             <input
               type="text"
               name="lastName"
+              placeholder="Last Name"
               value={editForm.lastName}
               onChange={handleEditChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              id="lastName"
             />
+            <label htmlFor="lastName" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Last Name</label>
+          </div>
+
+          <div className="relative group md:col-span-2">
+            <input
+              type="text"
+              name="headline"
+              placeholder="Professional Headline"
+              value={editForm.headline}
+              onChange={handleEditChange}
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              id="headline"
+            />
+            <label htmlFor="headline" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Professional Headline</label>
+          </div>
+
+          <div className="relative group md:col-span-2">
+            <textarea
+              name="bio"
+              placeholder="Tell workers about yourself..."
+              value={editForm.bio}
+              onChange={handleEditChange}
+              rows={4}
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              id="bio"
+            />
+            <label htmlFor="bio" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">About You</label>
           </div>
         </div>
       </div>
-      {/* Headline */}
-      <div className="grid grid-cols-1 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-base-content opacity-80 mb-1">
-            Headline (optional)
-          </label>
-          <input
-            type="text"
-            name="headline"
-            value={editForm.headline}
-            onChange={handleEditChange}
-            placeholder="e.g., Property Manager"
-            className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
-        </div>
-      </div>
 
-      {/* Bio */}
-      <div>
-        <label className="block text-sm font-medium text-base-content opacity-80 mb-1">
-          About Me (Bio)
-        </label>
-        <textarea
-          name="bio"
-          value={editForm.bio}
-          onChange={handleEditChange}
-          rows={4}
-          placeholder="Write a little about yourself or the types of properties you manage..."
-          className="w-full px-3 py-2 border border-base-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
-      </div>
-
-      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-bold text-white mb-4">Address</h3>
-        <p className="text-sm text-slate-400 mb-3">
-          <i className="fas fa-info-circle mr-1"></i>
-          Public profiles show only city/area. Full address is private and only
-          shared after booking.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Address Line 1
-            </label>
+      {/* 📍 ADDRESS GLASS CARD */}
+      <div className="glass-card p-8">
+        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+          <i className="fas fa-location-dot text-indigo-500"></i> Primary Address
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="relative group md:col-span-2">
             <input
               type="text"
               name="address1"
+              placeholder="Address Line 1"
               value={editForm.address1 || ""}
               onChange={handleEditChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              id="address1"
             />
+            <label htmlFor="address1" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Address Line 1</label>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Address Line 2
-            </label>
-            <input
-              type="text"
-              name="address2"
-              value={editForm.address2 || ""}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              City
-            </label>
+
+          <div className="relative group">
             <input
               type="text"
               name="city"
+              placeholder="City"
               value={editForm.city || ""}
               onChange={handleEditChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              id="city"
             />
+            <label htmlFor="city" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">City</label>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Country
-            </label>
+
+          <div className="relative group">
             <input
               type="text"
               name="country"
+              placeholder="Country"
               value={editForm.country || ""}
               onChange={handleEditChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              id="country"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              ZIP Code
-            </label>
-            <input
-              type="text"
-              name="zip"
-              value={editForm.zip || ""}
-              onChange={handleEditChange}
-              className="input input-bordered w-full"
-            />
+            <label htmlFor="country" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Country</label>
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end gap-3">
-        <button onClick={() => setIsEditing(false)} className="btn btn-ghost">
-          Cancel
-        </button>
-        <button
-          onClick={handleSaveProfile}
-          disabled={saving}
-          className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {saving && <i className="fas fa-spinner fa-spin"></i>}
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
+      {/* 💾 ACTION FOOTER */}
+      <div className="flex items-center justify-between glass-card p-6 bg-blue-600/5 border-blue-500/10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
+            <i className="fas fa-shield-check"></i>
+          </div>
+          <div>
+            <p className="text-xs font-black text-white uppercase tracking-tight">Data Security</p>
+            <p className="text-[10px] text-white/30 font-bold uppercase tracking-tighter">Your info is protected</p>
+          </div>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={() => setActiveTab("overview")} className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white/40 hover:text-white transition-all">
+            Discard
+          </button>
+          <button
+            onClick={handleSaveProfile}
+            disabled={saving}
+            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-900 border-none text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-blue-600/20 flex items-center gap-3 active:scale-95"
+          >
+            {saving ? <span className="loading loading-spinner loading-xs"></span> : <i className="fas fa-cloud-arrow-up"></i>}
+            {saving ? "Deploying..." : "Apply Changes"}
+          </button>
+        </div>
       </div>
     </div>
   );
 
   const renderChangePassword = () => (
-    <div className="space-y-6">
-      <div className="bg-[#121a2f] border border-slate-700/50 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-bold text-white mb-4">Change Password</h3>
-        <div className="space-y-4 max-w-md">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Current Password
-            </label>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 mx-auto">
+      <div className="glass-card p-8">
+        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+          <i className="fas fa-lock text-rose-500"></i> Change Password
+        </h3>
+
+        <div className="space-y-6">
+          <div className="relative group">
             <input
               type="password"
               name="currentPassword"
+              placeholder="Current Password"
               value={passwordForm.currentPassword}
               onChange={handlePasswordChange}
-              className="input input-bordered w-full"
+              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all placeholder:text-transparent peer"
+              id="currentPassword"
             />
+            <label htmlFor="currentPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-rose-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-rose-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Current Password</label>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              New Password
-            </label>
-            <input
-              type="password"
-              name="newPassword"
-              value={passwordForm.newPassword}
-              onChange={handlePasswordChange}
-              className="input input-bordered w-full"
-            />
+
+          <div className="h-px bg-white/5 w-1/2 mx-auto"></div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative group">
+              <input
+                type="password"
+                name="newPassword"
+                placeholder="New Password"
+                value={passwordForm.newPassword}
+                onChange={handlePasswordChange}
+                className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+                id="newPassword"
+              />
+              <label htmlFor="newPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">New Password</label>
+            </div>
+
+            <div className="relative group">
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm"
+                value={passwordForm.confirmPassword}
+                onChange={handlePasswordChange}
+                className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+                id="confirmPassword"
+              />
+              <label htmlFor="confirmPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Confirm Password</label>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-base-content opacity-80">
-              Confirm New Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={passwordForm.confirmPassword}
-              onChange={handlePasswordChange}
-              className="input input-bordered w-full"
-            />
-          </div>
+        </div>
+
+        <div className="mt-10">
+          <button
+            onClick={handleChangePassword}
+            disabled={saving}
+            className="w-full py-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 disabled:from-slate-800 disabled:to-slate-800 border-none text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-rose-600/20 flex items-center justify-center gap-3 active:scale-[0.98]"
+          >
+            {saving ? <span className="loading loading-spinner loading-xs"></span> : <i className="fas fa-key-skeleton"></i>}
+            {saving ? "Updating Vault..." : "Update Password"}
+          </button>
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <button onClick={handlePasswordUpdate} className="btn btn-primary">
-          Update Password
-        </button>
+      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl text-center">
+        <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest leading-relaxed">
+          Forgot your password? <button className="text-blue-400 hover:text-blue-300 ml-1">Request a reset link</button>
+        </p>
       </div>
     </div>
   );
@@ -814,180 +751,133 @@ export default function MyProfile() {
   }
 
   return (
-    <>
-      {/* Background container to match Stitch dark blue UI */}
-      <div className="min-h-screen pb-12">
-        {/* Header - Transparent/Minimal */}
-        <div className="pt-8 pb-4">
-          <div className="w-full px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold text-white tracking-tight">
-              Client Hub
-            </h1>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#0b1121] text-slate-100 selection:bg-blue-500/30 font-sans pb-20">
+      {/* Background Blobs for Depth */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+      </div>
 
-        <div className="w-full px-4 sm:px-6 lg:px-8 mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
-            {/* Left Sidebar - Profile Card (Stitch Inspired) */}
-            <div className="lg:col-span-1">
-              <div className="bg-[#121a2f] border border-slate-700/50 rounded-2xl p-6 sticky top-24 shadow-xl flex flex-col items-center">
-                {/* Profile Picture & Online Dot */}
-                <div className="relative mb-5 group pt-4">
-                  <div className="w-28 h-28 rounded-full rounded-tl-none rounded-tr-3xl overflow-hidden border-4 border-[#0b1121] shadow-lg relative bg-slate-800">
-                    <img
-                      src={
-                        clientData.profileCover &&
-                        clientData.profileCover.trim()
-                          ? clientData.profileCover
-                          : "https://i.pravatar.cc/150?img=3"
-                      }
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        if (
-                          e.target.src !== "https://i.pravatar.cc/150?img=3"
-                        ) {
-                          e.target.src = "https://i.pravatar.cc/150?img=3";
-                        }
-                      }}
+      <div className="relative mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
+          
+          {/* ── Fixed Glass Sidebar ── */}
+          <aside className="lg:sticky lg:top-24 space-y-6">
+            {/* Profile Brief Card */}
+            <div className="glass-card p-6 flex flex-col items-center text-center">
+              <div className="relative mb-4 group">
+                <div className="w-24 h-24 mask mask-squircle overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-2xl relative">
+                  <img
+                    src={clientData.profileCover || "https://i.pravatar.cc/150?img=3"}
+                    alt="Profile"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                    onError={(e) => (e.target.src = "https://i.pravatar.cc/150?img=3")}
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      disabled={saving}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    {/* Hover Upload Overlay */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        disabled={saving}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                      />
-                      <i className="fas fa-camera text-white text-xl"></i>
-                    </div>
+                    <i className="fas fa-camera text-white text-lg"></i>
                   </div>
-                  {/* Status Dot */}
-                  <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 border-4 border-[#121a2f] rounded-full shadow-md z-10"></div>
-                  {saving && (
-                    <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg z-20 animate-pulse">
-                      <i className="fas fa-spinner fa-spin text-white text-xs"></i>
-                    </div>
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0b1121] shadow-lg animate-pulse"></span>
+                {saving && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl z-20">
+                    <span className="loading loading-spinner loading-sm text-blue-400"></span>
+                  </div>
+                )}
+              </div>
+
+              <h2 className="text-xl font-bold text-white tracking-tight truncate w-full">
+                {`${clientData.firstName || ""} ${clientData.lastName || ""}`.trim() || "User Profile"}
+              </h2>
+              <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest mt-1">
+                Premium Client
+              </p>
+              
+              <div className="mt-4 flex gap-2 w-full">
+                <button 
+                  onClick={handleShareProfile}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] font-bold text-white/70 transition-all uppercase"
+                >
+                  <i className="fas fa-share-nodes text-[10px]"></i> Share
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Sidebar */}
+            <nav className="glass-card p-2 space-y-1">
+              {[
+                { id: 'overview', label: 'Overview', icon: 'fa-grid-2' },
+                { id: 'edit', label: 'Account Settings', icon: 'fa-user-gear' },
+                { id: 'password', label: 'Security', icon: 'fa-shield-halved' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-all relative overflow-hidden group ${
+                    activeTab === tab.id 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                      : 'text-white/40 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <i className={`fas ${tab.icon} text-lg w-5 text-center ${activeTab === tab.id ? 'text-white' : 'group-hover:text-blue-400'}`}></i>
+                  <span className="tracking-tight">{tab.label}</span>
+                  {activeTab === tab.id && (
+                    <span className="absolute right-3 w-1 h-4 bg-white/30 rounded-full"></span>
                   )}
+                </button>
+              ))}
+            </nav>
+
+            {/* Verification Status Banner */}
+            <div className="glass-card p-5">
+              <h4 className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-4">
+                Trust & Safety
+              </h4>
+              <div className="space-y-3">
+                <div className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                  clientData.emailVerified 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-white/5 border-white/5 text-white/40 cursor-pointer hover:bg-white/10'
+                }`} onClick={!clientData.emailVerified ? handleSendVerificationEmail : undefined}>
+                  <div className="flex items-center gap-2.5">
+                    <i className={`fas ${clientData.emailVerified ? 'fa-circle-check' : 'fa-envelope'} text-sm`}></i>
+                    <span className="text-[11px] font-bold uppercase tracking-tight">Email Verify</span>
+                  </div>
+                  {!clientData.emailVerified && <i className="fas fa-chevron-right text-[10px] opacity-40"></i>}
+                </div>
+                
+                <div className="flex items-center justify-between p-2.5 rounded-xl border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
+                  <div className="flex items-center gap-2.5">
+                    <i className="fas fa-phone text-sm"></i>
+                    <span className="text-[11px] font-bold uppercase tracking-tight">Phone Linked</span>
+                  </div>
                 </div>
 
-                {/* Name & Role */}
-                <h2 className="text-2xl font-bold text-white text-center tracking-tight leading-tight">
-                  {`${clientData.firstName || ""} ${clientData.lastName || ""}`.trim() ||
-                    "Client Profile"}
-                </h2>
-                <p className="text-blue-500 font-semibold text-sm mt-1 uppercase tracking-wider mb-2">
-                  Client Profile
-                </p>
-                <p className="text-slate-500 text-xs mb-6">
-                  {clientData.createdAt
-                    ? `Member since ${new Date(clientData.createdAt).toLocaleDateString("default", { month: "short", year: "numeric" })}`
-                    : ""}
-                </p>
-
-                {/* Actions */}
-                <div className="w-full space-y-3 mb-8">
-                  <button
-                    onClick={() => setActiveTab("edit")}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
-                  >
-                    <i className="fas fa-pen text-sm"></i> Edit Profile
-                  </button>
-                  <button
-                    onClick={handleShareProfile}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-700"
-                  >
-                    <i className="fas fa-share-alt text-sm"></i> Share Profile
-                  </button>
-                </div>
-
-                {/* Verification Badges */}
-                <div className="w-full bg-[#0b1121] rounded-xl p-4 border border-slate-800">
-                  <h4 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 text-center">
-                    Verification Status
-                  </h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Email Status */}
-                    <div
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold ${user?.emailVerified || clientData.emailVerified ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 cursor-pointer hover:bg-slate-700"}`}
-                      onClick={
-                        !(user?.emailVerified || clientData.emailVerified)
-                          ? handleSendVerificationEmail
-                          : undefined
-                      }
-                    >
-                      <i
-                        className={`fas ${user?.emailVerified || clientData.emailVerified ? "fa-check-circle" : "fa-envelope"}`}
-                      ></i>{" "}
-                      Email
-                    </div>
-
-                    {/* Phone Status - Mock */}
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                      <i className="fas fa-check-circle"></i> Phone
-                    </div>
-
-                    {/* Payment Status - Mock */}
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-500 border border-slate-700">
-                      <i className="fas fa-minus-circle"></i> Payment
-                    </div>
-
-                    {/* ID Status - Mock */}
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                      <i className="fas fa-id-card"></i> ID
-                    </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl border bg-blue-500/10 border-blue-500/20 text-blue-400">
+                  <div className="flex items-center gap-2.5">
+                    <i className="fas fa-id-card text-sm"></i>
+                    <span className="text-[11px] font-bold uppercase tracking-tight">Identity Verified</span>
                   </div>
                 </div>
               </div>
             </div>
+          </aside>
 
-            {/* Right Panel - Main Content Areas */}
-            <div className="lg:col-span-1 border border-slate-800 rounded-2xl bg-[#0b1121]/50 overflow-hidden">
-              {/* Minimal horizontal nav */}
-              <div className="flex border-b border-slate-800 bg-[#121a2f]">
-                <button
-                  onClick={() => setActiveTab("overview")}
-                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "overview" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
-                >
-                  {" "}
-                  Overview{" "}
-                </button>
-                <button
-                  onClick={() => setActiveTab("edit")}
-                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "edit" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
-                >
-                  {" "}
-                  Update Details{" "}
-                </button>
-                <button
-                  onClick={() => setActiveTab("password")}
-                  className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "password" ? "border-blue-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"}`}
-                >
-                  {" "}
-                  Security{" "}
-                </button>
-              </div>
+          {/* ── Main Content Area ── */}
+          <main className="space-y-8 min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {activeTab === 'overview' && renderOverview()}
+            {activeTab === 'edit' && renderEditProfile()}
+            {activeTab === 'password' && renderChangePassword()}
+          </main>
 
-              {/* Rendering active section */}
-              <div className="p-6">
-                {activeTab === "overview" && renderOverview()}
-                {/* Provide basic styling wrapper so the generated edit forms fit in */}
-                {activeTab === "edit" && (
-                  <div className="p-4 bg-[#121a2f] border border-slate-800 rounded-xl">
-                    {renderEditProfile()}
-                  </div>
-                )}
-                {activeTab === "password" && (
-                  <div className="p-4 bg-[#121a2f] border border-slate-800 rounded-xl">
-                    {renderChangePassword()}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

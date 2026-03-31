@@ -97,12 +97,21 @@ export default function ChatApplicationStatus({
   const handleAcceptPrice = async () => {
     if (!applicationData?._id || !applicationData?.proposedPrice) return;
 
+    const nStatus = String(applicationData.negotiationStatus || '').toLowerCase();
+    const agreedPrice =
+      nStatus === 'accepted' &&
+      (applicationData.finalPrice == null || Number(applicationData.finalPrice) <= 0) &&
+      applicationData.counterPrice != null &&
+      Number(applicationData.counterPrice) > 0
+        ? Number(applicationData.counterPrice)
+        : Number(applicationData.proposedPrice);
+
     try {
       setLoading(true);
       const response = await axios.post(`${API_BASE}/api/applications`, {
         jobId,
         workerId,
-        finalPrice: applicationData.proposedPrice,
+        finalPrice: agreedPrice,
         negotiationStatus: 'accepted'
       });
       setApplicationData(response.data.application);
@@ -147,20 +156,20 @@ export default function ChatApplicationStatus({
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: 'badge-warning',
-      accepted: 'badge-success',
-      rejected: 'badge-error',
-      completed: 'badge-info'
+      pending: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+      accepted: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+      rejected: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+      completed: 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
     };
     return badges[status] || 'badge-ghost';
   };
 
   const getStatusText = (status) => {
     const texts = {
-      pending: 'Pending',
-      accepted: 'Accepted',
-      rejected: 'Rejected',
-      completed: 'Completed'
+      pending: 'Awaiting Response',
+      accepted: 'Accepted / Ongoing',
+      rejected: 'Declined',
+      completed: 'Work Finished'
     };
     return texts[status] || status;
   };
@@ -185,36 +194,36 @@ export default function ChatApplicationStatus({
   }
 
   return (
-    <div className="bg-base-200 p-4 rounded-lg border border-base-300 space-y-3">
+    <div className="glass border border-white/10 p-5 rounded-2xl space-y-4 shadow-lg backdrop-blur-xl">
       {/* Status Badge */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className={`badge ${getStatusBadge(status)}`}>
+        <div className="flex items-center gap-3">
+          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(status)}`}>
             {getStatusText(status)}
           </span>
           {applicationData?.proposedPrice && (
-            <span className="text-sm font-semibold text-base-content">
-              {applicationData.proposedPrice} {applicationData.currency || 'BDT'}
+            <span className="text-sm font-bold text-white/90 font-mono tracking-tight">
+              {applicationData.proposedPrice} <span className="text-[10px] text-white/40">{applicationData.currency || 'BDT'}</span>
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {jobId && (
             <Link
               to={`/My-Posted-Job-Details/${jobId}`}
-              className="text-xs link link-primary flex items-center gap-1"
+              className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1.5"
             >
-              <i className="fas fa-briefcase text-[10px]"></i>
-              View Job
+              <i className="fas fa-briefcase opacity-70"></i>
+              Job Post
             </Link>
           )}
           {applicationData?._id && (
             <Link
               to={`/application-detail/${applicationData._id}`}
-              className="text-xs link link-primary flex items-center gap-1"
+              className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1.5"
             >
-              <i className="fas fa-file-alt text-[10px]"></i>
-              View Application
+              <i className="fas fa-file-alt opacity-70"></i>
+              Application
             </Link>
           )}
         </div>
@@ -222,8 +231,8 @@ export default function ChatApplicationStatus({
 
       {/* Proposal Text Preview - support both proposalText (normal apply) and proposal (job-offer accept) */}
       {(applicationData?.proposalText || applicationData?.proposal) && (
-        <div className="text-sm text-base-content/80 bg-base-100 p-3 rounded border border-base-300">
-          <p className="line-clamp-2">{applicationData.proposalText || applicationData.proposal}</p>
+        <div className="text-[13px] text-white/70 bg-white/5 p-4 rounded-xl border border-white/10 leading-relaxed italic border-l-4 border-l-blue-500/50">
+          <p className="line-clamp-3">"{applicationData.proposalText || applicationData.proposal}"</p>
         </div>
       )}
 
@@ -287,13 +296,13 @@ export default function ChatApplicationStatus({
           </div>
           
           {!applicationData?.finalPrice && (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {!showCounterOffer ? (
                 <>
                   <button
                     onClick={handleAcceptPrice}
                     disabled={loading}
-                    className="btn btn-sm btn-success flex-1"
+                    className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold flex-1 rounded-xl shadow-lg shadow-emerald-600/10"
                   >
                     {loading ? (
                       <span className="loading loading-spinner loading-xs"></span>
@@ -304,7 +313,7 @@ export default function ChatApplicationStatus({
                   <button
                     onClick={() => setShowCounterOffer(true)}
                     disabled={loading}
-                    className="btn btn-sm btn-outline flex-1"
+                    className="btn btn-sm bg-white/5 hover:bg-white/10 border border-white/10 text-white flex-1 rounded-xl"
                   >
                     Counter Offer
                   </button>
@@ -313,7 +322,7 @@ export default function ChatApplicationStatus({
                 <div className="flex gap-2 w-full">
                   <input
                     type="number"
-                    className="input input-bordered input-sm flex-1"
+                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1"
                     placeholder="Enter counter price"
                     value={counterPrice}
                     onChange={(e) => setCounterPrice(e.target.value)}
@@ -323,7 +332,7 @@ export default function ChatApplicationStatus({
                   <button
                     onClick={handleCounterOffer}
                     disabled={loading || !counterPrice}
-                    className="btn btn-sm btn-primary"
+                    className="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white rounded-xl"
                   >
                     {loading ? (
                       <span className="loading loading-spinner loading-xs"></span>
@@ -336,7 +345,7 @@ export default function ChatApplicationStatus({
                       setShowCounterOffer(false);
                       setCounterPrice('');
                     }}
-                    className="btn btn-sm btn-ghost"
+                    className="btn btn-sm btn-ghost text-white/60 hover:text-white"
                   >
                     Cancel
                   </button>

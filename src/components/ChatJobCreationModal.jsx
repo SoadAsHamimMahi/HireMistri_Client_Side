@@ -146,7 +146,7 @@ export default function ChatJobCreationModal({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-lg">
+      <div className="modal-box w-full">
         <h3 className="font-bold text-lg mb-4">Create Job</h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">

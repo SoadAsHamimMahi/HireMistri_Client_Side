@@ -15,13 +15,25 @@ async function nominatimReverse(lat, lng) {
   return res.json();
 }
 
-async function nominatimSearch(query) {
-  const res = await fetch(
-    `${NOMINATIM_SEARCH}?q=${encodeURIComponent(query)}&format=json&addressdetails=1&namedetails=1&limit=6&countrycodes=bd`,
-    { headers: { 'Accept-Language': 'en' } }
-  );
-  if (!res.ok) throw new Error('Search failed');
-  return res.json();
+async function googlePlacesSearch(query, sessionToken) {
+  if (!window.google?.maps?.places) return [];
+  const service = new window.google.maps.places.AutocompleteService();
+  return new Promise((resolve) => {
+    service.getPlacePredictions(
+      {
+        input: query,
+        componentRestrictions: { country: 'bd' },
+        sessionToken,
+      },
+      (predictions, status) => {
+        if (status !== window.google.maps.places.PlacesServiceStatus.OK || !predictions) {
+          resolve([]);
+          return;
+        }
+        resolve(predictions);
+      }
+    );
+  });
 }
 
 function buildDisplayName(data) {
@@ -64,6 +76,50 @@ function buildDisplayName(data) {
   return parts.length >= 2 ? parts.join(', ') : data.display_name || '';
 }
 
+function parseGoogleAddressComponents(components = [], placeName = '') {
+  const getCompResource = (type) => components.find((c) => Array.isArray(c.types) && c.types.includes(type));
+  const getComp = (type) => {
+    const comp = getCompResource(type);
+    return comp?.long_name || comp?.short_name || '';
+  };
+
+  const streetNumber = getComp('street_number');
+  const premise = getComp('premise');
+  const subpremise = getComp('subpremise');
+  const neighborhood = getComp('neighborhood');
+  const sublocality = getComp('sublocality_level_1');
+
+  // Landmark/Building candidates
+  const pointOfInterest = getComp('point_of_interest');
+  const establishment = getComp('establishment');
+  const busStation = getComp('bus_station');
+  const transitStation = getComp('transit_station');
+
+  // Logic for Floor/House No.
+  // Sometimes 'premise' contains the building name, 'subpremise' contains the floor/flat.
+  // 'street_number' is the classic house number.
+  const floorParts = [streetNumber, subpremise].map((s) => String(s).trim()).filter(Boolean);
+  const floorHouseNo = floorParts.length ? floorParts.join(', ') : (premise || null);
+
+  // Logic for Landmark
+  // If placeName is just a generic address, skip it. If it looks like a specific POI, use it.
+  const isGenericAddress = /^\d+|^[A-Z]\d+/.test(placeName) && placeName.includes(',');
+  const landmarkCandidate = [
+    !isGenericAddress ? placeName : '',
+    pointOfInterest,
+    establishment,
+    busStation,
+    transitStation,
+    neighborhood,
+    sublocality
+  ].map(s => String(s || '').trim()).filter(Boolean);
+
+  // Take the most specific one as the primary landmark
+  const landmark = landmarkCandidate.length ? landmarkCandidate[0] : null;
+
+  return { floorHouseNo, landmark };
+}
+
 export default function LocationPicker({
   value = '',
   locationGeo,
@@ -75,7 +131,7 @@ export default function LocationPicker({
   const { isLoaded } = useJsApiLoader({
     id: 'location-picker',
     googleMapsApiKey: apiKey,
-    libraries: [],
+    libraries: ['places'],
   });
 
   const [center, setCenter] = useState(
@@ -95,6 +151,8 @@ export default function LocationPicker({
   const debounceRef = useRef(null);
   const wrapperRef = useRef(null);
   const geocoderRef = useRef(null);
+  const autocompleteSessionTokenRef = useRef(null);
+  const placeDetailsCacheRef = useRef(new Map());
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -108,40 +166,92 @@ export default function LocationPicker({
   }, []);
 
   // Try Google Geocoder first, fall back to Nominatim
+  const getPlaceExtras = useCallback(async (placeId = null, result = null) => {
+    if (placeId && placeDetailsCacheRef.current.has(placeId)) return placeDetailsCacheRef.current.get(placeId);
+
+    // If we already have the geocode result, we can parse it directly without an extra API call.
+    if (result?.address_components) {
+      const parsed = parseGoogleAddressComponents(result.address_components, result.name || '');
+      const data = { ...parsed, name: result.name || null };
+      if (placeId) placeDetailsCacheRef.current.set(placeId, data);
+      return data;
+    }
+
+    if (!placeId || !window.google?.maps?.places) return { floorHouseNo: null, landmark: null, name: null };
+
+    const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+    const details = await new Promise((resolve) => {
+      service.getDetails(
+        {
+          placeId,
+          fields: ['name', 'address_components'],
+        },
+        (place, status) => {
+          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place) {
+            resolve({ floorHouseNo: null, landmark: null, name: null });
+            return;
+          }
+          const parsed = parseGoogleAddressComponents(place.address_components || [], place.name || '');
+          resolve({ ...parsed, name: place.name || null });
+        }
+      );
+    });
+
+    placeDetailsCacheRef.current.set(placeId, details);
+    return details;
+  }, []);
+
+  // Helper to build a clean address that includes the building name if it's not already at the start.
+  const buildLocationString = (name, formattedAddress) => {
+    if (!name) return formattedAddress || '';
+    if (!formattedAddress) return name;
+    // If the name is already the first part of the address, don't repeat it.
+    if (formattedAddress.toLowerCase().startsWith(name.toLowerCase())) return formattedAddress;
+    return `${name}, ${formattedAddress}`;
+  };
+
   const reverseGeocode = useCallback(
     (lat, lng) => {
       setReverseLoading(true);
 
-      const applyAddr = (addr, placeId = null) => {
-        setAddressText(addr);
-        onChange?.({ locationText: addr, locationGeo: { lat, lng }, placeId });
+      const applyAddr = async (addr, placeId = null, result = null) => {
+        const extras = await getPlaceExtras(placeId, result);
+        const finalAddr = buildLocationString(extras.name, addr);
+        setAddressText(finalAddr);
+        onChange?.({
+          locationText: finalAddr,
+          locationGeo: { lat, lng },
+          placeId,
+          floorHouseNo: extras.floorHouseNo,
+          landmark: extras.landmark,
+        });
         setReverseLoading(false);
       };
 
       const fallbackToNominatim = async () => {
         try {
           const data = await nominatimReverse(lat, lng);
-          // Use display_name directly — it's the most complete (e.g. "Al Modina Tower Mosque, 184/A, South VP Road...")
-          // Take first 6 comma-parts to keep it readable but detailed
           const addr = data.display_name
             ? data.display_name.split(',').slice(0, 6).join(',').trim()
             : buildDisplayName(data);
-          applyAddr(addr || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+          await applyAddr(addr || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         } catch {
-          applyAddr(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+          await applyAddr(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         }
       };
 
-      // Prefer Google Geocoder — it knows building names from Google's POI database
       if (geocoderRef.current) {
         geocoderRef.current.geocode({ location: { lat, lng } }, async (results, status) => {
           if (status === 'OK' && results?.length) {
+            // Prioritize results that are buildings or specific addresses
             const best =
-              results.find((r) => r.types?.includes('premise')) ||
               results.find((r) => r.types?.includes('street_address')) ||
-              results.find((r) => r.types?.includes('route')) ||
+              results.find((r) => r.types?.includes('premise')) ||
+              results.find((r) => r.types?.includes('point_of_interest')) ||
+              results.find((r) => r.types?.includes('establishment')) ||
+              results.find((r) => r.types?.includes('street_address')) ||
               results[0];
-            applyAddr(best.formatted_address || '', best.place_id || null);
+            await applyAddr(best.formatted_address || '', best.place_id || null, best);
           } else {
             await fallbackToNominatim();
           }
@@ -150,17 +260,17 @@ export default function LocationPicker({
         fallbackToNominatim();
       }
     },
-    [onChange]
+    [onChange, getPlaceExtras]
   );
 
-  // Debounced Nominatim search for dropdown
+  // Google Places Autocomplete search for dropdown
   const handleInputChange = (e) => {
     const val = e.target.value;
     setAddressText(val);
     setSuggestions([]);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!val.trim() || val.trim().length < 3) {
+    if (!val.trim() || val.trim().length < 2) {
       setShowSuggestions(false);
       return;
     }
@@ -168,7 +278,10 @@ export default function LocationPicker({
     debounceRef.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const results = await nominatimSearch(val);
+        if (!autocompleteSessionTokenRef.current && window.google?.maps?.places) {
+          autocompleteSessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+        }
+        const results = await googlePlacesSearch(val, autocompleteSessionTokenRef.current);
         setSuggestions(results || []);
         setShowSuggestions(true);
       } catch {
@@ -179,16 +292,44 @@ export default function LocationPicker({
     }, 400);
   };
 
-  const handleSuggestionClick = (item) => {
-    const lat = parseFloat(item.lat);
-    const lng = parseFloat(item.lon);
-    const addr = buildDisplayName(item);
+  const handleSuggestionClick = async (item) => {
+    const placeId = item.place_id;
+    const addr = item.description || item.structured_formatting?.main_text || '';
     setAddressText(addr);
-    setCenter({ lat, lng });
-    setMarkerPosition({ lat, lng });
     setShowSuggestions(false);
     setSuggestions([]);
-    onChange?.({ locationText: addr, locationGeo: { lat, lng }, placeId: null });
+    
+    setReverseLoading(true);
+    const extras = await getPlaceExtras(placeId);
+    
+    // Refresh session token for next search
+    if (window.google?.maps?.places) {
+      autocompleteSessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+    }
+
+    if (geocoderRef.current) {
+      geocoderRef.current.geocode({ placeId }, (results, status) => {
+        if (status === 'OK' && results?.[0]) {
+          const res = results[0];
+          const lat = res.geometry.location.lat();
+          const lng = res.geometry.location.lng();
+          setCenter({ lat, lng });
+          setMarkerPosition({ lat, lng });
+          const finalAddr = buildLocationString(extras.name || addr, res.formatted_address);
+          onChange?.({
+            locationText: finalAddr,
+            locationGeo: { lat, lng },
+            placeId,
+            floorHouseNo: extras.floorHouseNo,
+            landmark: extras.landmark,
+          });
+          setAddressText(finalAddr);
+        }
+        setReverseLoading(false);
+      });
+    } else {
+      setReverseLoading(false);
+    }
   };
 
   // Save raw typed text on blur/Enter if no suggestion was chosen
@@ -228,14 +369,43 @@ export default function LocationPicker({
   };
 
   const onMapClick = useCallback(
-    (e) => {
+    async (e) => {
       const lat = e.latLng.lat();
       const lng = e.latLng.lng();
       setMarkerPosition({ lat, lng });
       setCenter({ lat, lng });
-      reverseGeocode(lat, lng);
+
+      if (e.placeId) {
+        // e.stop(); // Optional: prevent the default Google info window
+        const placeId = e.placeId;
+        setReverseLoading(true);
+        const extras = await getPlaceExtras(placeId);
+
+        if (geocoderRef.current) {
+          geocoderRef.current.geocode({ placeId }, (results, status) => {
+            if (status === 'OK' && results?.[0]) {
+              const res = results[0];
+              const finalAddr = buildLocationString(extras.name, res.formatted_address);
+              setAddressText(finalAddr);
+              onChange?.({
+                locationText: finalAddr,
+                locationGeo: { lat, lng },
+                placeId,
+                floorHouseNo: extras.floorHouseNo,
+                landmark: extras.landmark,
+              });
+            }
+            setReverseLoading(false);
+          });
+        } else {
+          setReverseLoading(false);
+          reverseGeocode(lat, lng);
+        }
+      } else {
+        reverseGeocode(lat, lng);
+      }
     },
-    [reverseGeocode]
+    [reverseGeocode, getPlaceExtras, onChange]
   );
 
   const onMarkerDragEnd = useCallback(
@@ -337,16 +507,22 @@ export default function LocationPicker({
         {showSuggestions && suggestions.length > 0 && (
           <ul className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-64 overflow-y-auto">
             {suggestions.map((item) => {
-              const display = buildDisplayName(item);
+              const mainText = item.structured_formatting?.main_text || '';
+              const secondaryText = item.structured_formatting?.secondary_text || '';
               return (
                 <li key={item.place_id}>
                   <button
                     type="button"
                     onMouseDown={() => handleSuggestionClick(item)}
-                    className="w-full text-left px-4 py-2.5 hover:bg-primary/10 hover:text-primary text-sm border-b border-base-300 last:border-0 flex items-start gap-2"
+                    className="w-full text-left px-4 py-3 hover:bg-primary/10 hover:text-primary text-sm border-b border-base-300 last:border-0 flex items-start gap-3 transition-colors"
                   >
-                    <i className="fas fa-map-marker-alt text-primary mt-0.5 shrink-0 text-xs" />
-                    <span className="line-clamp-2">{display}</span>
+                    <i className="fas fa-map-marker-alt text-primary mt-1 shrink-0 text-xs" />
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-bold text-base-content line-clamp-1">{mainText}</span>
+                      {secondaryText && (
+                        <span className="text-xs text-base-content/60 line-clamp-1">{secondaryText}</span>
+                      )}
+                    </div>
                   </button>
                 </li>
               );

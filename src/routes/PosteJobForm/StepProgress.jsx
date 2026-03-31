@@ -45,7 +45,7 @@ export default function StepProgress({ currentStep }) {
         </div>
       ) : (
         /* Steps 1-4: numbered circles - full width, centered */
-        <div className="w-full max-w-3xl mx-auto flex items-start">
+        <div className="w-full mx-auto flex items-start">
           {STEPS.map((step, index) => {
             const isCompleted = step.number < currentStep;
             const isCurrent = step.number === currentStep;

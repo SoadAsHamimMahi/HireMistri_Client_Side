@@ -36,57 +36,61 @@ const ReviewCard = ({ review }) => {
   };
 
   return (
-    <div className="bg-base-100 rounded-lg p-4 lg:p-6 border border-base-300 shadow-sm">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
+    <div className="glass-card rounded-2xl p-6 border-none shadow-lg mb-4 hover:border-[#1754cf]/20 transition-all group">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1754cf] to-[#2563eb] flex items-center justify-center text-white font-black text-xl shadow-lg shrink-0">
             {review.clientName?.charAt(0)?.toUpperCase() || 'C'}
           </div>
           <div>
-            <p className="font-semibold text-base-content">{review.clientName || 'Anonymous'}</p>
-            <p className="text-xs text-muted">
-              {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              }) : ''}
-            </p>
+            <p className="font-bold text-white text-lg leading-tight">{review.clientName || 'Anonymous Client'}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] font-bold text-[#1754cf] bg-[#1754cf]/10 px-2 py-0.5 rounded-md uppercase tracking-wider border border-[#1754cf]/20">Verified Hiring</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                }) : ''}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end">
           {renderStars(review.overallRating || 0)}
+          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1">Overall Satisfaction</span>
         </div>
       </div>
 
       {review.reviewText && (
-        <p className="text-base-content opacity-80 mb-4 whitespace-pre-wrap">
-          {review.reviewText}
-        </p>
+        <div className="relative">
+          <i className="fas fa-quote-left absolute -left-2 -top-2 text-white/5 text-3xl"></i>
+          <p className="text-slate-300 text-sm leading-relaxed mb-6 italic pl-4 relative z-10 font-light">
+            "{review.reviewText}"
+          </p>
+        </div>
       )}
 
       {/* Category Ratings */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-base-300">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 pt-5 border-t border-white/5">
         {RATING_CATEGORIES.map((category) => {
           const rating = review.ratings?.[category.key] || 0;
           if (rating === 0) return null;
           
           return (
-            <div key={category.key} className="flex items-center gap-2">
-              <i className={`${category.icon} text-primary text-xs`}></i>
-              <span className="text-xs text-muted flex-1 truncate">
-                {category.label}
-              </span>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <i
-                    key={star}
-                    className={`fas fa-star text-xs ${
-                      star <= Math.round(rating)
-                        ? 'text-yellow-400'
-                        : 'text-muted'
-                    }`}
-                  ></i>
-                ))}
+            <div key={category.key} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <i className={`${category.icon} text-[#1754cf] text-[10px]`}></i>
+                  {category.label}
+                </span>
+                <span className="text-[10px] font-black text-white">{rating}</span>
+              </div>
+              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#1754cf] to-[#2563eb] rounded-full" 
+                  style={{ width: `${(rating / 5) * 100}%` }}
+                ></div>
               </div>
             </div>
           );

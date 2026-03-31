@@ -380,11 +380,11 @@ export default function StepImagesReview({
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#131c2e] border border-[#1e3054] rounded-2xl max-w-md w-full p-8 text-center shadow-2xl">
-            <div className="mx-auto w-20 h-20 rounded-full bg-[#1754cf]/20 flex items-center justify-center mb-5">
-              <FaCheckCircle className="text-[#1754cf] text-4xl" />
+          <div className="bg-[#131c2e] border border-[#1e3054] rounded-2xl w-full max-w-sm mx-auto p-6 sm:p-7 text-center shadow-2xl">
+            <div className="mx-auto w-16 h-16 rounded-full bg-[#1754cf]/20 flex items-center justify-center mb-4">
+              <FaCheckCircle className="text-[#1754cf] text-3xl" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
               {isEditMode ? 'Job Updated Successfully!' : 'Job Posted Successfully!'}
             </h3>
             <p className="text-slate-400 text-sm mb-6 leading-relaxed">

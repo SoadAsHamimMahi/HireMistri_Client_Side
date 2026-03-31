@@ -487,18 +487,18 @@ export default function Messages({
   }
 
   return (
-    <div className="flex flex-col h-full bg-base-200 rounded-lg border border-base-300">
+    <div className="flex flex-col h-full glass-morphism rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
       {/* Header */}
       {showHeader && (
-        <div className="p-4 border-b border-base-300 bg-base-100 flex items-center justify-between">
+        <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
             {showUserInfo && workerProfile?.profileCover && (
               <div className="avatar">
-                <div className="w-12 h-12 rounded-full">
+                <div className="w-12 h-12 mask mask-squircle shadow-lg">
                   <img
                     src={workerProfile.profileCover}
                     alt={finalWorkerName}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               </div>
@@ -536,8 +536,8 @@ export default function Messages({
             </div>
           </div>
           {onClose && (
-            <button onClick={onClose} className="btn btn-sm btn-ghost ml-2">
-              ✕
+            <button onClick={onClose} className="btn btn-circle btn-ghost btn-sm text-white/60 hover:text-white hover:bg-white/10 transition-all">
+              <i className="fas fa-times"></i>
             </button>
           )}
         </div>
@@ -545,7 +545,7 @@ export default function Messages({
 
       {/* Worker Job Request Card */}
       {workerJobRequest && (
-        <div className="px-4 pt-4 pb-2 border-b border-base-300 bg-base-100">
+        <div className="px-4 pt-4 pb-2 border-b border-white/10 bg-white/5">
           <WorkerJobRequestCard 
             request={workerJobRequest}
             userRole="client"
@@ -557,7 +557,7 @@ export default function Messages({
       )}
 
       {/* Action Bar - Application Status & Quick Actions */}
-      <div className="px-4 pt-4 pb-2 border-b border-base-300 bg-base-100 space-y-2">
+      <div className="px-4 pt-4 pb-2 border-b border-white/10 bg-white/5 space-y-2">
         {/* Job-related: Show application status */}
         {jobId && finalWorkerId && (
           <ChatApplicationStatus
@@ -614,7 +614,7 @@ export default function Messages({
       </div>
 
       {/* Messages List - No loading state, show cached messages immediately */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
         {messagesWithSeparators.length === 0 ? (
           <div className="text-center py-8 text-base-content opacity-70">
             No messages yet. Start the conversation!
@@ -623,9 +623,9 @@ export default function Messages({
           messagesWithSeparators.map((item) => {
             if (item.type === 'separator') {
               return (
-                <div key={item.key} className="flex items-center justify-center my-4">
-                  <div className="divider w-full max-w-xs">
-                    <span className="text-xs text-base-content opacity-60 px-2">{item.date}</span>
+                <div key={item.key} className="flex items-center justify-center my-6">
+                  <div className="divider w-full  before:bg-white/10 after:bg-white/10">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-white/40 px-3 py-1 rounded-full bg-white/5 border border-white/10">{item.date}</span>
                   </div>
                 </div>
               );
@@ -639,15 +639,15 @@ export default function Messages({
             // Render system messages with special styling
             if (isSystemMessage) {
               return (
-                <div key={item.key} className="flex items-center justify-center my-2">
-                  <div className="bg-base-200 border border-base-300 rounded-lg px-4 py-2 max-w-[85%]">
-                    <div className="flex items-center gap-2">
-                      <i className="fas fa-info-circle text-primary"></i>
-                      <p className="text-sm text-base-content/80 whitespace-pre-wrap break-words">
+                <div key={item.key} className="flex items-center justify-center my-3">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-center backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-1">
+                      <i className="fas fa-info-circle text-blue-400 opacity-80"></i>
+                      <p className="text-sm text-white/70 whitespace-pre-wrap break-words leading-relaxed font-medium">
                         {msg.message}
                       </p>
                     </div>
-                    <p className="text-xs text-base-content/50 mt-1 text-center">
+                    <p className="text-[10px] text-white/30 mt-2 font-mono uppercase tracking-tighter">
                       {formatMessageTime(msg.createdAt)}
                     </p>
                   </div>
@@ -673,23 +673,23 @@ export default function Messages({
                 )}
                 {!showAvatar && !isSender && <div className="w-8"></div>}
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
+                  className={` rounded-2xl p-4 shadow-sm relative group transition-all duration-300 ${
                     isSender
-                      ? 'bg-primary text-primary-content'
-                      : 'bg-base-100 text-base-content border border-base-300'
+                      ? 'bg-gradient-to-br from-[#1754cf] to-[#1e40af] text-white rounded-tr-none border border-white/10'
+                      : 'bg-white/5 text-white/90 border border-white/10 backdrop-blur-md rounded-tl-none'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-                  <div className="flex items-center justify-end gap-2 mt-1">
-                    <p className={`text-xs ${isSender ? 'opacity-80' : 'opacity-60'}`}>
+                  <p className="text-[14.5px] whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
+                  <div className="flex items-center justify-end gap-2 mt-2">
+                    <p className={`text-[10px] font-medium uppercase tracking-tighter ${isSender ? 'text-white/60' : 'text-white/40'}`}>
                       {formatMessageTime(msg.createdAt)}
                     </p>
                     {isSender && (
-                      <span className={`text-xs ${msg.read ? 'text-primary' : 'opacity-60'}`}>
+                      <span className={`text-[10px] ${msg.read ? 'text-white' : 'text-white/40'}`}>
                         {msg.read ? (
-                          <i className="fas fa-check-double"></i>
+                          <i className="fas fa-check-double scale-90"></i>
                         ) : (
-                          <i className="fas fa-check"></i>
+                          <i className="fas fa-check scale-90"></i>
                         )}
                       </span>
                     )}
@@ -719,30 +719,32 @@ export default function Messages({
       </div>
 
       {/* Message Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-base-300 bg-base-100">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-              if (connected && finalWorkerId) {
-                sendTyping(finalWorkerId, e.target.value.length > 0);
-              }
-            }}
-            placeholder="Type a message..."
-            className="input input-bordered flex-1"
-            disabled={sending}
-          />
+      <form onSubmit={handleSend} className="p-4 border-t border-white/10 bg-white/5 backdrop-blur-lg">
+        <div className="flex gap-3 items-center">
+          <div className="flex-1 relative group">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                if (connected && finalWorkerId) {
+                  sendTyping(finalWorkerId, e.target.value.length > 0);
+                }
+              }}
+              placeholder="Type a message..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all text-sm"
+              disabled={sending}
+            />
+          </div>
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-circle bg-blue-600 hover:bg-blue-700 border-none text-white shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
             disabled={!newMessage.trim() || sending}
           >
             {sending ? (
               <span className="loading loading-spinner loading-sm"></span>
             ) : (
-              <FaPaperPlane />
+              <FaPaperPlane className="scale-110" />
             )}
           </button>
         </div>

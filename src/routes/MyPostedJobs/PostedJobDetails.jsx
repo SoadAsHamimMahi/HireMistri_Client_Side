@@ -48,7 +48,7 @@ function DeleteJobButton({ jobId, jobTitle }) {
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-[#121a2f] rounded-2xl shadow-2xl p-8 max-w-md w-full border border-red-500/30">
+          <div className="relative bg-[#121a2f] rounded-2xl shadow-2xl p-8 w-full border border-red-500/30">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
               <i className="fas fa-exclamation-triangle text-2xl text-red-500"></i>
             </div>
@@ -110,6 +110,7 @@ export default function PostedJobDetails() {
   // Rating modal state
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const [workerDetails, setWorkerDetails] = useState({});
 
   useEffect(() => {
     let ignore = false;
@@ -155,10 +156,31 @@ export default function PostedJobDetails() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setApps(data || []);
+
+      // Fetch worker details for each unique workerId
+      if (data && data.length > 0) {
+        const workerIds = [...new Set(data.map(app => app.workerId).filter(Boolean))];
+        workerIds.forEach(wid => fetchWorkerDetails(wid));
+      }
     } catch (e) {
       setAppsErr(e.message || 'Failed to load applications');
     } finally {
       setAppsLoading(false);
+    }
+  };
+
+  const fetchWorkerDetails = async (workerId) => {
+    if (workerDetails[workerId]) return;
+    try {
+      const resp = await fetch(`${base}/api/users/${workerId}/public`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setWorkerDetails(prev => ({ ...prev, [workerId]: data }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch worker details:', err);
     }
   };
 
@@ -368,7 +390,7 @@ export default function PostedJobDetails() {
 
   if (err) return (
     <div className="min-h-screen bg-[#0b1121] text-slate-300 font-sans flex items-center justify-center">
-      <div className="text-center bg-[#121a2f] p-10 border border-red-500/20 rounded-3xl shadow-2xl max-w-lg mx-4">
+      <div className="text-center bg-[#121a2f] p-10 border border-red-500/20 rounded-3xl shadow-2xl mx-4">
         <i className="fas fa-exclamation-triangle text-5xl text-red-500 mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"></i>
         <h2 className="text-3xl font-bold mb-3 text-white">Error Loading Job</h2>
         <p className="text-lg opacity-80 text-slate-400 mb-6">{err}</p>
@@ -379,7 +401,7 @@ export default function PostedJobDetails() {
 
   if (!job) return (
     <div className="min-h-screen bg-[#0b1121] text-slate-300 font-sans flex items-center justify-center">
-      <div className="text-center bg-[#121a2f] p-10 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-4">
+      <div className="text-center bg-[#121a2f] p-10 border border-slate-800 rounded-3xl shadow-xl mx-4">
         <i className="fas fa-search text-5xl text-slate-500 mb-6"></i>
         <h2 className="text-3xl font-bold mb-3 text-white">Job Not Found</h2>
         <Link to="/My-Posted-Jobs" className="btn btn-primary mt-4">Back to List</Link>
@@ -596,12 +618,21 @@ export default function PostedJobDetails() {
                         <tr key={`${a.workerId}-${i}`} className="hover:bg-[#172136] transition-colors group">
                           <td className="px-4 py-4 text-center font-medium text-slate-500">{i + 1}</td>
                           <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                                {(a.workerName || 'W').charAt(0).toUpperCase()}
+                            <Link to={`/worker/${a.workerId}`} className="flex items-center gap-3 group/link">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden border border-white/10 shrink-0">
+                                {workerDetails[a.workerId]?.profileCover ? (
+                                  <img src={workerDetails[a.workerId].profileCover} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                  (workerDetails[a.workerId]?.displayName || a.workerName || 'W').charAt(0).toUpperCase()
+                                )}
                               </div>
-                              <span className="font-bold text-slate-200">{a.workerName || 'Unknown Worker'}</span>
-                            </div>
+                              <span className="font-bold text-slate-200 group-hover/link:text-blue-400 transition-colors">
+                                {([workerDetails[a.workerId]?.firstName, workerDetails[a.workerId]?.lastName].filter(Boolean).join(' ').trim()) ||
+                                  workerDetails[a.workerId]?.displayName || 
+                                  a.workerName || 
+                                  'Unknown Worker'}
+                              </span>
+                            </Link>
                           </td>
                           <td className="px-4 py-4 font-extrabold text-white">{formatCurrency(a.proposedPrice)}</td>
                           <td className="px-4 py-4">
@@ -641,7 +672,7 @@ export default function PostedJobDetails() {
       {open && selected && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative bg-[#121a2f] border border-blue-500/20 w-full max-w-2xl rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="relative bg-[#121a2f] border border-blue-500/20 w-full max-w-2xl mx-auto rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="bg-[#172136] border-b border-slate-800 px-6 py-5 flex items-center justify-between sticky top-0 z-10">
               <h3 className="text-xl font-bold mb-0 text-white flex items-center gap-2">
@@ -655,12 +686,29 @@ export default function PostedJobDetails() {
             <div className="p-6 md:p-8 overflow-y-auto">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-800">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg">
-                    {(selected.workerName || 'W').charAt(0).toUpperCase()}
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg overflow-hidden border-2 border-white/5">
+                    {workerDetails[selected.workerId]?.profileCover ? (
+                      <img src={workerDetails[selected.workerId].profileCover} className="w-full h-full object-cover" alt="" />
+                    ) : (
+                      (([workerDetails[selected.workerId]?.firstName, workerDetails[selected.workerId]?.lastName].filter(Boolean).join(' ').trim()) ||
+                      workerDetails[selected.workerId]?.displayName || 
+                      selected.workerName || 
+                      'W').charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-lg text-white">{selected.workerName || '—'}</h4>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Status: <Badge text={selected.status || 'pending'} tone={(selected.status || 'pending').toLowerCase()} /></p>
+                    <h4 className="font-extrabold text-lg text-white">
+                      {([workerDetails[selected.workerId]?.firstName, workerDetails[selected.workerId]?.lastName].filter(Boolean).join(' ').trim()) ||
+                        workerDetails[selected.workerId]?.displayName || 
+                        selected.workerName || 
+                        '—'}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge text={selected.status || 'pending'} tone={(selected.status || 'pending').toLowerCase()} />
+                      <Link to={`/worker/${selected.workerId}`} className="text-[10px] font-bold text-blue-400 hover:text-white uppercase tracking-widest flex items-center gap-1 transition-colors">
+                        View Profile <i className="fas fa-external-link-alt text-[8px]"></i>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -780,6 +828,7 @@ export default function PostedJobDetails() {
                             >
                               <i className="fas fa-hand-holding-usd"></i> Make Counter Offer
                             </button>
+                            {String(selected.negotiationStatus || '').toLowerCase() !== 'countered' && (
                             <button
                               className="flex-1 bg-green-600 hover:bg-green-500 shadow-lg shadow-green-500/20 text-white font-bold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
                               disabled={negotiating}
@@ -793,6 +842,7 @@ export default function PostedJobDetails() {
                             >
                               <i className="fas fa-check"></i> Accept Their Price
                             </button>
+                            )}
                             <button
                               className="w-full sm:w-auto bg-[#1e293b] hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-400 border border-slate-600 font-bold py-2.5 px-4 rounded-xl transition-colors shrink-0"
                               disabled={negotiating}

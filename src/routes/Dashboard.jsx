@@ -326,7 +326,7 @@ export default function Dashboard() {
                   <i className="fas fa-folder-open text-4xl text-slate-600"></i>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">No jobs posted yet</h3>
-                <p className="text-slate-400 mb-6 max-w-sm mx-auto">You haven't posted any jobs. Create your first job posting to start receiving applications.</p>
+                <p className="text-slate-400 mb-6 mx-auto">You haven't posted any jobs. Create your first job posting to start receiving applications.</p>
                 <Link to="/post-job" className="bg-[#2563eb] hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-blue-500/25">
                   <i className="fas fa-plus mr-2"></i> Post Your First Job
                 </Link>

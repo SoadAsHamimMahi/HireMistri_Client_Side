@@ -85,6 +85,13 @@ export default function StepLocation({ form, setForm, nextStep, prevStep }) {
                   locationText: loc?.locationText ?? prev.locationText,
                   locationGeo: loc?.locationGeo ?? prev.locationGeo,
                   placeId: loc?.placeId ?? prev.placeId,
+                  // Auto-fill only when empty, so we don't fight user typing.
+                  floorHouseNo:
+                    String(prev.floorHouseNo || '').trim().length > 0
+                      ? prev.floorHouseNo
+                      : (loc?.floorHouseNo ?? prev.floorHouseNo),
+                  landmark:
+                    String(prev.landmark || '').trim().length > 0 ? prev.landmark : (loc?.landmark ?? prev.landmark),
                 }))
               }
               placeholder="e.g. Blue Orchid Residency, Block C"

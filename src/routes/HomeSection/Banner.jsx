@@ -40,7 +40,7 @@ const Banner = () => {
             <span className='text-[#2563eb] drop-shadow-[0_0_20px_rgba(37,99,235,0.5)]'>Worker</span> for Your Project
           </h1>
           
-          <p className="mb-8 text-lg sm:text-xl max-w-lg leading-relaxed text-slate-300 font-medium">
+          <p className="mb-8 text-lg sm:text-xl  leading-relaxed text-slate-300 font-medium">
             Connect with skilled professionals in your area. Post your job and get matched with the top-rated workers instantly.
           </p>
           

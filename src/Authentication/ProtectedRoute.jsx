@@ -20,7 +20,7 @@ return <Navigate to="/login" state={{ from: location }} replace />;
   if (isSuspended) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
-        <div className="card w-full max-w-md bg-base-100 shadow-xl">
+        <div className="card w-full bg-base-100 shadow-xl">
           <div className="card-body text-center">
             <h1 className="text-2xl font-bold text-error">Account suspended</h1>
             <p className="text-base-content/70">

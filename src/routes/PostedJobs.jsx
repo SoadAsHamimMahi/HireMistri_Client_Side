@@ -51,7 +51,7 @@ function DeleteJobButton({ jobId, jobTitle, onDelete, isIconOnly = false }) {
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-[#1a2232] rounded-2xl shadow-2xl p-8 max-w-md w-full border border-red-500/30">
+          <div className="relative bg-[#1a2232] rounded-2xl shadow-2xl p-8 w-full border border-red-500/30">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/30">
               <i className="fas fa-exclamation-triangle text-3xl text-red-500"></i>
             </div>

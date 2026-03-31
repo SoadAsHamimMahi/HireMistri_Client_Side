@@ -153,16 +153,21 @@ export default function Notifications({ onClose }) {
   const readNotifications = notifications.filter(n => n.read);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose}></div>
-      <div className="relative bg-base-200 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 z-[150] flex justify-end">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+      <div className="relative w-full sm:w-[400px] h-full bg-[#121a2f] border-l border-slate-800 shadow-2xl flex flex-col animate-slideInRight">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-base-300">
-          <h2 className="text-xl font-bold text-base-content">Notifications</h2>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/80 bg-[#172136]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
+              <i className="far fa-bell text-sm"></i>
+            </span>
+            <h2 className="text-lg font-bold text-white tracking-wide">Notifications</h2>
+          </div>
+          <div className="flex items-center gap-3">
             {unreadCount > 0 && (
               <button
-                className="btn btn-sm btn-ghost"
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                 onClick={markAllAsRead}
                 title="Mark all as read"
               >
@@ -170,42 +175,48 @@ export default function Notifications({ onClose }) {
               </button>
             )}
             <button
-              className="btn btn-sm btn-circle btn-ghost"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800/80 text-slate-400 hover:bg-slate-700 hover:text-white transition-all"
               onClick={onClose}
             >
-              ✕
+              <i className="fas fa-times"></i>
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
           {loading ? (
-            <div className="text-center py-8">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
-              <p className="mt-4 text-base-content opacity-70">Loading notifications...</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <span className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500"></span>
+              <p className="mt-4 text-sm font-medium text-slate-400">Loading notifications...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-error">{error}</p>
-              <button className="btn btn-sm btn-primary mt-4" onClick={fetchNotifications}>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500">
+                <i className="fas fa-exclamation-triangle"></i>
+              </div>
+              <p className="text-sm font-medium text-slate-300">{error}</p>
+              <button className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors" onClick={fetchNotifications}>
                 Retry
               </button>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="text-center py-8">
-              <i className="far fa-bell text-6xl text-base-content opacity-30 mb-4"></i>
-              <p className="text-base-content opacity-70">No notifications yet</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50 text-slate-500">
+                <i className="far fa-bell text-2xl"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-300">All caught up!</h3>
+              <p className="mt-1 text-sm text-slate-500">You don't have any notifications right now.</p>
             </div>
           ) : (
-            <>
+            <div className="space-y-8">
               {/* Unread Notifications */}
               {unreadNotifications.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-base-content opacity-70 mb-3">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 ml-1">
                     New ({unreadNotifications.length})
                   </h3>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     {unreadNotifications.map((notification) => (
                       <NotificationItem
                         key={notification._id}
@@ -224,10 +235,10 @@ export default function Notifications({ onClose }) {
               {/* Read Notifications */}
               {readNotifications.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-base-content opacity-70 mb-3">
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 ml-1">
                     Earlier
                   </h3>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     {readNotifications.map((notification) => (
                       <NotificationItem
                         key={notification._id}
@@ -242,12 +253,41 @@ export default function Notifications({ onClose }) {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
+}
+
+function getIconProps(notification, isUnread) {
+  const type = (notification.type || '').toLowerCase();
+  const title = (notification.title || '').toLowerCase();
+  const msg = (notification.message || '').toLowerCase();
+  
+  if (title.includes('warning') || title.includes('alert') || title.includes('failed') || msg.includes('warned')) {
+    return { icon: 'fas fa-exclamation-triangle', cls: isUnread ? 'bg-red-500/20 text-red-500' : 'bg-slate-800 text-slate-400' };
+  }
+  if (title.includes('platform') || type === 'system' || title.includes('admin') || title.includes('system')) {
+    return { icon: 'fas fa-bullhorn', cls: isUnread ? 'bg-amber-500/20 text-amber-500' : 'bg-slate-800 text-slate-400' };
+  }
+  if (title.includes('expired') || title.includes('timeout')) {
+    return { icon: 'fas fa-stopwatch', cls: isUnread ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-800 text-slate-400' };
+  }
+  if (type === 'message' || title.includes('message') || title.includes('chat')) {
+    return { icon: 'fas fa-envelope', cls: isUnread ? 'bg-sky-500/20 text-sky-400' : 'bg-slate-800 text-slate-400' };
+  }
+  if (type === 'job' || title.includes('job') || title.includes('offer')) {
+    return { icon: 'fas fa-briefcase', cls: isUnread ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-400' };
+  }
+  if (title.includes('payment') || title.includes('money') || title.includes('paid')) {
+    return { icon: 'fas fa-wallet', cls: isUnread ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400' };
+  }
+  if (type === 'application' || title.includes('appl')) {
+    return { icon: 'fas fa-file-alt', cls: isUnread ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-800 text-slate-400' };
+  }
+  return { icon: 'fas fa-bell', cls: isUnread ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-400' };
 }
 
 function NotificationItem({ notification, onMarkAsRead, onDelete, formatTime, getNotificationLink, isUnread }) {
@@ -257,53 +297,61 @@ function NotificationItem({ notification, onMarkAsRead, onDelete, formatTime, ge
     }
   };
 
+  const { icon, cls } = getIconProps(notification, isUnread);
+
   return (
     <div
-      className={`p-4 rounded-lg border transition-colors ${
+      className={`group relative overflow-hidden rounded-xl border p-4 transition-all duration-200 ${
         isUnread
-          ? 'bg-primary/10 border-primary/20 hover:bg-primary/20'
-          : 'bg-base-100 border-base-300 hover:bg-base-200'
+          ? 'border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10'
+          : 'border-slate-800/40 bg-slate-800/20 hover:bg-slate-800/40'
       }`}
     >
-      <div className="flex items-start gap-3">
-        <div className="flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <h4 className={`font-semibold ${isUnread ? 'text-base-content' : 'text-base-content opacity-70'}`}>
-                {notification.title}
-              </h4>
-              <p className={`text-sm mt-1 ${isUnread ? 'text-base-content' : 'text-base-content opacity-60'}`}>
-                {notification.message}
-              </p>
-              <p className="text-xs text-base-content opacity-50 mt-2">
-                {formatTime(notification.createdAt)}
-              </p>
-            </div>
-            <div className="flex items-center gap-1">
-              {isUnread && (
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-              )}
-              <button
-                className="btn btn-xs btn-ghost btn-circle"
+      {isUnread && (
+        <div className="absolute left-0 top-0 h-full w-[3px] bg-blue-500 rounded-l-xl"></div>
+      )}
+      <div className="flex items-start gap-4">
+        <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${cls}`}>
+          <i className={`text-sm ${icon}`}></i>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+             <div className="min-w-0">
+                <h4 className={`truncate text-sm font-semibold ${isUnread ? 'text-white' : 'text-slate-300'}`}>
+                  {notification.title}
+                </h4>
+             </div>
+             {/* Delete Button (visible on hover) */}
+             <button
+                className="opacity-0 group-hover:opacity-100 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all ml-auto"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(notification._id);
                 }}
-                title="Delete"
+                title="Remove"
               >
-                ✕
+                <i className="fas fa-times text-[10px]"></i>
               </button>
-            </div>
           </div>
-          {notification.jobId && (
-            <Link
-              to={getNotificationLink(notification)}
-              onClick={handleClick}
-              className="btn btn-sm btn-link mt-2 p-0 h-auto min-h-0"
-            >
-              View Job →
-            </Link>
-          )}
+          <p className={`mt-1.5 text-[13px] leading-relaxed ${isUnread ? 'text-slate-300' : 'text-slate-400'}`}>
+            {notification.message}
+          </p>
+          
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-slate-500">
+              {formatTime(notification.createdAt)}
+            </span>
+            {notification.jobId && (
+              <Link
+                to={getNotificationLink(notification)}
+                onClick={handleClick}
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+              >
+                View Details <i className="fas fa-arrow-right text-[10px]"></i>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

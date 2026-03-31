@@ -119,33 +119,37 @@ export default function ApplicationDetail() {
 
             {/* Worker Card */}
             <div className="glass rounded-2xl p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Worker</h2>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center bg-[#1754cf]/20 text-[#1754cf] font-bold text-2xl flex-shrink-0 border-2 border-[#1754cf]/30">
-                  {workerInfo?.profileCover
-                    ? <img src={workerInfo.profileCover} alt={workerInfo.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    : (workerInfo?.name || application.workerName || 'W').charAt(0).toUpperCase()
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Worker Information</h2>
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center bg-[#1754cf]/20 text-[#1754cf] font-bold text-3xl flex-shrink-0 border border-white/10 shadow-lg">
+                  {workerInfo?.profileCover || workerInfo?.photoURL
+                    ? <img src={workerInfo.profileCover || workerInfo.photoURL} alt={workerInfo.displayName || workerInfo.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    : (workerInfo?.displayName || workerInfo?.name || application.workerName || 'W').charAt(0).toUpperCase()
                   }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-bold text-lg truncate">
-                    {workerInfo?.name || application.workerName || 'Unknown Worker'}
+                  <h3 className="text-white font-extrabold text-xl truncate">
+                    {workerInfo?.displayName || workerInfo?.name || application.workerName || 'Unknown Worker'}
                   </h3>
-                  {workerInfo?.specialty && (
-                    <p className="text-slate-400 text-sm">{workerInfo.specialty}</p>
-                  )}
-                  {workerInfo?.averageRating > 0 && (
-                    <p className="text-yellow-400 text-sm mt-0.5">
-                      <i className="fas fa-star text-xs mr-1"></i>{workerInfo.averageRating.toFixed(1)} rating
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    {workerInfo?.specialty && (
+                      <span className="text-slate-400 text-xs font-medium flex items-center gap-1.5">
+                        <i className="fas fa-tools text-[#1754cf]/60"></i> {workerInfo.specialty}
+                      </span>
+                    )}
+                    {workerInfo?.averageRating > 0 && (
+                      <span className="text-yellow-400 text-xs font-bold flex items-center gap-1.5 bg-yellow-400/10 px-2 py-0.5 rounded-lg border border-yellow-400/20">
+                        <i className="fas fa-star text-[10px]"></i>{workerInfo.averageRating.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                  <Link
+                    to={`/worker/${application.workerId}`}
+                    className="inline-flex items-center gap-2 mt-3 text-xs font-bold text-blue-400 hover:text-white transition-colors group/link"
+                  >
+                    View Full Profile <i className="fas fa-arrow-right text-[10px] group-hover/link:translate-x-1 transition-transform"></i>
+                  </Link>
                 </div>
-                <Link
-                  to={`/worker/${application.workerId}`}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-[#1754cf]/10 hover:bg-[#1754cf]/20 border border-[#1754cf]/20 text-[#1754cf] rounded-xl text-sm font-semibold transition-all flex-shrink-0"
-                >
-                  <i className="fas fa-user text-xs"></i> Profile
-                </Link>
               </div>
             </div>
 
