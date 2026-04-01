@@ -24,6 +24,21 @@ export default function ApplicationDetail() {
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
 
+  // Additional Charges & Completion State
+  const [extraCharges, setExtraCharges] = useState([]);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completing, setCompleting] = useState(false);
+
+  const fetchExtraCharges = async () => {
+    if (!applicationId) return;
+    try {
+      const res = await axios.get(`${API_BASE}/api/applications/${applicationId}/additional-charges`);
+      setExtraCharges(res.data);
+    } catch (err) {
+      console.warn('Could not fetch extra charges', err);
+    }
+  };
+
   const fetchApplication = async () => {
     try {
       setLoading(true);
@@ -37,7 +52,10 @@ export default function ApplicationDetail() {
   };
 
   useEffect(() => {
-    if (applicationId) fetchApplication();
+    if (applicationId) {
+      fetchApplication();
+      fetchExtraCharges();
+    }
   }, [applicationId]);
 
   const handleStatusChange = async (newStatus) => {
@@ -54,7 +72,40 @@ export default function ApplicationDetail() {
     }
   };
 
+  const handleChargeAction = async (chargeId, action) => {
+    try {
+      await axios.post(`${API_BASE}/api/applications/${applicationId}/additional-charges/approve`, {
+        chargeId,
+        status: action
+      });
+      toast.success(`Charge ${action.toLowerCase()}!`);
+      fetchExtraCharges();
+    } catch (err) {
+      toast.error(err.response?.data?.error || `Failed to ${action.toLowerCase()} charge`);
+    }
+  };
+
+  const handleCompleteJob = async () => {
+    setCompleting(true);
+    try {
+      const res = await axios.patch(`${API_BASE}/api/applications/${application._id}/status`, { status: 'completed' });
+      setApplication(prev => ({ ...prev, ...res.data, workerInfo: prev.workerInfo, jobInfo: prev.jobInfo }));
+      toast.success('Job marked as completed successfully!');
+      setShowCompleteModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to complete job');
+    } finally {
+      setCompleting(false);
+    }
+  };
+
   const statusCfg = STATUS_CONFIG[(application?.status || 'pending').toLowerCase()] || STATUS_CONFIG.pending;
+  
+  // Calculations for Itemized Bill
+  const laborAmount = Number(application?.finalPrice || application?.proposedPrice || 0);
+  const approvedExtras = extraCharges.filter(c => c.status === 'APPROVED' && c.type === 'EXTRA_COST').reduce((s, c) => s + Number(c.amount), 0);
+  const approvedTips = extraCharges.filter(c => c.status === 'APPROVED' && c.type === 'TIP').reduce((s, c) => s + Number(c.amount), 0);
+  const totalBill = laborAmount + approvedExtras + approvedTips;
 
   if (loading) {
     return (
@@ -112,10 +163,73 @@ export default function ApplicationDetail() {
           </span>
         </div>
 
+        {/* --- Job Progress Tracker Stepper --- */}
+        <div className="glass rounded-2xl p-6 mb-8 overflow-x-auto">
+          <div className="min-w-[600px] flex items-center justify-between relative">
+            {/* Background line */}
+            <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full overflow-hidden">
+              {(() => {
+                const stepIndex = ['pending', 'accepted', 'completed'].indexOf((application.status || 'pending').toLowerCase());
+                const width = stepIndex === 0 ? '50%' : stepIndex === 1 ? '100%' : stepIndex === 2 ? '100%' : '50%';
+                if (['rejected', 'withdrawn'].includes(application.status)) return null;
+                return <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: stepIndex >= 2 ? '100%' : (stepIndex > 0 ? '50%' : '0%') }} />;
+              })()}
+            </div>
+
+            {/* Step: Applied */}
+            <div className={`relative z-10 flex flex-col items-center gap-2 ${['rejected', 'withdrawn'].includes(application.status) ? 'opacity-50' : 'opacity-100'}`}>
+              <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                <i className="fas fa-paper-plane"></i>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-blue-400">Applied</span>
+            </div>
+
+            {/* Step: Accepted */}
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              {['rejected', 'withdrawn'].includes(application.status) ? (
+                <div className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                  <i className="fas fa-times"></i>
+                </div>
+              ) : (
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 ${['accepted', 'completed'].includes(application.status) ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-[#111621] border-2 border-slate-600 text-slate-500'}`}>
+                  {['accepted', 'completed'].includes(application.status) ? <i className="fas fa-handshake"></i> : <i className="fas fa-hourglass-half"></i>}
+                </div>
+              )}
+              <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${['rejected', 'withdrawn'].includes(application.status) ? 'text-red-400' : ['accepted', 'completed'].includes(application.status) ? 'text-green-400' : 'text-slate-500'}`}>
+                {['rejected', 'withdrawn'].includes(application.status) ? application.status : 'Accepted'}
+              </span>
+            </div>
+
+            {/* Step: Completed */}
+            <div className={`relative z-10 flex flex-col items-center gap-2 ${['rejected', 'withdrawn'].includes(application.status) ? 'opacity-50' : 'opacity-100'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 ${application.status === 'completed' ? 'bg-[#1754cf] text-white shadow-[0_0_15px_rgba(23,84,207,0.5)]' : 'bg-[#111621] border-2 border-slate-600 text-slate-500'}`}>
+                <i className="fas fa-flag-checkered"></i>
+              </div>
+              <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${application.status === 'completed' ? 'text-blue-400' : 'text-slate-500'}`}>Completed</span>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* ── Left column ── */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Job Expiry Warning */}
+            {application?.jobInfo?.status === 'expired' && (
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-5 flex items-start gap-4 shadow-lg shadow-orange-500/5 animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
+                  <i className="fas fa-exclamation-triangle text-orange-500 text-lg"></i>
+                </div>
+                <div>
+                  <h4 className="text-white font-bold text-base mb-1">Attention: Job Expired</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    This job has reached its expiration date and is no longer visible to new workers. 
+                    You can still communicate with this applicant, but no new applications can be received.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Worker Card */}
             <div className="glass rounded-2xl p-6">
@@ -212,6 +326,74 @@ export default function ApplicationDetail() {
                 </div>
               </div>
             )}
+
+            {/* Additional Charges Section for Client */}
+            {isClient && ['accepted', 'completed'].includes(application.status) && (
+               <div className="glass rounded-2xl p-6">
+                 <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">Additional Charges & Tips</h2>
+                 </div>
+                 
+                 {extraCharges.length > 0 ? (
+                    <div className="space-y-4">
+                       {extraCharges.map(charge => (
+                          <div key={charge._id} className="bg-[#111621] border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+                             <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${charge.type === 'TIP' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                       {charge.type.replace('_', ' ')}
+                                    </span>
+                                    <span className="text-white font-bold text-lg">৳{Number(charge.amount).toLocaleString()}</span>
+                                </div>
+                                <p className="text-sm text-slate-400">{charge.description}</p>
+                                {charge.receiptUrls?.length > 0 && (
+                                   <div className="flex gap-3 mt-2">
+                                     {charge.receiptUrls.map((url, i) => (
+                                        <a key={i} href={API_BASE + url} target="_blank" rel="noreferrer" className="text-xs text-[#1754cf] hover:underline flex items-center gap-1">
+                                          <i className="fas fa-file-invoice"></i> Receipt {i + 1}
+                                        </a>
+                                     ))}
+                                   </div>
+                                )}
+                             </div>
+                             
+                             <div className="flex flex-col gap-2 shrink-0">
+                                {charge.status === 'PENDING' && application.status === 'accepted' ? (
+                                   <div className="flex gap-2">
+                                     <button onClick={() => handleChargeAction(charge._id, 'APPROVED')} className="px-4 py-2 bg-green-500/20 text-green-400 hover:bg-green-500/30 font-bold text-xs rounded-lg transition-colors">
+                                        Approve
+                                     </button>
+                                     <button onClick={() => handleChargeAction(charge._id, 'REJECTED')} className="px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold text-xs rounded-lg transition-colors">
+                                        Reject
+                                     </button>
+                                   </div>
+                                ) : (
+                                   <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg text-center ${
+                                      charge.status === 'APPROVED' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                                      charge.status === 'REJECTED' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                      'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                                   }`}>
+                                      {charge.status}
+                                   </span>
+                                )}
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 ) : (
+                    <p className="text-sm text-slate-500 italic">No additional charges requested by the worker.</p>
+                 )}
+                 
+                 {/* Checkout / Complete Job Action */}
+                 {application.status === 'accepted' && (
+                    <div className="mt-8 pt-6 border-t border-white/5 text-right">
+                       <button onClick={() => setShowCompleteModal(true)} className="inline-flex items-center gap-2 px-8 py-3 bg-[#1754cf] hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg transition-transform hover:-translate-y-0.5">
+                          Review & Complete Job <i className="fas fa-check-double"></i>
+                       </button>
+                    </div>
+                 )}
+               </div>
+            )}
           </div>
 
           {/* ── Right column ── */}
@@ -287,6 +469,60 @@ export default function ApplicationDetail() {
           </div>
         </div>
       </div>
+
+      {/* Itemized Bill / Checkout Modal */}
+      {showCompleteModal && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
+            <div className="bg-[#111621] border border-white/10 rounded-2xl max-w-md w-full shadow-2xl p-6 relative">
+               <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-extrabold text-white">Itemized Final Bill</h3>
+                  <button onClick={() => setShowCompleteModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                     <i className="fas fa-times"></i>
+                  </button>
+               </div>
+               
+               <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center text-slate-300">
+                     <span className="text-sm font-medium">Labor Cost (Agreed Bid)</span>
+                     <span className="font-bold">৳ {laborAmount.toLocaleString()}</span>
+                  </div>
+                  {approvedExtras > 0 && (
+                     <div className="flex justify-between items-center text-blue-400">
+                        <span className="text-sm font-medium">Approved Extra Costs</span>
+                        <span className="font-bold">+ ৳ {approvedExtras.toLocaleString()}</span>
+                     </div>
+                  )}
+                  {approvedTips > 0 && (
+                     <div className="flex justify-between items-center text-purple-400">
+                        <span className="text-sm font-medium">Approved Tips</span>
+                        <span className="font-bold">+ ৳ {approvedTips.toLocaleString()}</span>
+                     </div>
+                  )}
+                  
+                  <div className="border-t border-white/10 pt-4 mt-4 flex justify-between items-center">
+                     <span className="text-sm font-bold text-white uppercase tracking-widest">Total to Pay Worker</span>
+                     <span className="text-3xl font-black text-green-400">৳ {totalBill.toLocaleString()}</span>
+                  </div>
+               </div>
+
+               <div className="bg-[#1754cf]/10 border border-[#1754cf]/20 rounded-xl p-4 mb-6">
+                  <p className="text-xs text-[#1754cf] leading-relaxed">
+                     <i className="fas fa-info-circle mr-1"></i>
+                     By completing this job, you confirm that the worker has finished the task to your satisfaction. You must pay this total amount directly to the worker. A platform fee will be automatically deducted from the worker's wallet.
+                  </p>
+               </div>
+
+               <div className="flex gap-3">
+                  <button onClick={() => setShowCompleteModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-colors">
+                     Cancel
+                  </button>
+                  <button onClick={handleCompleteJob} disabled={completing} className="flex-[2] py-3 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold text-sm transition-colors shadow-lg shadow-green-500/20 disabled:opacity-50">
+                     {completing ? 'Processing...' : 'Confirm & Complete Job'}
+                  </button>
+               </div>
+            </div>
+         </div>
+      )}
     </div>
   );
 }

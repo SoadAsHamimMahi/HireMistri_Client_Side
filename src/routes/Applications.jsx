@@ -25,6 +25,8 @@ export default function Applications() {
   const [negotiatingAppId, setNegotiatingAppId] = useState(null);
   const [counterPrice, setCounterPrice] = useState('');
   const [negotiating, setNegotiating] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   // Rating modal state
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
@@ -309,6 +311,19 @@ export default function Applications() {
     );
   }
 
+  const toggleSelectForCompare = (id) => {
+    setSelectedForCompare(prev => {
+      if (prev.includes(id)) return prev.filter(item => item !== id);
+      if (prev.length >= 3) {
+        toast.error('You can compare up to 3 workers at a time');
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const selectedWorkers = applications.filter(a => selectedForCompare.includes(a._id));
+
   return (
     <div className="text-slate-100 min-h-screen font-sans">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -363,7 +378,15 @@ export default function Applications() {
                   Rejected
                 </button>
               </div>
-              <div className="flex gap-3 mb-3 shrink-0 w-full md:w-auto">
+              <div className="flex gap-3 mb-3 shrink-0 w-full md:w-auto items-center">
+                {selectedForCompare.length >= 2 && (
+                  <button 
+                    onClick={() => setShowCompareModal(true)}
+                    className="bg-[#1754cf] hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all animate-bounce"
+                  >
+                    <i className="fas fa-columns"></i> Compare ({selectedForCompare.length})
+                  </button>
+                )}
                 <div className="relative flex-1 md:flex-none">
                   <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                   <input
@@ -406,9 +429,17 @@ export default function Applications() {
                   if (isCompleted) statusColor = "bg-purple-500/10 text-purple-400";
                   if (isRejected) statusColor = "bg-red-500/10 text-red-400";
 
+                  const isSelected = selectedForCompare.includes(applicant._id);
+
                   return (
-                    <div key={applicant._id} className="bg-[#1a2232]/70 backdrop-blur-xl rounded-2xl p-5 border border-white/5 flex flex-wrap lg:flex-nowrap flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:border-[#1754cf]/30 transition-all group shadow-sm">
+                    <div key={applicant._id} className={`bg-[#1a2232]/70 backdrop-blur-xl rounded-2xl p-5 border flex flex-wrap lg:flex-nowrap flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:border-[#1754cf]/30 transition-all group shadow-sm relative ${isSelected ? 'border-[#1754cf] ring-1 ring-[#1754cf]/30' : 'border-white/5'}`}>
                       <div className="flex items-start lg:items-center gap-5 w-full lg:w-auto">
+                        <button 
+                          onClick={() => toggleSelectForCompare(applicant._id)}
+                          className={`shrink-0 w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${isSelected ? 'bg-[#1754cf] border-[#1754cf] text-white' : 'border-white/10 hover:border-white/30 text-transparent'}`}
+                        >
+                          <i className="fas fa-check text-[10px]"></i>
+                        </button>
                         <div className="h-16 w-16 min-w-[64px] rounded-2xl bg-gradient-to-br from-[#1754cf] to-indigo-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shrink-0 ring-2 ring-white/5 overflow-hidden">
                           {workerInfo.photo ? (
                             <img src={workerInfo.photo} alt={workerInfo.name} className="w-full h-full object-cover" />
@@ -609,6 +640,75 @@ export default function Applications() {
                     Close
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Comparison Modal */}
+        {showCompareModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-in fade-in">
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowCompareModal(false)}></div>
+            <div className="bg-[#111621] border border-white/10 rounded-[2.5rem] w-full max-w-4xl shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
+                 <div>
+                   <h2 className="text-2xl font-black text-white tracking-tight">Compare Workers</h2>
+                   <p className="text-slate-500 text-sm">Side-by-side comparison of selected applicants</p>
+                 </div>
+                 <button onClick={() => setShowCompareModal(false)} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all">
+                    <i className="fas fa-times"></i>
+                 </button>
+              </div>
+
+              <div className="overflow-auto p-8">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {selectedWorkers.map(app => {
+                      const info = getWorkerInfo(app);
+                      const fullInfo = workerDetails[app.workerId];
+                      return (
+                        <div key={app._id} className="bg-[#1a2232] rounded-[2rem] border border-white/5 p-6 flex flex-col">
+                           <div className="flex flex-col items-center text-center mb-6">
+                              <div className="w-20 h-20 rounded-2xl overflow-hidden mb-4 ring-4 ring-[#1754cf]/10">
+                                 {info.photo ? <img src={info.photo} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full bg-blue-500 flex items-center justify-center text-2xl font-black text-white">{info.name[0]}</div>}
+                              </div>
+                              <h3 className="text-white font-bold text-lg leading-tight mb-1">{info.name}</h3>
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1754cf] bg-blue-500/10 px-3 py-1 rounded-full">{fullInfo?.specialty || 'Generalist'}</span>
+                           </div>
+
+                           <div className="space-y-4 flex-1">
+                              <div className="bg-white/5 rounded-2xl p-4">
+                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rating</p>
+                                 <div className="flex items-center gap-2 text-yellow-400 font-black">
+                                    <i className="fas fa-star"></i>
+                                    <span>{fullInfo?.averageRating ? fullInfo.averageRating.toFixed(1) : 'No Rating'}</span>
+                                    <span className="text-[10px] text-slate-500 font-bold ml-auto">({fullInfo?.totalReviews || 0} reviews)</span>
+                                 </div>
+                              </div>
+
+                              <div className="bg-white/5 rounded-2xl p-4">
+                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Price Offer</p>
+                                 <p className="text-white font-black text-xl">৳{(app.finalPrice || app.proposedPrice || 0).toLocaleString()}</p>
+                              </div>
+
+                              <div className="bg-white/5 rounded-2xl p-4">
+                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                                 <p className="text-slate-300 font-bold text-sm uppercase tracking-wide">{app.status}</p>
+                              </div>
+                           </div>
+
+                           <button 
+                             onClick={() => { setShowCompareModal(false); navigate(`/worker/${app.workerId}`); }}
+                             className="mt-6 w-full py-3 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-white/5 transition-all"
+                           >
+                             View Details
+                           </button>
+                        </div>
+                      )
+                    })}
+                 </div>
+              </div>
+
+              <div className="p-6 bg-[#0f1420] border-t border-white/5 text-center shrink-0">
+                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Hire-Mistri Comparison Tool v1.0</p>
               </div>
             </div>
           </div>

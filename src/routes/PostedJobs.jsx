@@ -344,6 +344,7 @@ export default function PostedJobs() {
             { id: 'active', label: `Active (${activeJobs})` },
             { id: 'in progress', label: `In Progress (${inProgressJobs})` },
             { id: 'completed', label: `Completed (${completedJobs})` },
+            { id: 'expired', label: `Expired` },
             { id: 'drafts', label: `Drafts (${draftJobs})` },
             { id: 'sent-offers', label: `Sent Offers (${sentOffers.length})` }
           ].map(tab => (
@@ -387,6 +388,7 @@ export default function PostedJobs() {
               if (status === 'completed') { badgeColor = 'bg-[#0bda5e]'; }
               if (status === 'draft') { badgeColor = 'bg-slate-600'; badgeLabel = 'Draft'; }
               if (status === 'cancelled') { badgeColor = 'bg-red-500'; }
+              if (status === 'expired') { badgeColor = 'bg-slate-500'; badgeLabel = 'Expired'; }
               if (isPrivate) { 
                 badgeColor = offerStatus === 'accepted' ? 'bg-[#0bda5e]' : offerStatus === 'pending' ? 'bg-orange-500' : 'bg-red-500';
                 badgeLabel = `Offer ${offerStatus}`;
