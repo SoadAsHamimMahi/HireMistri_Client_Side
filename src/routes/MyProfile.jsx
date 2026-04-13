@@ -1,25 +1,19 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import { AuthContext } from "../Authentication/AuthProvider";
-import { useTheme } from "../contexts/ThemeContext";
 import axios from "axios";
-import PageContainer from "../components/layout/PageContainer";
 import { toast } from "react-hot-toast";
 
 export default function MyProfile() {
-  const { user, sendVerificationEmail, reloadUser } = useContext(AuthContext);
-  const { isDarkMode } = useTheme();
+  const { user, sendVerificationEmail } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("overview");
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [sendingVerification, setSendingVerification] = useState(false);
 
   const base = (
     import.meta.env.VITE_API_URL || "http://localhost:5000"
   ).replace(/\/$/, "");
 
-  const normalizeProfileImageUrl = (value) => {
+  const normalizeProfileImageUrl = useCallback((value) => {
     if (!value || typeof value !== "string") return "";
     const raw = value.trim();
     if (!raw) return "";
@@ -33,7 +27,7 @@ export default function MyProfile() {
       if (raw.startsWith("/uploads/")) return `${base}${raw}`;
       return raw;
     }
-  };
+  }, [base]);
 
   // Client data from API
   const [clientData, setClientData] = useState({
@@ -76,7 +70,7 @@ export default function MyProfile() {
   });
 
   // Fetch user profile data
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user?.uid) return;
 
     try {
@@ -137,7 +131,7 @@ export default function MyProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [base, normalizeProfileImageUrl, user?.uid, user?.email]);
 
   // Update user profile
   const updateUserProfile = async (profileData) => {
@@ -194,7 +188,7 @@ export default function MyProfile() {
   // Fetch profile data on component mount
   useEffect(() => {
     fetchUserProfile();
-  }, [user?.uid]);
+  }, [fetchUserProfile]);
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -252,65 +246,25 @@ export default function MyProfile() {
       newPassword: "",
       confirmPassword: "",
     });
-    setIsChangingPassword(false);
   };
 
   const handleShareProfile = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       toast.success("Profile link copied!");
-    } catch (err) {
+    } catch (error) {
+      console.error("Failed to copy profile link:", error);
       toast.error("Failed to copy link");
     }
   };
 
-  const addSkill = (skill) => {
-    if (skill.trim() && !editForm.skills.includes(skill.trim())) {
-      setEditForm((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skill.trim()],
-      }));
-    }
-  };
-
-  const removeSkill = (skillToRemove) => {
-    setEditForm((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((skill) => skill !== skillToRemove),
-    }));
-  };
-
   const handleSendVerificationEmail = async () => {
     try {
-      setSendingVerification(true);
       await sendVerificationEmail();
       alert("Verification email sent! Please check your inbox.");
     } catch (e) {
       console.error(e);
       alert(e.message || "Failed to send verification email");
-    } finally {
-      setSendingVerification(false);
-    }
-  };
-
-  const handleCheckVerification = async () => {
-    try {
-      await reloadUser();
-      if (user?.emailVerified) {
-        // Sync to server
-        await axios.patch(`${base}/api/users/${user.uid}`, {
-          emailVerified: true,
-        });
-        setClientData((prev) => ({ ...prev, emailVerified: true }));
-        alert("Email verified!");
-      } else {
-        alert(
-          "Email not verified yet. Please check your inbox and click the verification link.",
-        );
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Failed to check verification status");
     }
   };
 
@@ -720,7 +674,7 @@ export default function MyProfile() {
 
         <div className="mt-10">
           <button
-            onClick={handleChangePassword}
+            onClick={handlePasswordUpdate}
             disabled={saving}
             className="w-full py-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 disabled:from-slate-800 disabled:to-slate-800 border-none text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-rose-600/20 flex items-center justify-center gap-3 active:scale-[0.98]"
           >

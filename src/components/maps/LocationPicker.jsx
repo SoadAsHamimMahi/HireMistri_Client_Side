@@ -421,7 +421,11 @@ export default function LocationPicker({
 
   const onMapLoad = useCallback(() => {
     if (window.google?.maps?.Geocoder && !geocoderRef.current) {
-      try { geocoderRef.current = new window.google.maps.Geocoder(); } catch {}
+      try {
+        geocoderRef.current = new window.google.maps.Geocoder();
+      } catch (error) {
+        console.warn('Failed to initialize Google Geocoder:', error);
+      }
     }
   }, []);
 

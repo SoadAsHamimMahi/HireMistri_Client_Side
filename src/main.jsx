@@ -196,32 +196,14 @@ const router = createBrowserRouter([
   },
 ]);
 
-// #region agent log
-try {
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:139',message:'Starting React render',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-} catch(e) {}
-// #endregion
-
 try {
   const rootElement = document.getElementById('root');
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:145',message:'Root element check',data:{exists:!!rootElement},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
+
   if (!rootElement) {
     throw new Error('Root element not found');
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:152',message:'Creating root',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-
   const root = createRoot(rootElement);
-
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:157',message:'Rendering app',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 
   // Add error boundary
   class ErrorBoundary extends React.Component {
@@ -231,20 +213,10 @@ try {
     }
 
     static getDerivedStateFromError(error) {
-      // #region agent log
-      try {
-        fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:ErrorBoundary',message:'React error caught',data:{error:error.message,stack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      } catch(e) {}
-      // #endregion
       return { hasError: true, error };
     }
 
     componentDidCatch(error, errorInfo) {
-      // #region agent log
-      try {
-        fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:componentDidCatch',message:'Error details',data:{error:error.message,componentStack:errorInfo.componentStack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      } catch(e) {}
-      // #endregion
       console.error('ErrorBoundary caught error:', error, errorInfo);
     }
 
@@ -281,12 +253,6 @@ try {
     </React.StrictMode>
   );
 
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:171',message:'Render completed',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 } catch (error) {
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/911a7613-44ba-43a9-92c1-5f0fb37aadca',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:174',message:'Render error',data:{error:error.message,stack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   console.error('Failed to render app:', error);
 }

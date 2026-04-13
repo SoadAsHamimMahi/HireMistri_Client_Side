@@ -18,7 +18,7 @@ export default function Root() {
   return (
       <div className="min-h-screen app-root transition-colors duration-300 flex flex-col overflow-x-hidden">
         <Navbar />
-        <main className="flex-1 w-full max-w-[83.333%] mx-auto">
+        <main className="flex-1 w-full">
           <Outlet />
         </main>
         <Footer></Footer>

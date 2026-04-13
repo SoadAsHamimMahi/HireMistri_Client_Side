@@ -5,71 +5,58 @@ import { Link } from 'react-router-dom';
 
 const Banner = () => {
   return (
-    <div
-      className="relative w-screen left-1/2 -translate-x-1/2 h-[60vh] md:h-[75vh] overflow-hidden bg-[#0b1121] bg-no-repeat bg-cover bg-right"
-      style={{
-        backgroundImage: `url(${BannerBg})`,
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0b1121] via-[#0b1121]/80 to-[#0b1121]/30 pointer-events-none z-10" aria-hidden="true" />
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0b1121] to-transparent z-10"></div>
-      
-      {/* Decorative Glow Elements */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] z-0 pointer-events-none"></div>
-
-      <div className="relative z-20 flex flex-col lg:flex-row items-center justify-between h-full w-full px-4 md:px-8">
-        
-        {/* Image Section - Always Left */}
-        <div className="w-full lg:w-1/2 flex justify-center lg:justify-start order-1 lg:order-none relative">
-          <img
-            src={BannerImage}
-            alt="Workers"
-            className="h-[300px] sm:h-[350px] lg:h-full w-auto object-contain drop-shadow-[0_20px_50px_rgba(37,99,235,0.2)]"
-          />
-        </div>
-
-        {/* Text Section - Always Right */}
-        <div className="w-full lg:w-1/2 text-white text-center lg:text-left py-8 flex flex-col justify-center items-center lg:items-start order-2">
-          
-          <div className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-sm mb-6 uppercase tracking-wider">
+    <section className="relative bg-gray-100 pt-12 overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-8 flex flex-col lg:flex-row items-stretch gap-12">
+        {/* Hero Content - Always Left on Desktop */}
+        <div className="flex-1 lg:max-w-2xl text-center lg:text-left z-10 order-2 lg:order-1 mt-8 lg:mt-0 flex flex-col justify-center">
+          <div className="inline-block w-fit self-center lg:self-start px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-[#0a58ca] font-bold text-sm mb-6 uppercase tracking-wider">
             <i className="fas fa-bolt text-yellow-500 mr-2"></i> Instant Booking Available
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-            Find the Perfect <br className="hidden lg:block" />
-            <span className='text-[#2563eb] drop-shadow-[0_0_20px_rgba(37,99,235,0.5)]'>Worker</span> for Your Project
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6 tracking-tight">
+            Find the <span className="text-[#0a58ca]">Perfect Worker</span><br className="hidden lg:block" /> for Your Project
           </h1>
-          
-          <p className="mb-8 text-lg sm:text-xl  leading-relaxed text-slate-300 font-medium">
+
+          <p className="text-lg text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
             Connect with skilled professionals in your area. Post your job and get matched with the top-rated workers instantly.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
-            <Link 
-              to="/post-job" 
-              className="group bg-[#2563eb] hover:bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-xl shadow-[0_4px_20px_0_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-3 w-full sm:w-auto"
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start w-full sm:w-auto">
+            <Link
+              to="/post-job"
+              className="group bg-[#0a58ca] hover:bg-[#084298] text-white px-8 py-3.5 rounded-md font-bold text-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-md shadow-blue-500/20"
             >
-              Post a Job <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+              Post a Job
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </Link>
-            
-            <button className="bg-[#121a2f] border border-slate-700 hover:border-blue-500/50 hover:bg-[#172136] text-white font-bold text-lg px-8 py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto">
-              <i className="fas fa-search text-blue-400"></i>
+
+            <button className="w-full sm:w-auto border-2 border-gray-200 text-gray-700 hover:bg-gray-50 px-8 py-3.5 rounded-md font-bold text-lg transition-colors flex items-center justify-center gap-2">
+              <i className="fas fa-search text-[#0a58ca]"></i>
               Browse Workers
             </button>
           </div>
-          
-          <div className="mt-8 flex items-center gap-4 text-sm font-semibold text-slate-400">
+
+          <div className="mt-10 flex items-center justify-center lg:justify-start gap-4 text-sm font-semibold text-gray-500">
             <div className="flex -space-x-3">
-              <img src="https://i.pravatar.cc/100?img=1" className="w-8 h-8 rounded-full border-2 border-[#0b1121]" alt="User"/>
-              <img src="https://i.pravatar.cc/100?img=2" className="w-8 h-8 rounded-full border-2 border-[#0b1121]" alt="User"/>
-              <img src="https://i.pravatar.cc/100?img=3" className="w-8 h-8 rounded-full border-2 border-[#0b1121]" alt="User"/>
+              <img src="https://i.pravatar.cc/100?img=1" className="w-8 h-8 rounded-full border-2 border-white" alt="User" />
+              <img src="https://i.pravatar.cc/100?img=2" className="w-8 h-8 rounded-full border-2 border-white" alt="User" />
+              <img src="https://i.pravatar.cc/100?img=3" className="w-8 h-8 rounded-full border-2 border-white" alt="User" />
             </div>
-            <span>Trusted by <span className="text-white">10,000+</span> Customers</span>
+            <span>Trusted by <span className="text-gray-900">10,000+</span> Customers</span>
           </div>
 
         </div>
+
+        {/* Hero Image - Right Side on Desktop */}
+        <div className="flex-1 w-full relative z-0 order-1 lg:order-2 flex items-end justify-center lg:justify-end">
+          <img
+            src={BannerImage}
+            alt="Workers ready for project"
+            className="block w-full max-h-[500px] lg:max-h-[600px] object-contain drop-shadow-2xl translate-y-[2px] -mb-px"
+          />
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -68,8 +68,8 @@ export default {
           "--tab-radius": "0.5rem",
         },
         light: {
-          "primary": "#1DC66C",
-          "primary-focus": "#17A858",
+          "primary": "#0a58ca",
+          "primary-focus": "#084298",
           "primary-content": "#ffffff",
           "secondary": "#3b82f6",
           "secondary-focus": "#2563eb",

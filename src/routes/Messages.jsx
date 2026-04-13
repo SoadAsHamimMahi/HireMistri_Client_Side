@@ -32,8 +32,6 @@ export default function Messages({
   const [isTyping, setIsTyping] = useState(false);
   const [workerProfile, setWorkerProfile] = useState(null);
   const [jobDetail, setJobDetail] = useState(null);
-  const [applicationStatus, setApplicationStatus] = useState(null);
-  const [applicationData, setApplicationData] = useState(null);
   const [showJobCreationModal, setShowJobCreationModal] = useState(false);
   const [workerJobRequest, setWorkerJobRequest] = useState(null);
   const [conversationJobs, setConversationJobs] = useState({ jobs: [], workerRequests: [] });
@@ -106,7 +104,7 @@ export default function Messages({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [conversationId, user?.uid, workerId, extractedWorkerId, extractedWorkerName, connected]);
+  }, [conversationId, user?.uid, workerId, extractedWorkerId, extractedWorkerName, connected, messages.length, updateMessages]);
 
   // WebSocket: Listen for new messages and typing indicators
   useEffect(() => {
@@ -219,35 +217,6 @@ export default function Messages({
     fetchJobDetail();
   }, [finalWorkerId, jobId, showUserInfo]);
 
-  // Fetch application status for job-related conversations
-  useEffect(() => {
-    const fetchApplicationStatus = async () => {
-      if (!jobId || !user?.uid || !finalWorkerId) {
-        setApplicationData(null);
-        setApplicationStatus(null);
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${API_BASE}/api/applications/${jobId}/${finalWorkerId}`
-        );
-        setApplicationData(response.data);
-        setApplicationStatus(response.data.status || 'pending');
-      } catch (err) {
-        if (err.response?.status === 404) {
-          // No application yet
-          setApplicationStatus(null);
-          setApplicationData(null);
-        } else {
-          console.error('Failed to fetch application status:', err);
-        }
-      }
-    };
-
-    fetchApplicationStatus();
-  }, [jobId, user?.uid, finalWorkerId]);
-
   // Fetch worker job requests for this conversation
   useEffect(() => {
     const fetchWorkerJobRequest = async () => {
@@ -319,11 +288,6 @@ export default function Messages({
     } finally {
       setWithdrawingOfferId(null);
     }
-  };
-
-  const handleApplicationStatusChange = (newStatus, data) => {
-    setApplicationStatus(newStatus);
-    setApplicationData(data);
   };
 
   const handleJobCreated = async (newJobId) => {
@@ -564,7 +528,7 @@ export default function Messages({
             jobId={jobId}
             workerId={finalWorkerId}
             userRole="client"
-            onStatusChange={handleApplicationStatusChange}
+            onStatusChange={() => {}}
           />
         )}
 

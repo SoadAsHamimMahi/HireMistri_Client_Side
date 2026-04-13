@@ -1,4 +1,4 @@
-import { FaArrowRight, FaArrowLeft, FaLightbulb } from 'react-icons/fa';
+import { FaArrowRight, FaArrowLeft, FaLightbulb, FaMoneyBillWave, FaClock, FaCalendarAlt } from 'react-icons/fa';
 
 export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }) {
   const handleChange = (e) => {
@@ -6,55 +6,59 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
   };
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
-
   const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full mx-auto items-start">
       {/* Left panel */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-4">
-            Set your Budget and Schedule
+          <p className="text-xs font-black text-[#0a58ca] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
+            <span className="w-10 h-0.5 bg-[#0a58ca]"></span>
+            Step 3 of 5
+          </p>
+          <h2 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-6">
+            Set your <span className="text-[#0a58ca]">Budget</span> & <span className="text-[#0a58ca]">Schedule</span>
           </h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Define the financial range and timing for your project to help mistris
-            provide accurate quotes and availability.
+          <p className="text-gray-500 leading-relaxed font-medium">
+            Define the financial range and timing for your project. This helps Mistris 
+            provide accurate quotes and verify their availability for your schedule.
           </p>
         </div>
 
         {/* Pro Tip */}
-        <div className="bg-[#111e34] border border-[#1e3054] rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <FaLightbulb className="text-[#1754cf]" size={14} />
-            <span className="text-sm font-semibold text-white">Pro Tip</span>
+        <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-[#0a58ca] shadow-sm">
+              <FaLightbulb size={14} />
+            </div>
+            <span className="text-sm font-black text-gray-900 uppercase tracking-widest">Pricing Tip</span>
           </div>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Setting a realistic budget and clear schedule helps attract the most qualified
-            professionals quickly. Experts are more likely to respond to jobs with clear timelines.
+          <p className="text-sm text-gray-600 font-medium leading-relaxed">
+            Mistris are 3x more likely to respond to posts with realistic budgets and clear timelines. 
+            If you're unsure, check the average price guide below.
           </p>
         </div>
 
         <button
           onClick={prevStep}
-          className="flex items-center gap-2 text-slate-400 text-sm hover:text-white transition-colors"
+          className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-[#0a58ca] transition-colors"
         >
-          <FaArrowLeft size={11} />
-          Back
+          <FaArrowLeft size={10} />
+          Go Back
         </button>
       </div>
 
       {/* Right panel */}
-      <div className="space-y-6">
+      <div className="bg-white rounded-[2rem] p-8 lg:p-10 border border-gray-100 shadow-xl shadow-blue-500/[0.03] space-y-10">
         {/* Estimated Budget */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <i className="fas fa-dollar-sign text-[#1754cf] text-sm" />
-            <span className="text-sm font-semibold text-white">Estimated Budget</span>
-          </div>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-              $
+        <div className="space-y-4">
+          <label className="block text-xs font-black text-gray-900 uppercase tracking-widest px-1">
+            Expected Budget
+          </label>
+          <div className="relative group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0a58ca] font-black text-lg">
+              ৳
             </span>
             <input
               name="budget"
@@ -64,90 +68,100 @@ export default function StepBudgetLocation({ form, setForm, nextStep, prevStep }
               value={form.budget || ''}
               onChange={handleChange}
               placeholder="0.00"
-              className="w-full bg-[#0e1627] border border-[#1e3054] text-white placeholder-slate-600 rounded-xl pl-8 pr-16 py-3 text-sm focus:outline-none focus:border-[#1754cf] focus:ring-1 focus:ring-[#1754cf]/40 transition-colors"
+              className="w-full bg-gray-50 border border-transparent text-gray-900 placeholder-gray-300 rounded-2xl pl-10 pr-16 py-5 text-xl font-black focus:outline-none focus:bg-white focus:border-[#0a58ca] focus:ring-4 focus:ring-blue-500/5 transition-all tabular-nums"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-900 uppercase tracking-widest">
               BDT
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1.5">
-            Average price for similar jobs: ৳2,500 – ৳5,000
-          </p>
+          <div className="bg-emerald-50 border border-emerald-100/50 rounded-xl p-3 flex items-center gap-3">
+             <div className="w-6 h-6 rounded bg-white flex items-center justify-center text-emerald-600 shadow-sm text-[10px]">
+               <FaMoneyBillWave />
+             </div>
+             <p className="text-xs font-bold text-emerald-700">
+              Average for similar jobs: <span className="font-black">৳2,500 – ৳5,000</span>
+            </p>
+          </div>
         </div>
 
         {/* Preferred Schedule */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <i className="fas fa-calendar-days text-[#1754cf] text-sm" />
-            <span className="text-sm font-semibold text-white">Preferred Schedule</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">
-                Start Date
-              </label>
-              <input
-                name="date"
-                type="date"
-                min={getTodayDate()}
-                value={form.date || ''}
-                onChange={handleChange}
-                className="w-full bg-[#0e1627] border border-[#1e3054] text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1754cf] focus:ring-1 focus:ring-[#1754cf]/40 transition-colors"
-              />
+        <div className="space-y-4">
+          <label className="block text-xs font-black text-gray-900 uppercase tracking-widest px-1">
+            Preferred Schedule
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <span className="text-sm font-black text-gray-900 uppercase block px-1">Start Date</span>
+              <div className="relative group">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#0a58ca] transition-colors pointer-events-none">
+                  <FaCalendarAlt size={12} />
+                </span>
+                <input
+                  name="date"
+                  type="date"
+                  min={getTodayDate()}
+                  value={form.date || ''}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border border-transparent text-gray-900 rounded-xl pl-10 pr-3 py-3 text-sm font-bold focus:outline-none focus:bg-white focus:border-[#0a58ca] focus:ring-4 focus:ring-blue-500/5 transition-all cursor-pointer"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">
-                Preferred Time
-              </label>
-              <input
-                name="time"
-                type="time"
-                min={form.date === getTodayDate() ? getCurrentTime() : '00:00'}
-                value={form.time || ''}
-                onChange={handleChange}
-                className="w-full bg-[#0e1627] border border-[#1e3054] text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1754cf] focus:ring-1 focus:ring-[#1754cf]/40 transition-colors"
-              />
+            <div className="space-y-2">
+              <span className="text-sm font-black text-gray-900 uppercase block px-1">Preferred Time</span>
+              <div className="relative group">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#0a58ca] transition-colors pointer-events-none">
+                  <FaClock size={12} />
+                </span>
+                <input
+                  name="time"
+                  type="time"
+                  min={form.date === getTodayDate() ? getCurrentTime() : '00:00'}
+                  value={form.time || ''}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border border-transparent text-gray-900 rounded-xl pl-10 pr-3 py-3 text-sm font-bold focus:outline-none focus:bg-white focus:border-[#0a58ca] focus:ring-4 focus:ring-blue-500/5 transition-all cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Job Expiration */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <i className="fas fa-hourglass-half text-[#1754cf] text-sm" />
-            <span className="text-sm font-semibold text-white">
-              Job Expiration{' '}
-              <span className="text-slate-500 font-normal">(Optional)</span>
+        <div className="space-y-4">
+          <label className="block text-xs font-black text-gray-900 uppercase tracking-widest px-1">
+            Job Expiration <span className="font-medium text-gray-900 italic">(Optional)</span>
+          </label>
+          <div className="relative group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#0a58ca] transition-colors pointer-events-none">
+              <i className="fas fa-hourglass-end text-sm" />
             </span>
+            <input
+              name="expiresAt"
+              type="date"
+              min={getTodayDate()}
+              value={form.expiresAt || ''}
+              onChange={handleChange}
+              className="w-full bg-gray-50 border border-transparent text-gray-900 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold focus:outline-none focus:bg-white focus:border-[#0a58ca] focus:ring-4 focus:ring-blue-500/5 transition-all"
+            />
           </div>
-          <input
-            name="expiresAt"
-            type="date"
-            min={getTodayDate()}
-            value={form.expiresAt || ''}
-            onChange={handleChange}
-            className="w-full bg-[#0e1627] border border-[#1e3054] text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1754cf] focus:ring-1 focus:ring-[#1754cf]/40 transition-colors"
-          />
-          <p className="text-xs text-slate-500 mt-1.5">
-            When should this job post automatically close?
+          <p className="text-xs text-gray-900 font-bold italic px-1">
+            The job post will automatically close on this date if not filled.
           </p>
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-4">
           <button
             onClick={prevStep}
-            className="flex items-center gap-2 text-slate-400 text-sm hover:text-white transition-colors"
+            className="px-6 py-3 text-xs font-black text-gray-300 uppercase tracking-widest hover:text-gray-600 transition-colors"
           >
-            <FaArrowLeft size={11} />
             Back
           </button>
           <button
             onClick={nextStep}
-            className="flex items-center gap-2 bg-[#1754cf] hover:bg-blue-600 text-white font-semibold rounded-xl px-6 py-3 text-sm transition-colors"
+            className="flex items-center gap-3 bg-[#0a58ca] hover:bg-[#084298] text-white font-black rounded-2xl px-10 py-4 text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
           >
             Next: Location
-            <FaArrowRight size={12} />
+            <FaArrowRight size={10} />
           </button>
         </div>
       </div>

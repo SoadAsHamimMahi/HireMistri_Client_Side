@@ -93,7 +93,7 @@ export default function MessagesInbox({ basePath = 'messages' }) {
       setSelectedConversationId(newConversationId);
       navigate(`/${basePath}/${newConversationId}`, { replace: true });
     }
-  }, [conversationId, workerId, jobId, user?.uid, navigate, preloadMessages]);
+  }, [conversationId, workerId, jobId, user?.uid, navigate, preloadMessages, basePath]);
 
   useEffect(() => {
     const fetchUserProfiles = async () => {
@@ -102,7 +102,9 @@ export default function MessagesInbox({ basePath = 'messages' }) {
         try {
           const res = await axios.get(`${API_BASE}/api/users/${wId}/public`);
           setUserProfiles(prev => ({ ...prev, [wId]: res.data }));
-        } catch {}
+        } catch (error) {
+          console.error(`Failed to fetch public profile for ${wId}:`, error);
+        }
       }
     };
     if (conversations.length > 0) fetchUserProfiles();

@@ -10,6 +10,7 @@ export default function PostJobWizard() {
     skills: [],
     // upcoming fields: category, description, etc.
   });
+  const nextStep = () => setStep((currentStep) => Math.min(currentStep + 1, 5));
 
   return (
     <>

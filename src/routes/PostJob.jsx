@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
+import PageContainer from '../components/layout/PageContainer';
 import StepTitle from './PosteJobForm/StepTitle';
 import StepScope from './PosteJobForm/StepScope';
 import StepBudgetLocation from './PosteJobForm/StepBudgetLocation';
@@ -12,7 +13,7 @@ const DRAFT_STORAGE_KEY = 'hiremistri_job_draft';
 
 export default function PostJob() {
   const { user } = useContext(AuthContext);
-  
+
   // Load draft from localStorage on mount
   const loadDraft = () => {
     try {
@@ -31,7 +32,7 @@ export default function PostJob() {
   };
 
   const initialDraft = loadDraft();
-  
+
   const [form, setForm] = useState(initialDraft?.form || {
     title: '',
     category: '',
@@ -93,29 +94,32 @@ export default function PostJob() {
   const hasDraft = initialDraft !== null;
 
   return (
-    <div className="min-h-screen">
-      <div className="w-full py-8 lg:py-12">
-        {/* Draft Notice */}
-        {hasDraft && (
-          <div className="flex items-center gap-3 bg-[#111e34] border border-[#1754cf]/30 rounded-xl px-4 py-3 mb-6 text-sm">
-            <i className="fas fa-circle-info text-[#1754cf]" />
-            <div className="flex-1 text-slate-300">
-              <span className="font-semibold text-white">Draft restored</span> — from{' '}
-              {initialDraft?.savedAt ? new Date(initialDraft.savedAt).toLocaleString() : 'earlier'}.
+    <div className="bg-[#f8f9fa] min-h-screen">
+      <PageContainer>
+        <div className="py-8 lg:py-12">
+          {/* Draft Notice */}
+          {hasDraft && (
+            <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 mb-8 text-sm shadow-sm transition-all animate-in fade-in slide-in-from-top-4">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#0a58ca] shadow-sm">
+                <i className="fas fa-info-circle" />
+              </div>
+              <div className="flex-1 text-gray-700 font-medium">
+                <span className="font-bold text-[#0a58ca]">Draft restored</span> — saved on{' '}
+                {initialDraft?.savedAt ? new Date(initialDraft.savedAt).toLocaleString() : 'earlier'}.
+              </div>
+              <button
+                className="text-gray-400 hover:text-red-500 text-xs font-bold uppercase tracking-wider bg-white px-3 py-1.5 rounded-lg border border-gray-100 transition-all shadow-sm"
+                onClick={() => {
+                  if (confirm('Are you sure you want to discard the draft and start fresh?')) {
+                    localStorage.removeItem(DRAFT_STORAGE_KEY);
+                    window.location.reload();
+                  }
+                }}
+              >
+                Discard
+              </button>
             </div>
-            <button
-              className="text-slate-400 hover:text-white text-xs underline underline-offset-2 shrink-0 transition-colors"
-              onClick={() => {
-                if (confirm('Are you sure you want to discard the draft and start fresh?')) {
-                  localStorage.removeItem(DRAFT_STORAGE_KEY);
-                  window.location.reload();
-                }
-              }}
-            >
-              Discard
-            </button>
-          </div>
-        )}
+          )}
 
         {/* Step Progress Indicator */}
         <StepProgress currentStep={step} />
@@ -161,7 +165,8 @@ export default function PostJob() {
             onSuccess={clearDraft}
           />
         )}
-      </div>
+        </div>
+      </PageContainer>
     </div>
   );
 }

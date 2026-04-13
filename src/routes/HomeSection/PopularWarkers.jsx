@@ -21,7 +21,7 @@ const PopularWarkers = () => {
       try {
         setLoading(true);
         setError('');
-        
+
         const response = await fetch(`${API_BASE}/api/browse-workers?limit=9&sortBy=popular`, {
           headers: { Accept: 'application/json' },
         });
@@ -31,15 +31,15 @@ const PopularWarkers = () => {
         }
 
         const data = await response.json();
-        
+
         if (!ignore) {
           const mappedWorkers = (Array.isArray(data) ? data : []).map(worker => {
-            const portfolioImages = Array.isArray(worker.portfolio) 
+            const portfolioImages = Array.isArray(worker.portfolio)
               ? worker.portfolio.map(p => p.url || (typeof p === 'string' ? p : '')).filter(Boolean)
               : [];
-            
-            const gigs = portfolioImages.length > 0 
-              ? portfolioImages 
+
+            const gigs = portfolioImages.length > 0
+              ? portfolioImages
               : (worker.profileCover ? [worker.profileCover] : []);
 
             const pricing = worker.pricing || {};
@@ -47,8 +47,8 @@ const PopularWarkers = () => {
 
             const location = worker.city || worker.country || 'Location not set';
 
-            const roles = Array.isArray(worker.servicesOffered?.categories) 
-              ? worker.servicesOffered.categories 
+            const roles = Array.isArray(worker.servicesOffered?.categories)
+              ? worker.servicesOffered.categories
               : [];
 
             return {
@@ -129,23 +129,25 @@ const PopularWarkers = () => {
   }
 
   return (
-    <div className="mt-24 w-full mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-3 text-white tracking-tight">
-          Most Popular Workers
-        </h2>
-        <p className="text-slate-400 text-sm md:text-base font-medium">Hire from our top-rated, proven professionals ready right now.</p>
-      </div>
+    <section className="py-16 bg-white w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center lg:text-left mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Most Popular Workers
+          </h2>
+          <p className="text-gray-500 text-sm md:text-base font-medium">Hire from our top-rated, proven professionals ready right now.</p>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {workers.map((worker) => (
-          <div key={worker.id} className="group flex flex-col bg-[#121a2f] rounded-2xl border border-slate-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_10px_40px_rgba(37,99,235,0.15)] hover:border-blue-500/40 relative overflow-hidden">
-            
-            {/* Top Glow on hover */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/80 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+          <div key={worker.id} className="border border-gray-100 rounded-xl p-4 flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
 
             {/* ✅ Gig Image Slider */}
-            <div className="h-56 w-full overflow-hidden relative">
+            <div className="relative mb-4 rounded-lg overflow-hidden h-48">
+              {/* Verified Badge overlaying */}
+              <div className="absolute top-2 left-2 z-20 bg-[#0a58ca] text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider">
+                <i className="fas fa-check-circle"></i> Verified
+              </div>
               {worker.gigs && worker.gigs.length > 0 ? (
                 <Swiper
                   modules={[Navigation, Pagination]}
@@ -158,83 +160,63 @@ const PopularWarkers = () => {
                       <img
                         src={img}
                         alt={`Gig ${idx + 1}`}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                         onError={(e) => {
                           e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Worker+Portfolio';
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#121a2f] to-transparent opacity-80 z-10"></div>
                     </SwiperSlide>
                   ))}
                 </Swiper>
               ) : (
-                <div className="h-full w-full bg-[#172136] flex items-center justify-center relative">
-                  <i className="fas fa-user text-6xl text-slate-700/50"></i>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#121a2f] to-transparent opacity-80"></div>
+                <div className="h-full w-full bg-gray-100 flex items-center justify-center relative">
+                  <i className="fas fa-user text-6xl text-gray-300"></i>
                 </div>
               )}
-
-              {/* Verified Badge overlaying image */}
-              <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-lg">
-                <i className="fas fa-check-circle"></i> Verified
-              </div>
             </div>
 
-            {/* Card Content Area - shifted up slightly for overlap effect */}
-            <div className="flex-1 flex flex-col p-6 pt-0 relative z-20 -mt-8">
-              
+            {/* Card Content Area */}
+            <div className="flex-1 flex flex-col">
               {/* Profile Header Row */}
-              <div className="flex justify-between items-end mb-4">
-                <h3 className="text-xl md:text-2xl font-bold text-white truncate drop-shadow-md pr-2">
-                  <Link to={`/worker/${worker.id}`} className="hover:text-blue-400 transition-colors">
+              <div className="flex justify-between items-start mb-1">
+                <h3 className="font-bold text-[#0a58ca] text-lg truncate pr-2">
+                  <Link to={`/worker/${worker.id}`} className="hover:text-[#084298] transition-colors">
                     {worker.name}
                   </Link>
                 </h3>
-                
+
                 {worker.rating > 0 && (
-                  <div className="flex items-center gap-1 bg-[#172136] border border-slate-700 px-2.5 py-1 rounded-lg shadow-sm">
-                    <i className="fas fa-star text-yellow-500 text-xs text-center w-3"></i>
-                    <span className="font-bold text-white text-sm">{worker.rating.toFixed(1)}</span>
+                  <div className="flex items-center gap-1 bg-yellow-50 text-yellow-700 border border-yellow-200 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm">
+                    <i className="fas fa-star w-3"></i>
+                    {worker.rating.toFixed(1)}
                   </div>
                 )}
               </div>
 
               {/* Stats & Meta info */}
-              <div className="space-y-2 mb-6 text-sm text-slate-400 font-medium">
-                <div className="flex items-center gap-2">
-                  <i className="fas fa-tools w-4 text-center text-slate-500"></i>
-                  <span className="capitalize">{worker.roles.length > 0 ? worker.roles[0] : 'General Worker'}</span>
-                  {worker.roles.length > 1 && <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">+{worker.roles.length - 1}</span>}
+              <p className="text-gray-600 text-sm mb-1 capitalize">
+                {worker.roles.length > 0 ? worker.roles[0] : 'General Worker'}
+                {worker.roles.length > 1 && <span className="ml-1 text-xs text-gray-500">+{worker.roles.length - 1}</span>}
+              </p>
+              
+              <p className="text-[#0a58ca] font-medium text-sm mb-3">{worker.jobs}+ jobs done</p>
+
+              <div className="text-gray-500 text-sm flex items-center justify-between gap-1 mb-4 mt-auto">
+                <div className="flex items-center gap-1 truncate w-2/3">
+                  <i className="fas fa-map-marker-alt w-3"></i>
+                  <span className="truncate">{worker.location}</span>
                 </div>
-                
-                <div className="flex justify-between items-center text-xs text-slate-500 pt-1 pb-1">
-                  <div className="flex items-center gap-1.5">
-                    <i className="fas fa-check-circle text-green-500/80"></i>
-                    <span className="text-slate-300 font-semibold">{worker.jobs}+</span> jobs done
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <i className="fas fa-map-marker-alt text-slate-400"></i>
-                    <span className="truncate ">{worker.location}</span>
-                  </div>
+                <div className="font-bold text-gray-900 border-l border-gray-200 pl-2">
+                  {worker.price > 0 ? `৳${worker.price.toLocaleString()}` : 'Neg.'}
                 </div>
               </div>
 
-              <div className="mt-auto space-y-4">
-                <div className="flex justify-between items-center bg-[#172136] p-3 rounded-xl border border-slate-700/50">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rate</span>
-                  <span className="font-extrabold text-white text-lg">
-                    {worker.price > 0 ? `৳${worker.price.toLocaleString()}` : 'Negotiable'}
-                  </span>
-                </div>
-
-                <Link
-                  to={`/worker/${worker.id}`}
-                  className="block w-full text-center bg-[#1e293b] hover:bg-[#2563eb] border border-slate-700 hover:border-[#2563eb] text-slate-200 hover:text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 md:shadow-[0_4px_14px_0_rgba(37,99,235,0)] hover:shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] group-hover:bg-[#2563eb] group-hover:border-[#2563eb] group-hover:text-white"
-                >
-                  View Profile
-                </Link>
-              </div>
-
+              <Link
+                to={`/worker/${worker.id}`}
+                className="w-full text-center bg-[#0a58ca] hover:bg-[#084298] text-white py-2 rounded-md font-medium transition-colors text-sm"
+              >
+                View Profile
+              </Link>
             </div>
           </div>
         ))}
@@ -267,7 +249,8 @@ const PopularWarkers = () => {
           opacity: 1;
         }
       `}</style>
-    </div>
+      </div>
+    </section>
   );
 };
 
