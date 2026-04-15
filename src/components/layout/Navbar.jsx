@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../Authentication/AuthProvider';
-import { useTheme } from '../contexts/ThemeContext';
+import { AuthContext } from '../../Authentication/AuthProvider';
+import { useTheme } from '../../contexts/ThemeContext';
 import axios from 'axios';
-import Notifications from '../components/Notifications';
+import Notifications from '../../components/Notifications';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

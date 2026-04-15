@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useContext, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../Authentication/AuthProvider';
-import { useMessages } from '../contexts/MessagesContext';
-import { useWebSocket } from '../contexts/WebSocketContext';
+import { AuthContext } from '../../Authentication/AuthProvider';
+import { useMessages } from '../../contexts/MessagesContext';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 import { FaPaperPlane, FaComments } from 'react-icons/fa';
 import axios from 'axios';
-import ChatApplicationStatus from '../components/ChatApplicationStatus';
-import ChatJobCreationModal from '../components/ChatJobCreationModal';
-import WorkerJobRequestCard from '../components/WorkerJobRequestCard';
+import ChatApplicationStatus from '../../components/chat/ChatApplicationStatus';
+import ChatJobCreationModal from '../../components/chat/ChatJobCreationModal';
+import WorkerJobRequestCard from '../../components/chat/WorkerJobRequestCard';
 import toast from 'react-hot-toast';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
@@ -454,7 +454,7 @@ export default function Messages({
     <div className="flex flex-col h-full glass-morphism rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
       {/* Header */}
       {showHeader && (
-        <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md flex items-center justify-between">
+        <div className="p-4 border-b border-gray-100 bg-[#f8f9fa] flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
             {showUserInfo && workerProfile?.profileCover && (
               <div className="avatar">
@@ -500,7 +500,7 @@ export default function Messages({
             </div>
           </div>
           {onClose && (
-            <button onClick={onClose} className="btn btn-circle btn-ghost btn-sm text-white/60 hover:text-white hover:bg-white/10 transition-all">
+            <button onClick={onClose} className="btn btn-circle btn-ghost btn-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all">
               <i className="fas fa-times"></i>
             </button>
           )}
@@ -509,7 +509,7 @@ export default function Messages({
 
       {/* Worker Job Request Card */}
       {workerJobRequest && (
-        <div className="px-4 pt-4 pb-2 border-b border-white/10 bg-white/5">
+        <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-[#f8f9fa]">
           <WorkerJobRequestCard 
             request={workerJobRequest}
             userRole="client"
@@ -521,7 +521,7 @@ export default function Messages({
       )}
 
       {/* Action Bar - Application Status & Quick Actions */}
-      <div className="px-4 pt-4 pb-2 border-b border-white/10 bg-white/5 space-y-2">
+      <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-[#f8f9fa] space-y-2">
         {/* Job-related: Show application status */}
         {jobId && finalWorkerId && (
           <ChatApplicationStatus
@@ -588,8 +588,8 @@ export default function Messages({
             if (item.type === 'separator') {
               return (
                 <div key={item.key} className="flex items-center justify-center my-6">
-                  <div className="divider w-full  before:bg-white/10 after:bg-white/10">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-white/40 px-3 py-1 rounded-full bg-white/5 border border-white/10">{item.date}</span>
+                  <div className="divider w-full  before:bg-gray-200 after:bg-gray-200">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500 px-3 py-1 rounded-full bg-[#f8f9fa] border border-gray-100">{item.date}</span>
                   </div>
                 </div>
               );
@@ -604,14 +604,14 @@ export default function Messages({
             if (isSystemMessage) {
               return (
                 <div key={item.key} className="flex items-center justify-center my-3">
-                  <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-center backdrop-blur-sm">
+                  <div className="bg-[#f8f9fa] border border-gray-100 rounded-2xl px-5 py-3 text-center ">
                     <div className="flex flex-col items-center gap-1">
                       <i className="fas fa-info-circle text-blue-400 opacity-80"></i>
-                      <p className="text-sm text-white/70 whitespace-pre-wrap break-words leading-relaxed font-medium">
+                      <p className="text-sm text-gray-600 whitespace-pre-wrap break-words leading-relaxed font-medium">
                         {msg.message}
                       </p>
                     </div>
-                    <p className="text-[10px] text-white/30 mt-2 font-mono uppercase tracking-tighter">
+                    <p className="text-[10px] text-gray-400 mt-2 font-mono uppercase tracking-tighter">
                       {formatMessageTime(msg.createdAt)}
                     </p>
                   </div>
@@ -639,17 +639,17 @@ export default function Messages({
                 <div
                   className={` rounded-2xl p-4 shadow-sm relative group transition-all duration-300 ${
                     isSender
-                      ? 'bg-gradient-to-br from-[#1754cf] to-[#1e40af] text-white rounded-tr-none border border-white/10'
-                      : 'bg-white/5 text-white/90 border border-white/10 backdrop-blur-md rounded-tl-none'
+                      ? 'bg-[#0a58ca] text-white rounded-tr-none shadow-sm'
+                      : 'bg-[#f8f9fa] text-gray-900 border border-gray-100 shadow-sm rounded-tl-none'
                   }`}
                 >
                   <p className="text-[14.5px] whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
                   <div className="flex items-center justify-end gap-2 mt-2">
-                    <p className={`text-[10px] font-medium uppercase tracking-tighter ${isSender ? 'text-white/60' : 'text-white/40'}`}>
+                    <p className={`text-[10px] font-medium uppercase tracking-tighter ${isSender ? 'text-blue-200' : 'text-gray-500'}`}>
                       {formatMessageTime(msg.createdAt)}
                     </p>
                     {isSender && (
-                      <span className={`text-[10px] ${msg.read ? 'text-white' : 'text-white/40'}`}>
+                      <span className={`text-[10px] ${msg.read ? 'text-white' : 'text-gray-300'}`}>
                         {msg.read ? (
                           <i className="fas fa-check-double scale-90"></i>
                         ) : (
@@ -683,7 +683,7 @@ export default function Messages({
       </div>
 
       {/* Message Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-white/10 bg-white/5 backdrop-blur-lg">
+      <form onSubmit={handleSend} className="p-4 border-t border-gray-100 bg-[#f8f9fa] backdrop-blur-lg">
         <div className="flex gap-3 items-center">
           <div className="flex-1 relative group">
             <input
@@ -696,13 +696,13 @@ export default function Messages({
                 }
               }}
               placeholder="Type a message..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all text-sm"
+              className="w-full bg-[#f8f9fa] border border-gray-100 rounded-xl px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all text-sm"
               disabled={sending}
             />
           </div>
           <button
             type="submit"
-            className="btn btn-circle bg-blue-600 hover:bg-blue-700 border-none text-white shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
+            className="btn btn-circle bg-[#0a58ca] hover:bg-[#084298] border-none text-white shadow-md shadow-blue-600/20 active:scale-95 transition-all"
             disabled={!newMessage.trim() || sending}
           >
             {sending ? (

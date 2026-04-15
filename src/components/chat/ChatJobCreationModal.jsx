@@ -1,8 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../Authentication/AuthProvider';
+import { AuthContext } from '../../Authentication/AuthProvider';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { LocationPicker } from './maps';
+import { LocationPicker } from '../maps';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 

@@ -351,10 +351,10 @@ export default function MyProfile() {
             { label: 'Hire Rate', value: `${stats.clientHireRate || 0}%`, icon: 'fa-chart-line', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
             { label: 'Cancelled', value: `${stats.clientCancellationRate || 0}%`, icon: 'fa-circle-xmark', color: 'text-rose-400', bg: 'bg-rose-500/10' }
           ].map((stat, i) => (
-            <div key={i} className="glass-card p-5 group hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+            <div key={i} className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-5 group hover:border-gray-300 transition-all duration-500 relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-1">{stat.label}</p>
-                <h4 className="text-2xl font-black text-white tracking-tighter">{stat.value}</h4>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                <h4 className="text-2xl font-black text-gray-900 tracking-tighter">{stat.value}</h4>
               </div>
               <div className={`absolute top-1/2 -right-4 -translate-y-1/2 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-700`}>
                 <i className={`fas ${stat.icon} text-6xl`}></i>
@@ -368,53 +368,53 @@ export default function MyProfile() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 🏠 PROPERTIES CARD */}
-          <div className="glass-card p-6">
-            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+          <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-6">
+            <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
               <i className="fas fa-building-user text-blue-500"></i> My Properties
             </h3>
 
             <div className="space-y-4">
               <div
                 onClick={() => setActiveTab("edit")}
-                className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.05] cursor-pointer transition-all group"
+                className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-200 hover:border-gray-200 hover:bg-white cursor-pointer transition-all group"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 mask mask-squircle bg-blue-600/10 flex items-center justify-center text-blue-400 text-xl group-hover:scale-110 transition-transform">
                     <i className="fas fa-house-chimney"></i>
                   </div>
                   <div>
-                    <h5 className="font-bold text-sm text-white tracking-tight">Primary Residence</h5>
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-tighter">{publicLocation}</p>
+                    <h5 className="font-bold text-sm text-gray-900 tracking-tight">Primary Residence</h5>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{publicLocation}</p>
                   </div>
                 </div>
-                <i className="fas fa-arrow-right-long text-white/20 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
+                <i className="fas fa-arrow-right-long text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
               </div>
 
               <button
                 onClick={() => setActiveTab("edit")}
-                className="w-full flex items-center gap-4 p-4 bg-dashed border-2 border-dashed border-white/5 rounded-2xl hover:border-white/20 hover:bg-white/[0.02] transition-all group"
+                className="w-full flex items-center gap-4 p-4 bg-dashed border-2 border-dashed border-gray-200 rounded-2xl hover:border-gray-300 hover:bg-white transition-all group"
               >
-                <div className="w-12 h-12 mask mask-squircle bg-white/5 flex items-center justify-center text-white/20 text-xl group-hover:text-white/40">
+                <div className="w-12 h-12 mask mask-squircle bg-gray-50 border-gray-100 flex items-center justify-center text-gray-400 text-xl group-hover:text-gray-500">
                   <i className="fas fa-plus"></i>
                 </div>
-                <span className="font-bold text-xs text-white/20 group-hover:text-white/40 uppercase tracking-widest">Add New Property</span>
+                <span className="font-bold text-xs text-gray-400 group-hover:text-gray-500 uppercase tracking-widest">Add New Property</span>
               </button>
             </div>
           </div>
 
           {/* 📜 ABOUT SECTION */}
-          <div className="glass-card p-6">
-            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+          <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-6">
+            <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
               <i className="fas fa-id-badge text-indigo-500"></i> Personal Bio
             </h3>
-            <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 min-h-[140px] relative overflow-hidden group">
-              <i className="fas fa-quote-left absolute top-4 right-4 text-white/[0.02] text-5xl group-hover:text-white/[0.05] transition-all"></i>
+            <div className="p-5 bg-white rounded-2xl border border-gray-200 min-h-[140px] relative overflow-hidden group">
+              <i className="fas fa-quote-left absolute top-4 right-4 text-gray-300 text-5xl group-hover:text-gray-300 transition-all"></i>
               {clientData.bio ? (
-                <p className="text-sm text-white/70 leading-relaxed font-medium relative z-10 italic">
+                <p className="text-sm text-gray-600 leading-relaxed font-medium relative z-10 italic">
                   "{clientData.bio}"
                 </p>
               ) : (
-                <p className="text-xs text-white/20 italic font-medium leading-relaxed">
+                <p className="text-xs text-gray-400 italic font-medium leading-relaxed">
                   You haven't added a bio yet. Tell workers a bit about yourself to build trust.
                 </p>
               )}
@@ -423,36 +423,36 @@ export default function MyProfile() {
         </div>
 
         {/* ⭐ WORKER REVIEWS */}
-        <div className="glass-card p-6">
+        <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-6">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-3">
+            <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-3">
               <i className="fas fa-star text-yellow-500"></i> Worker Feedback
             </h3>
 
-            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+            <div className="flex items-center gap-4 bg-gray-50 border-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-white">{clientData.averageRating || "0.0"}</span>
+                <span className="text-xl font-black text-gray-900">{clientData.averageRating || "0.0"}</span>
                 <div className="flex text-yellow-500 text-[10px]">
                   {[...Array(5)].map((_, i) => (
                     <i key={i} className={i < Math.floor(clientData.averageRating || 0) ? "fas fa-star" : "far fa-star"}></i>
                   ))}
                 </div>
               </div>
-              <div className="h-4 w-px bg-white/10"></div>
-              <span className="text-[10px] text-white/30 font-black uppercase tracking-tight">Global Rating</span>
+              <div className="h-4 w-px bg-gray-100"></div>
+              <span className="text-[10px] text-gray-400 font-black uppercase tracking-tight">Global Rating</span>
             </div>
           </div>
 
           {clientData.reviews && clientData.reviews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {clientData.reviews.map((review, idx) => (
-                <div key={idx} className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/15 transition-all group relative overflow-hidden">
+                <div key={idx} className="p-5 bg-white rounded-2xl border border-gray-200 hover:border-white/15 transition-all group relative overflow-hidden">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 mask mask-squircle bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-all">
+                    <div className="w-10 h-10 mask mask-squircle bg-gray-50 border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-all">
                       <i className="fas fa-user"></i>
                     </div>
                     <div>
-                      <h5 className="font-bold text-sm text-white tracking-tight">{review.authorName || "Worker"}</h5>
+                      <h5 className="font-bold text-sm text-gray-900 tracking-tight">{review.authorName || "Worker"}</h5>
                       <div className="flex text-yellow-500 text-[8px] mt-0.5">
                         {[...Array(5)].map((_, i) => (
                           <i key={i} className={i < review.rating ? "fas fa-star" : "far fa-star"}></i>
@@ -460,19 +460,19 @@ export default function MyProfile() {
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-white/50 italic leading-relaxed line-clamp-2">
+                  <p className="text-xs text-gray-500 italic leading-relaxed line-clamp-2">
                     "{review.comment}"
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 px-4 bg-white/[0.01] rounded-3xl border border-dashed border-white/10 text-center">
-              <div className="w-16 h-16 mask mask-squircle bg-white/5 flex items-center justify-center mb-4">
-                <i className="far fa-comments text-2xl text-white/10"></i>
+            <div className="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-3xl border border-dashed border-gray-200 text-center">
+              <div className="w-16 h-16 mask mask-squircle bg-gray-50 border-gray-100 flex items-center justify-center mb-4">
+                <i className="far fa-comments text-2xl text-gray-900/10"></i>
               </div>
-              <h4 className="text-white font-bold tracking-tight mb-1">No Reviews Yet</h4>
-              <p className="text-white/20 text-[11px]  leading-relaxed font-medium">
+              <h4 className="text-gray-900 font-bold tracking-tight mb-1">No Reviews Yet</h4>
+              <p className="text-gray-400 text-[11px]  leading-relaxed font-medium">
                 Complete more jobs to receive feedback from the community.
               </p>
             </div>
@@ -486,8 +486,8 @@ export default function MyProfile() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
       
       {/* 👤 PERSONAL INFO GLASS CARD */}
-      <div className="glass-card p-8">
-        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+      <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-8">
+        <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
           <i className="fas fa-user-circle text-blue-500"></i> Personal Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -498,10 +498,10 @@ export default function MyProfile() {
               placeholder="First Name"
               value={editForm.firstName}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
               id="firstName"
             />
-            <label htmlFor="firstName" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">First Name</label>
+            <label htmlFor="firstName" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">First Name</label>
           </div>
 
           <div className="relative group">
@@ -511,10 +511,10 @@ export default function MyProfile() {
               placeholder="Last Name"
               value={editForm.lastName}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
               id="lastName"
             />
-            <label htmlFor="lastName" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Last Name</label>
+            <label htmlFor="lastName" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Last Name</label>
           </div>
 
           <div className="relative group md:col-span-2">
@@ -524,10 +524,10 @@ export default function MyProfile() {
               placeholder="Professional Headline"
               value={editForm.headline}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
               id="headline"
             />
-            <label htmlFor="headline" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Professional Headline</label>
+            <label htmlFor="headline" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Professional Headline</label>
           </div>
 
           <div className="relative group md:col-span-2">
@@ -537,17 +537,17 @@ export default function MyProfile() {
               value={editForm.bio}
               onChange={handleEditChange}
               rows={4}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
               id="bio"
             />
-            <label htmlFor="bio" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">About You</label>
+            <label htmlFor="bio" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">About You</label>
           </div>
         </div>
       </div>
 
       {/* 📍 ADDRESS GLASS CARD */}
-      <div className="glass-card p-8">
-        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+      <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-8">
+        <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
           <i className="fas fa-location-dot text-indigo-500"></i> Primary Address
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -558,10 +558,10 @@ export default function MyProfile() {
               placeholder="Address Line 1"
               value={editForm.address1 || ""}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder-transparent peer"
               id="address1"
             />
-            <label htmlFor="address1" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Address Line 1</label>
+            <label htmlFor="address1" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Address Line 1</label>
           </div>
 
           <div className="relative group">
@@ -571,10 +571,10 @@ export default function MyProfile() {
               placeholder="City"
               value={editForm.city || ""}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder-transparent peer"
               id="city"
             />
-            <label htmlFor="city" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">City</label>
+            <label htmlFor="city" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">City</label>
           </div>
 
           <div className="relative group">
@@ -584,33 +584,33 @@ export default function MyProfile() {
               placeholder="Country"
               value={editForm.country || ""}
               onChange={handleEditChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder-transparent peer"
               id="country"
             />
-            <label htmlFor="country" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Country</label>
+            <label htmlFor="country" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-indigo-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-indigo-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Country</label>
           </div>
         </div>
       </div>
 
       {/* 💾 ACTION FOOTER */}
-      <div className="flex items-center justify-between glass-card p-6 bg-blue-600/5 border-blue-500/10">
+      <div className="flex items-center justify-between bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-6 bg-blue-600/5 border-blue-500/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
             <i className="fas fa-shield-check"></i>
           </div>
           <div>
-            <p className="text-xs font-black text-white uppercase tracking-tight">Data Security</p>
-            <p className="text-[10px] text-white/30 font-bold uppercase tracking-tighter">Your info is protected</p>
+            <p className="text-xs font-black text-gray-900 uppercase tracking-tight">Data Security</p>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Your info is protected</p>
           </div>
         </div>
         <div className="flex gap-4">
-          <button onClick={() => setActiveTab("overview")} className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white/40 hover:text-white transition-all">
+          <button onClick={() => setActiveTab("overview")} className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-all">
             Discard
           </button>
           <button
             onClick={handleSaveProfile}
             disabled={saving}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-900 border-none text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-blue-600/20 flex items-center gap-3 active:scale-95"
+            className="px-8 py-2.5 bg-[#0a58ca] hover:bg-[#084298] disabled:bg-blue-300 border-none text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-blue-600/20 flex items-center gap-3 active:scale-95"
           >
             {saving ? <span className="loading loading-spinner loading-xs"></span> : <i className="fas fa-cloud-arrow-up"></i>}
             {saving ? "Deploying..." : "Apply Changes"}
@@ -622,8 +622,8 @@ export default function MyProfile() {
 
   const renderChangePassword = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 mx-auto">
-      <div className="glass-card p-8">
-        <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+      <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-8">
+        <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
           <i className="fas fa-lock text-rose-500"></i> Change Password
         </h3>
 
@@ -635,13 +635,13 @@ export default function MyProfile() {
               placeholder="Current Password"
               value={passwordForm.currentPassword}
               onChange={handlePasswordChange}
-              className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all placeholder:text-transparent peer"
+              className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all placeholder-transparent peer"
               id="currentPassword"
             />
-            <label htmlFor="currentPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-rose-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-rose-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Current Password</label>
+            <label htmlFor="currentPassword" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-rose-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-rose-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Current Password</label>
           </div>
 
-          <div className="h-px bg-white/5 w-1/2 mx-auto"></div>
+          <div className="h-px bg-gray-50 border-gray-100 w-1/2 mx-auto"></div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="relative group">
@@ -651,10 +651,10 @@ export default function MyProfile() {
                 placeholder="New Password"
                 value={passwordForm.newPassword}
                 onChange={handlePasswordChange}
-                className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+                className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
                 id="newPassword"
               />
-              <label htmlFor="newPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">New Password</label>
+              <label htmlFor="newPassword" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">New Password</label>
             </div>
 
             <div className="relative group">
@@ -664,10 +664,10 @@ export default function MyProfile() {
                 placeholder="Confirm"
                 value={passwordForm.confirmPassword}
                 onChange={handlePasswordChange}
-                className="w-full bg-white/5 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-transparent peer"
+                className="w-full bg-gray-50 border-gray-100 border border-gray-200 rounded-2xl px-5 py-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-transparent peer"
                 id="confirmPassword"
               />
-              <label htmlFor="confirmPassword" className="absolute left-5 top-4 text-white/20 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="absolute left-5 top-4 text-gray-400 text-sm transition-all pointer-events-none peer-focus:-top-2 peer-focus:left-4 peer-focus:text-[10px] peer-focus:text-blue-400 peer-focus:font-black peer-focus:uppercase peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase">Confirm Password</label>
             </div>
           </div>
         </div>
@@ -684,8 +684,8 @@ export default function MyProfile() {
         </div>
       </div>
 
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl text-center">
-        <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest leading-relaxed">
+      <div className="p-6 bg-white border border-gray-200 rounded-3xl text-center">
+        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
           Forgot your password? <button className="text-blue-400 hover:text-blue-300 ml-1">Request a reset link</button>
         </p>
       </div>
@@ -705,11 +705,11 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1121] text-slate-100 selection:bg-blue-500/30 font-sans pb-20">
+    <div className="min-h-screen bg-[#f8f9fa] text-gray-900 selection:bg-blue-200 font-sans pb-20">
       {/* Background Blobs for Depth */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+        
+        
       </div>
 
       <div className="relative mx-auto px-4 sm:px-6 lg:px-8 pt-24">
@@ -718,9 +718,9 @@ export default function MyProfile() {
           {/* ── Fixed Glass Sidebar ── */}
           <aside className="lg:sticky lg:top-24 space-y-6">
             {/* Profile Brief Card */}
-            <div className="glass-card p-6 flex flex-col items-center text-center">
+            <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-6 flex flex-col items-center text-center">
               <div className="relative mb-4 group">
-                <div className="w-24 h-24 mask mask-squircle overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-2xl relative">
+                <div className="w-24 h-24 mask mask-squircle overflow-hidden bg-gray-50 border-gray-100 ring-1 ring-white/10 shadow-2xl relative">
                   <img
                     src={clientData.profileCover || "https://i.pravatar.cc/150?img=3"}
                     alt="Profile"
@@ -735,10 +735,10 @@ export default function MyProfile() {
                       disabled={saving}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <i className="fas fa-camera text-white text-lg"></i>
+                    <i className="fas fa-camera text-gray-900 text-lg"></i>
                   </div>
                 </div>
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0b1121] shadow-lg animate-pulse"></span>
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-lg animate-pulse"></span>
                 {saving && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl z-20">
                     <span className="loading loading-spinner loading-sm text-blue-400"></span>
@@ -746,7 +746,7 @@ export default function MyProfile() {
                 )}
               </div>
 
-              <h2 className="text-xl font-bold text-white tracking-tight truncate w-full">
+              <h2 className="text-xl font-bold text-gray-900 tracking-tight truncate w-full">
                 {`${clientData.firstName || ""} ${clientData.lastName || ""}`.trim() || "User Profile"}
               </h2>
               <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest mt-1">
@@ -756,7 +756,7 @@ export default function MyProfile() {
               <div className="mt-4 flex gap-2 w-full">
                 <button 
                   onClick={handleShareProfile}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] font-bold text-white/70 transition-all uppercase"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-gray-50 border-gray-100 hover:bg-gray-100 border border-gray-200 text-[11px] font-bold text-gray-600 transition-all uppercase"
                 >
                   <i className="fas fa-share-nodes text-[10px]"></i> Share
                 </button>
@@ -764,7 +764,7 @@ export default function MyProfile() {
             </div>
 
             {/* Navigation Sidebar */}
-            <nav className="glass-card p-2 space-y-1">
+            <nav className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-2 space-y-1">
               {[
                 { id: 'overview', label: 'Overview', icon: 'fa-grid-2' },
                 { id: 'edit', label: 'Account Settings', icon: 'fa-user-gear' },
@@ -775,29 +775,29 @@ export default function MyProfile() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-all relative overflow-hidden group ${
                     activeTab === tab.id 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                      : 'text-white/40 hover:text-white hover:bg-white/5'
+                      ? 'bg-[#0a58ca] text-white shadow-md shadow-blue-600/20' 
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 border-gray-100'
                   }`}
                 >
                   <i className={`fas ${tab.icon} text-lg w-5 text-center ${activeTab === tab.id ? 'text-white' : 'group-hover:text-blue-400'}`}></i>
                   <span className="tracking-tight">{tab.label}</span>
                   {activeTab === tab.id && (
-                    <span className="absolute right-3 w-1 h-4 bg-white/30 rounded-full"></span>
+                    <span className="absolute right-3 w-1 h-4 bg-white rounded-full"></span>
                   )}
                 </button>
               ))}
             </nav>
 
             {/* Verification Status Banner */}
-            <div className="glass-card p-5">
-              <h4 className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-4">
+            <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm p-5">
+              <h4 className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-4">
                 Trust & Safety
               </h4>
               <div className="space-y-3">
                 <div className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
                   clientData.emailVerified 
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-white/5 border-white/5 text-white/40 cursor-pointer hover:bg-white/10'
+                    : 'bg-gray-50 border-gray-100 border-gray-200 text-gray-500 cursor-pointer hover:bg-gray-100'
                 }`} onClick={!clientData.emailVerified ? handleSendVerificationEmail : undefined}>
                   <div className="flex items-center gap-2.5">
                     <i className={`fas ${clientData.emailVerified ? 'fa-circle-check' : 'fa-envelope'} text-sm`}></i>

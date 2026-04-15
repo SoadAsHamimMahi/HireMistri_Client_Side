@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
 import PageContainer from '../components/layout/PageContainer';
-import StepTitle from './PosteJobForm/StepTitle';
-import StepScope from './PosteJobForm/StepScope';
-import StepBudgetLocation from './PosteJobForm/StepBudgetLocation';
-import StepLocation from './PosteJobForm/StepLocation';
-import StepImagesReview from './PosteJobForm/StepImagesReview';
-import StepProgress from './PosteJobForm/StepProgress';
+import StepTitle from './PostJobForm/StepTitle';
+import StepScope from './PostJobForm/StepScope';
+import StepBudgetLocation from './PostJobForm/StepBudgetLocation';
+import StepLocation from './PostJobForm/StepLocation';
+import StepImagesReview from './PostJobForm/StepImagesReview';
+import StepProgress from './PostJobForm/StepProgress';
 
 const DRAFT_STORAGE_KEY = 'hiremistri_job_draft';
 

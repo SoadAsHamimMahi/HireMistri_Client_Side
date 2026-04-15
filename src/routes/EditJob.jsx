@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../Authentication/AuthProvider';
-import StepTitle from './PosteJobForm/StepTitle';
-import StepSkills from './PosteJobForm/StepSkills';
-import StepScope from './PosteJobForm/StepScope';
-import StepBudgetLocation from './PosteJobForm/StepBudgetLocation';
-import StepImagesReview from './PosteJobForm/StepImagesReview';
-import StepProgress from './PosteJobForm/StepProgress';
+import StepTitle from './PostJobForm/StepTitle';
+import StepSkills from './PostJobForm/StepSkills';
+import StepScope from './PostJobForm/StepScope';
+import StepBudgetLocation from './PostJobForm/StepBudgetLocation';
+import StepImagesReview from './PostJobForm/StepImagesReview';
+import StepProgress from './PostJobForm/StepProgress';
 import axios from 'axios';
 
 export default function EditJob() {

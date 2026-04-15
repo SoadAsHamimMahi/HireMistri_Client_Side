@@ -1,4 +1,5 @@
 import React from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -6,13 +7,13 @@ import './index.css';
 
 import Root, { loader as rootLoader, action as rootAction } from './routes/Root';
 import ErrorPage from './routes/ErrorPage';
-import Home from './routes/HomeSection/Home';
+import Home from './routes/Home/Home';
 import PostJob from './routes/PostJob';
 import Dashboard from './routes/Dashboard';
 import Applications from './routes/Applications';
 import WorkerProfile from './routes/WorkerProfile';
-import PostedJobs from './routes/PostedJobs';
-import PostJobWizard from './routes/PosteJobForm/PostJobWizard';
+import PostedJobs from './routes/PostedJobs/PostedJobsList';
+import PostJobWizard from './routes/PostJobForm/PostJobWizard';
 import Register from './Authentication/Register';
 import Login from './Authentication/Login';
 import ProtectedRoute from './Authentication/ProtectedRoute';
@@ -23,11 +24,11 @@ import PublicRoute from './Authentication/PublicRoute';
 import ThemeProvider from './contexts/ThemeContext';
 import { MessagesProvider } from './contexts/MessagesContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
-import PostedJobDetails from './routes/MyPostedJobs/PostedJobDetails';
+import PostedJobDetails from './routes/PostedJobs/PostedJobDetails';
 import MyProfile from './routes/MyProfile';
 import EditJob from './routes/EditJob';
-import MessagesPaused from './routes/MessagesPaused';
-import MessagesInbox from './routes/MessagesInbox';
+import MessagesPaused from './routes/Messages/MessagesPaused';
+import MessagesInbox from './routes/Messages/MessagesInbox';
 import SupportInbox from './routes/Support/SupportInbox';
 import ApplicationDetail from './routes/ApplicationDetail';
 
@@ -204,37 +205,6 @@ try {
   }
 
   const root = createRoot(rootElement);
-
-  // Add error boundary
-  class ErrorBoundary extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { hasError: false, error: null };
-    }
-
-    static getDerivedStateFromError(error) {
-      return { hasError: true, error };
-    }
-
-    componentDidCatch(error, errorInfo) {
-      console.error('ErrorBoundary caught error:', error, errorInfo);
-    }
-
-    render() {
-      if (this.state.hasError) {
-        return (
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h1>Something went wrong</h1>
-            <p>{this.state.error?.message}</p>
-            <button onClick={() => this.setState({ hasError: false, error: null })}>
-              Try again
-            </button>
-          </div>
-        );
-      }
-      return this.props.children;
-    }
-  }
 
   root.render(
     <React.StrictMode>
