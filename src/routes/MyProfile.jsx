@@ -712,7 +712,7 @@ export default function MyProfile() {
         
       </div>
 
-      <div className="relative mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+      <div className="relative w-full max-w-[83.333%] mx-auto px-4 sm:px-6 lg:px-8 pt-24">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
           
           {/* ── Fixed Glass Sidebar ── */}

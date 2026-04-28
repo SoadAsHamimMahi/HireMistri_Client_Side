@@ -94,13 +94,13 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:flex items-center relative">
+          <div className="hidden lg:flex items-stretch relative">
             <input
               type="text"
               placeholder="Search..."
-              className="bg-white text-gray-900 border border-gray-300 focus:border-[#0a58ca] focus:ring-1 focus:ring-[#0a58ca] rounded-l-md px-4 py-2 w-72 xl:w-96 outline-none transition-all placeholder:text-gray-400 text-sm"
+              className="bg-white text-gray-900 border border-gray-300 border-r-0 focus:border-[#0a58ca] focus:ring-1 focus:ring-[#0a58ca] rounded-l-md px-4 py-2 w-72 xl:w-96 outline-none transition-all placeholder:text-gray-400 text-sm"
             />
-            <button className="bg-[#0a58ca] hover:bg-[#084298] text-white px-4 py-2 rounded-r-md transition-colors flex items-center justify-center">
+            <button className="bg-[#0a58ca] hover:bg-[#084298] text-white px-4 py-2 rounded-r-md transition-colors flex items-center justify-center border border-[#0a58ca]">
               <i className="fas fa-search"></i>
             </button>
           </div>
@@ -205,13 +205,13 @@ export default function Navbar() {
 
       {/* Mobile Search Bar */}
       <div className="lg:hidden px-4 pb-4 bg-white">
-        <div className="flex relative">
+        <div className="flex relative items-stretch">
           <input
             type="text"
             placeholder="Search workers..."
-            className="bg-white text-gray-900 border border-gray-300 rounded-l-md px-4 py-3 w-full outline-none placeholder:text-gray-400 text-sm font-medium focus:border-[#0a58ca]"
+            className="bg-white text-gray-900 border border-gray-300 border-r-0 rounded-l-md px-4 py-3 w-full outline-none placeholder:text-gray-400 text-sm font-medium focus:border-[#0a58ca]"
           />
-          <button className="bg-[#0a58ca] hover:bg-[#084298] text-white px-5 rounded-r-md border border-[#0a58ca]">
+          <button className="bg-[#0a58ca] hover:bg-[#084298] text-white px-5 rounded-r-md border border-[#0a58ca] flex items-center justify-center">
             <i className="fas fa-search"></i>
           </button>
         </div>

@@ -37,6 +37,9 @@ export default function Messages({
   const [conversationJobs, setConversationJobs] = useState({ jobs: [], workerRequests: [] });
   const [withdrawingOfferId, setWithdrawingOfferId] = useState(null);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null); 
+  const isNearBottom = useRef(true);          
+  const prevMessageCount = useRef(0);
   
   // Use provided conversationId or generate one - jobId is optional, but workerId and user.uid are required
   const conversationId = providedConversationId || (workerId && user?.uid 
@@ -372,10 +375,27 @@ export default function Messages({
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleMessagesScroll = () => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    // Check if user is within 120px of the bottom
+    isNearBottom.current = scrollHeight - scrollTop - clientHeight < 120;
+  };
+
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [uniqueMessages]);
+    if (uniqueMessages.length === 0) return;
+
+    const hasNewMessage = uniqueMessages.length > prevMessageCount.current;
+    const lastMessage = uniqueMessages[uniqueMessages.length - 1];
+    const isFromMe = lastMessage?.senderId === user?.uid;
+
+    if (hasNewMessage && (isNearBottom.current || isFromMe)) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    prevMessageCount.current = uniqueMessages.length;
+  }, [uniqueMessages, user?.uid]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -451,7 +471,7 @@ export default function Messages({
   }
 
   return (
-    <div className="flex flex-col h-full glass-morphism rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative">
       {/* Header */}
       {showHeader && (
         <div className="p-4 border-b border-gray-100 bg-[#f8f9fa] flex items-center justify-between">
@@ -578,7 +598,11 @@ export default function Messages({
       </div>
 
       {/* Messages List - No loading state, show cached messages immediately */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
+        className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-[#fcfdfe]"
+      >
         {messagesWithSeparators.length === 0 ? (
           <div className="text-center py-8 text-base-content opacity-70">
             No messages yet. Start the conversation!
@@ -639,13 +663,13 @@ export default function Messages({
                 <div
                   className={` rounded-2xl p-4 shadow-sm relative group transition-all duration-300 ${
                     isSender
-                      ? 'bg-[#0a58ca] text-white rounded-tr-none shadow-sm'
+                      ? 'bg-[#0a58ca] text-white rounded-br-none shadow-[#0a58ca]/10 shadow-lg'
                       : 'bg-[#f8f9fa] text-gray-900 border border-gray-100 shadow-sm rounded-tl-none'
                   }`}
                 >
                   <p className="text-[14.5px] whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
                   <div className="flex items-center justify-end gap-2 mt-2">
-                    <p className={`text-[10px] font-medium uppercase tracking-tighter ${isSender ? 'text-blue-200' : 'text-gray-500'}`}>
+                    <p className={`text-[10px] font-medium uppercase tracking-tighter ${isSender ? 'text-white/70' : 'text-gray-400'}`}>
                       {formatMessageTime(msg.createdAt)}
                     </p>
                     {isSender && (

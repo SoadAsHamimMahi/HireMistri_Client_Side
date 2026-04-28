@@ -172,7 +172,7 @@ export default function MessagesInbox({ basePath = 'messages' }) {
 
   return (
     <div
-      className="h-screen overflow-hidden text-gray-900 bg-[#f8f9fa] selection:bg-blue-200 font-sans"
+      className="h-full overflow-hidden text-gray-900 bg-[#f8f9fa] selection:bg-blue-200 font-sans"
     >
       {/* Slim custom scrollbar and glass effects */}
       <style>{`
@@ -187,47 +187,56 @@ export default function MessagesInbox({ basePath = 'messages' }) {
 
         {/* ── Conversations Sidebar ── */}
         <aside
-          className={`${showMobileConversations ? 'flex' : 'hidden'} md:flex flex-col flex-shrink-0 glass-sidebar border-r border-gray-100`}
-          style={{ width: '24rem' }}
+          className={`${showMobileConversations ? 'flex' : 'hidden'} md:flex flex-col flex-shrink-0 bg-white border-r border-gray-100 shadow-[2px_0_15px_rgba(0,0,0,0.02)]`}
+          style={{ width: '24.5rem' }}
         >
           {/* Sidebar Header */}
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex flex-col">
-              <h3 className="font-bold text-xl text-gray-900 tracking-tight">Messages</h3>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-0.5">
-                {unreadTotal > 0 ? `${unreadTotal} Unread` : `${conversations.length} Conversations`}
-              </p>
+          <div className="p-6 border-b border-gray-100/60 bg-white/50 backdrop-blur-md sticky top-0 z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <h3 className="font-black text-2xl text-gray-900 tracking-tight">Messages</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`w-2 h-2 rounded-full ${unreadTotal > 0 ? 'bg-[#0a58ca] animate-pulse' : 'bg-gray-300'}`}></span>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-[0.1em] font-extrabold">
+                    {unreadTotal > 0 ? `${unreadTotal} Unread` : `${conversations.length} Conversations`}
+                  </p>
+                </div>
+              </div>
+              <Link to="/" className="w-10 h-10 flex items-center justify-center bg-[#0a58ca]/5 text-[#0a58ca] hover:bg-[#0a58ca] hover:text-white rounded-2xl transition-all duration-300 border border-[#0a58ca]/10 group">
+                <i className="fas fa-plus text-xs group-hover:rotate-90 transition-transform"></i>
+              </Link>
             </div>
-            <Link to="/" className="w-8 h-8 flex items-center justify-center bg-blue-600/10 text-blue-400 hover:bg-[#0a58ca] hover:text-white rounded-xl transition-all border border-blue-500/20 shadow-sm shadow-blue-600/5">
-              <i className="fas fa-plus text-xs"></i>
-            </Link>
           </div>
 
-          {/* Search */}
-          <div className="px-5 pt-4 pb-2">
+          {/* Search & Filters */}
+          <div className="px-5 pt-5 pb-3 bg-white">
             <div className="relative group">
-              <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm group-focus-within:text-blue-400 transition-colors"></i>
+              <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm group-focus-within:text-[#0a58ca] transition-colors"></i>
               <input
                 type="text"
-                placeholder="Search chats or jobs..."
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-gray-900 placeholder:text-gray-400 transition-all"
+                placeholder="Search conversations..."
+                className="w-full bg-gray-50/80 border border-gray-100 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:bg-white text-gray-900 placeholder:text-gray-400 transition-all font-medium"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
             </div>
 
             {/* Filter pills */}
-            <div className="flex gap-2 mt-3.5 no-scrollbar overflow-x-auto pb-1">
-              {['all', 'unread', 'job-related'].map(f => (
+            <div className="flex gap-2 mt-4 no-scrollbar overflow-x-auto pb-1">
+              {[
+                { id: 'all', label: 'All Chats' },
+                { id: 'unread', label: 'Unread' },
+                { id: 'job-related', label: 'Jobs' }
+              ].map(f => (
                 <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`text-[11px] px-4 py-1.5 rounded-full font-bold transition-all uppercase tracking-tighter flex-shrink-0 ${filter === f
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                    : 'bg-gray-50 text-gray-500 hover:text-gray-900 border border-gray-100'
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  className={`text-[11px] px-5 py-2 rounded-full font-black transition-all uppercase tracking-wider flex-shrink-0 ${filter === f.id
+                    ? 'bg-[#0a58ca] text-white shadow-lg shadow-[#0a58ca]/20'
+                    : 'bg-gray-50 text-gray-500 hover:text-[#0a58ca] hover:bg-white border border-gray-100'
                     }`}
                 >
-                  {f === 'job-related' ? 'Job Posts' : f}
+                  {f.label}
                 </button>
               ))}
             </div>
