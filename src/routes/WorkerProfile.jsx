@@ -157,7 +157,6 @@ export default function WorkerProfile() {
   const skillsDisplay = [...new Set([...decodedServices, ...skills])];
   
   const experienceYears = profile?.experienceYears || profile?.workExperience || null;
-  const languages = Array.isArray(profile?.languages) ? profile.languages : [];
   const portfolio = Array.isArray(profile?.portfolio) ? profile.portfolio : [];
   const pricing = profile?.pricing || {};
   const hourlyRate = pricing.hourlyRate || null;
@@ -168,12 +167,12 @@ export default function WorkerProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b1121] text-slate-200 transition-colors duration-300">
-        <PageContainer maxWidth="6xl">
+      <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-300">
+        <PageContainer>
           <div className="flex items-center justify-center p-40">
             <div className="flex flex-col items-center gap-4">
-              <span className="loading loading-spinner text-[#1754cf] loading-lg"></span>
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Accessing Profile...</p>
+              <span className="loading loading-spinner text-[#0a58ca] loading-lg"></span>
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Loading Profile...</p>
             </div>
           </div>
         </PageContainer>
@@ -183,20 +182,20 @@ export default function WorkerProfile() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#0b1121] text-slate-200 transition-colors duration-300">
-        <PageContainer maxWidth="6xl">
+      <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-300">
+        <PageContainer>
           <div className="flex items-center gap-3 mb-6 pt-6">
-            <button className="btn btn-ghost gap-2 text-slate-300" onClick={() => navigate(-1)}>
+            <button className="btn btn-ghost gap-2 text-gray-600 hover:text-gray-900" onClick={() => navigate(-1)}>
               <i className="fas fa-arrow-left"></i> Back
             </button>
           </div>
-          <div className="text-center p-12 bg-[#121a2f] rounded-[2rem] border border-slate-800 shadow-2xl">
-            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-              <i className="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+          <div className="text-center p-8 lg:p-12 bg-white rounded-2xl border border-gray-200 shadow-sm max-w-2xl mx-auto">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i className="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
             </div>
-            <h3 className="font-extrabold text-3xl text-white mb-2">{error ? 'Oops, profile unavailable' : 'Worker Not Found'}</h3>
-            <p className="text-slate-400 max-w-md mx-auto">{error || 'This profile is currently unavailable or doesn\'t exist in our records.'}</p>
-            <button onClick={() => navigate(-1)} className="mt-8 px-8 py-3 bg-[#1754cf] text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all">
+            <h3 className="font-bold text-2xl text-gray-900 mb-2">{error ? 'Oops, profile unavailable' : 'Worker Not Found'}</h3>
+            <p className="text-gray-500 max-w-md mx-auto">{error || 'This profile is currently unavailable or doesn\'t exist in our records.'}</p>
+            <button onClick={() => navigate(-1)} className="mt-8 px-6 py-2.5 bg-[#0a58ca] hover:bg-[#084298] text-white rounded-lg font-semibold shadow-sm transition-all">
               Return to Catalog
             </button>
           </div>
@@ -206,22 +205,21 @@ export default function WorkerProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1121] text-slate-100 pb-20 font-sans selection:bg-[#1754cf]/30">
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-20 font-sans selection:bg-[#0a58ca]/20">
       
       {/* 1. Hero / Cover Section */}
-      <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden">
+      <div className="relative w-full h-[250px] md:h-[300px] bg-gray-200 overflow-hidden">
         <img 
           src={profile.profileBanner || 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=2000'} 
-          className="w-full h-full object-cover opacity-40 scale-105 blur-sm"
+          className="w-full h-full object-cover opacity-90"
           alt="Profile Background"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b1121] via-[#0b1121]/60 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0b1121] via-transparent to-[#0b1121]"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-gray-50/40 to-transparent"></div>
         
         {/* Back Button Overlay */}
-        <div className="absolute top-8 left-8 z-10">
+        <div className="absolute top-6 left-6 lg:left-[8.333%] z-10">
           <button 
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#121a2f]/80 backdrop-blur-xl border border-white/5 text-white/80 hover:text-white hover:border-white/20 transition-all text-sm font-bold shadow-2xl"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-700 hover:text-[#0a58ca] hover:bg-white transition-all text-sm font-semibold shadow-sm"
             onClick={() => navigate(-1)}
           >
             <i className="fas fa-arrow-left"></i> Back to search
@@ -229,76 +227,69 @@ export default function WorkerProfile() {
         </div>
       </div>
 
-      <PageContainer maxWidth="6xl">
+      <PageContainer>
         
         {/* Profile Header Overlay */}
-        <div className="relative -mt-40 md:-mt-52 z-20 mb-16">
-          <div className="flex flex-col md:flex-row items-end gap-8 px-4">
+        <div className="relative -mt-24 md:-mt-32 z-20 mb-12">
+          <div className="flex flex-col md:flex-row items-end gap-6 md:gap-8 px-2 md:px-4">
             {/* Avatar */}
-            <div className="relative shrink-0 group">
-              <div className="w-40 h-40 md:w-56 md:h-56 mask mask-squircle bg-[#1a2232] p-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 relative z-10">
+            <div className="relative shrink-0">
+              <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-white p-1 shadow-md border border-gray-100 relative z-10">
                 <img
                   src={profile.profileCover || profile.photoURL || 'https://i.pravatar.cc/400?img=12'}
                   alt={displayName}
-                  className="object-cover w-full h-full mask mask-squircle transition-transform duration-700 group-hover:scale-110"
+                  className="object-cover w-full h-full rounded-full"
                   onError={(e) => { e.currentTarget.src = 'https://i.pravatar.cc/400?img=12'; }}
                 />
               </div>
-              <div className="absolute -inset-4 bg-gradient-to-br from-[#1754cf]/20 to-transparent blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
               
               {profile.isAvailable && (
-                <div className="absolute bottom-6 right-6 w-8 h-8 bg-emerald-500 border-[6px] border-[#0b1121] rounded-full z-20 shadow-[0_0_25px_rgba(16,185,129,0.6)] animate-pulse"></div>
+                <div className="absolute bottom-4 right-4 w-6 h-6 bg-green-500 border-4 border-white rounded-full z-20 shadow-sm" title="Available for work"></div>
               )}
             </div>
 
             {/* Profile Brief */}
-            <div className="flex-1 pb-4">
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter drop-shadow-2xl">{displayName}</h1>
-                <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1754cf]/10 text-[#1754cf] text-[10px] font-black uppercase tracking-[0.15em] border border-[#1754cf]/20 shadow-xl backdrop-blur-md">
-                  <i className="fas fa-certificate"></i> Verified Expert
+            <div className="flex-1 pb-2">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{displayName}</h1>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#0a58ca] text-[10px] font-bold uppercase tracking-wider border border-blue-100">
+                  <i className="fas fa-certificate"></i> Verified
                 </div>
               </div>
               
-              <p className="text-xl md:text-2xl text-slate-400 font-bold mb-6 tracking-tight">
-                {profile.headline || 'Professional Master Mistri'}
+              <p className="text-lg text-gray-600 font-medium mb-5">
+                {profile.headline || 'Professional Mistri'}
               </p>
 
-              <div className="flex flex-wrap items-center gap-8">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center text-yellow-500 text-lg">
+              <div className="flex flex-wrap items-center gap-6 bg-white p-3 md:px-5 rounded-xl border border-gray-200 shadow-sm inline-flex">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center text-yellow-400 text-base">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <i key={star} className={`fas fa-star ${star <= Math.round(rating) ? '' : 'text-slate-700'} mr-0.5`}></i>
+                      <i key={star} className={`fas fa-star ${star <= Math.round(rating) ? '' : 'text-gray-200'} mr-0.5`}></i>
                     ))}
                   </div>
                   <div>
-                    <span className="text-white font-black text-lg">{rating > 0 ? rating.toFixed(1) : 'New'}</span>
-                    <span className="text-slate-500 text-xs font-bold block">({totalReviews} Reviews)</span>
+                    <span className="text-gray-900 font-bold">{rating > 0 ? rating.toFixed(1) : 'New'}</span>
+                    <span className="text-gray-500 text-xs ml-1">({totalReviews})</span>
                   </div>
                 </div>
                 
-                <div className="h-10 w-[1px] bg-white/10 hidden sm:block"></div>
+                <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-[#1754cf] border border-blue-500/20">
-                    <i className="fas fa-map-marker-alt"></i>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <i className="fas fa-map-marker-alt text-[#0a58ca]"></i>
                   <div>
-                    <span className="text-white font-black block">{serviceCities.length > 0 ? serviceCities[0] : 'Dhaka'}</span>
-                    <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{serviceCities.length > 1 ? `+${serviceCities.length - 1} more cities` : 'Bangladesh'}</span>
+                    <span className="text-gray-900 font-semibold">{serviceCities.length > 0 ? serviceCities[0] : 'Dhaka'}</span>
                   </div>
                 </div>
 
                 {experienceYears && (
                   <>
-                    <div className="h-10 w-[1px] bg-white/10 hidden sm:block"></div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                        <i className="fas fa-award"></i>
-                      </div>
+                    <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
+                    <div className="flex items-center gap-2">
+                      <i className="fas fa-award text-[#0a58ca]"></i>
                       <div>
-                        <span className="text-white font-black block">{experienceYears} Years</span>
-                        <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Experience</span>
+                        <span className="text-gray-900 font-semibold">{experienceYears} Years</span>
                       </div>
                     </div>
                   </>
@@ -308,45 +299,38 @@ export default function WorkerProfile() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Left Column (Main Content) */}
-          <div className="w-full lg:w-[65%] flex flex-col gap-12">
+          <div className="w-full lg:w-[65%] flex flex-col gap-8">
             
             {/* 2. Core Expertise Section */}
-            <section className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-2xl">
-              <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                <span className="w-8 h-[1px] bg-slate-800"></span> 
+            <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
                 Core Expertise
               </h3>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 {skillsDisplay.length > 0 ? skillsDisplay.map((skill, idx) => (
-                  <span key={idx} className="px-5 py-2.5 rounded-2xl bg-[#0b1121] border border-white/5 text-slate-200 text-xs font-bold hover:border-[#1754cf]/40 hover:bg-[#1754cf]/10 hover:text-white transition-all cursor-default shadow-lg group">
-                    <i className="fas fa-bolt text-[10px] text-[#1754cf] mr-2 opacity-30 group-hover:opacity-100 transition-opacity"></i>
+                  <span key={idx} className="px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium hover:border-[#0a58ca] hover:text-[#0a58ca] transition-colors cursor-default">
                     {skill}
                   </span>
                 )) : (
-                  <span className="text-slate-500 italic text-sm">No specific expertise listed.</span>
+                  <span className="text-gray-500 italic text-sm">No specific expertise listed.</span>
                 )}
               </div>
             </section>
 
             {/* 3. Navigation Tabs */}
-            <div className="sticky top-24 z-30 bg-[#0b1121]/90 backdrop-blur-2xl rounded-3xl p-1.5 border border-white/5 shadow-2xl overflow-hidden mb-4">
-              <div className="flex items-center gap-1">
-                {['about', 'portfolio', 'reviews'].map((tab) => (
-                  <button 
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-3 px-6 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden ${activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
-                  >
-                    <span className="relative z-10">{tab}</span>
-                    {activeTab === tab && (
-                      <div className="absolute inset-0 bg-[#1754cf] shadow-[0_0_20px_rgba(23,84,207,0.4)] transition-all"></div>
-                    )}
-                  </button>
-                ))}
-              </div>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex">
+              {['about', 'portfolio', 'reviews'].map((tab) => (
+                <button 
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-3.5 px-4 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activeTab === tab ? 'text-[#0a58ca] border-[#0a58ca] bg-blue-50/30' : 'text-gray-500 border-transparent hover:text-gray-800 hover:bg-gray-50'}`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             {/* 4. Dynamic Content Sections */}
@@ -354,37 +338,33 @@ export default function WorkerProfile() {
               
               {/* About Section */}
               {activeTab === 'about' && (
-                <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                  <div className="flex items-center gap-6 mb-8">
-                    <h2 className="text-3xl font-black text-white tracking-tighter">Professional Bio</h2>
-                    <div className="h-[1px] flex-1 bg-white/5"></div>
-                  </div>
-                  
-                  <div className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-[2.5rem] p-10 shadow-2xl mb-12">
-                    <p className="text-slate-300 text-lg md:text-xl leading-relaxed font-medium">
+                <div className="animate-in fade-in duration-500">
+                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Professional Bio</h2>
+                    <p className="text-gray-600 text-base leading-relaxed">
                       {(profile.bio && profile.bio.trim()) || 
                        "Professional Mistri with a commitment to excellence. I provide high-quality structural and mechanical solutions with a focus on durability and precision. My approach combines traditional expertise with modern efficiency to ensure your task is handled exactly right."}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex items-center gap-5 group hover:border-emerald-500/20 transition-all shadow-xl">
-                      <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-2xl shrink-0 transition-transform group-hover:scale-110 shadow-inner">
-                        <i className="fas fa-check-shield"></i>
+                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600 text-xl shrink-0">
+                        <i className="fas fa-check-circle"></i>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Account Status</p>
-                        <p className="text-white font-black text-lg">Identity Verified</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Account Status</p>
+                        <p className="text-gray-900 font-bold text-base">Identity Verified</p>
                       </div>
                     </div>
                     
-                    <div className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex items-center gap-5 group hover:border-[#1754cf]/20 transition-all shadow-xl">
-                      <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-[#1754cf] text-2xl shrink-0 transition-transform group-hover:scale-110 shadow-inner">
-                        <i className="fas fa-language"></i>
+                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#0a58ca] text-xl shrink-0">
+                        <i className="fas fa-layer-group"></i>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Expertise Range</p>
-                        <p className="text-white font-black text-lg">{decodedServices.length || 1} Categories</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Expertise Range</p>
+                        <p className="text-gray-900 font-bold text-base">{decodedServices.length || 1} Categories</p>
                       </div>
                     </div>
                   </div>
@@ -393,14 +373,9 @@ export default function WorkerProfile() {
 
               {/* Portfolio Section */}
               {activeTab === 'portfolio' && (
-                <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                  <div className="flex items-center gap-6 mb-10">
-                    <h2 className="text-3xl font-black text-white tracking-tighter">Work Showcase</h2>
-                    <div className="h-[1px] flex-1 bg-white/5"></div>
-                  </div>
-                  
+                <div className="animate-in fade-in duration-500">
                   {portfolio.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       {portfolio.map((item, i) => {
                         const imgUrl = typeof item === 'string' ? item : (item?.url || item?.imageUrl);
                         const caption = typeof item === 'object' ? item.caption : '';
@@ -408,32 +383,26 @@ export default function WorkerProfile() {
                         return (
                           <div 
                             key={i} 
-                            className="group relative rounded-[2rem] overflow-hidden bg-[#121a2f] border border-white/10 cursor-pointer shadow-2xl"
+                            className="group relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer shadow-sm hover:shadow-md transition-all"
                             onClick={() => setSelectedImage({ url: imgUrl, caption })}
                           >
-                            <div className="aspect-[4/5] overflow-hidden">
-                              <img src={imgUrl} alt="Project" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1" />
+                            <div className="aspect-[4/3] overflow-hidden">
+                              <img src={imgUrl} alt="Project" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             </div>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
-                              <p className="text-white font-black text-2xl mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{caption || 'Project Showcase'}</p>
-                              <div className="flex items-center gap-3 text-slate-300 text-xs font-bold uppercase tracking-widest translate-y-4 group-hover:translate-y-0 shadow transition-transform duration-700">
-                                <i className="fas fa-calendar-alt text-[#1754cf]"></i> Verified Performance
-                              </div>
-                            </div>
-                            <div className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 flex items-center justify-center text-white scale-0 group-hover:scale-100 transition-all duration-300">
-                              <i className="fas fa-expand-alt"></i>
+                            <div className="p-4 bg-white border-t border-gray-100">
+                              <p className="text-gray-900 font-semibold text-sm truncate">{caption || 'Project Showcase'}</p>
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-[3rem] p-24 text-center shadow-2xl">
-                      <div className="w-24 h-24 bg-[#0b1121] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner border border-white/5">
-                        <i className="fas fa-images text-4xl text-slate-700"></i>
+                    <div className="bg-white border border-gray-200 rounded-2xl p-16 text-center shadow-sm">
+                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i className="fas fa-images text-2xl text-gray-400"></i>
                       </div>
-                      <h3 className="text-2xl font-black text-slate-300 tracking-tight">Portfolio Preview Unavailable</h3>
-                      <p className="text-slate-500 mt-2 font-medium">Verified project visuals will appear here as they are uploaded.</p>
+                      <h3 className="text-lg font-bold text-gray-800">No Portfolio Yet</h3>
+                      <p className="text-gray-500 text-sm mt-1">This worker hasn't uploaded any past work photos.</p>
                     </div>
                   )}
                 </div>
@@ -441,14 +410,9 @@ export default function WorkerProfile() {
 
               {/* Reviews Section */}
               {activeTab === 'reviews' && (
-                <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                  <div className="flex items-center gap-6 mb-10">
-                    <h2 className="text-3xl font-black text-white tracking-tighter">Client Feedback</h2>
-                    <div className="h-[1px] flex-1 bg-white/5"></div>
-                  </div>
-                  
-                  <div className="bg-[#121a2f]/40 backdrop-blur-md border border-white/5 rounded-[3rem] p-1 shadow-2xl overflow-hidden">
-                    <div className="bg-[#0b1121]/50 p-6 md:p-12">
+                <div className="animate-in fade-in duration-500">
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-6 md:p-8">
                       <ReviewDisplay workerId={workerId} limit={10} />
                     </div>
                   </div>
@@ -460,100 +424,83 @@ export default function WorkerProfile() {
 
           {/* Right Column (Floating Action Panel) */}
           <div className="w-full lg:w-[35%]">
-            <div className="sticky top-28 flex flex-col gap-8">
+            <div className="sticky top-28 flex flex-col gap-6">
               
               {/* Main Hire Card */}
-              <div className="bg-[#121a2f] border border-white/10 rounded-[3rem] p-10 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-                {/* Decorative blobs */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-[#1754cf]/15 rounded-full -mr-24 -mt-24 blur-[80px]"></div>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full -ml-16 -mb-16 blur-[60px]"></div>
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm relative overflow-hidden">
                 
                 {/* Price Display */}
-                <div className="flex items-center justify-between mb-10 relative z-10">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block mb-2">Expertise Valuation</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-5xl font-black text-white tracking-tighter">{hourlyRate ? `${currency}${hourlyRate}` : 'Contact'}</span>
-                      {hourlyRate && <span className="text-slate-400 font-bold text-sm">/hr</span>}
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Pricing</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold text-gray-900">{hourlyRate ? `${currency}${hourlyRate}` : 'Contact'}</span>
+                      {hourlyRate && <span className="text-gray-500 font-medium text-sm">/hr</span>}
                     </div>
                   </div>
-                  <div className="bg-[#1754cf]/15 text-[#1754cf] px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] border border-[#1754cf]/20 shadow-xl backdrop-blur-md">
-                    Premium Tier
+                  <div className="bg-blue-50 text-[#0a58ca] px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-blue-100">
+                    Premium
                   </div>
                 </div>
 
                 {/* Performance Metrics */}
-                <div className="grid grid-cols-2 gap-4 mb-10 relative z-10">
-                  <div className="bg-[#0b1121]/60 p-5 rounded-3xl border border-white/5 shadow-inner">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                       <i className="fas fa-check-circle text-[#1754cf]/60"></i> Hires
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                       <i className="fas fa-check-circle text-green-500"></i> Jobs Done
                     </p>
-                    <p className="text-white font-black text-2xl tracking-tighter">{completedJobs > 0 ? `${completedJobs}+` : 'Elite'}</p>
+                    <p className="text-gray-900 font-bold text-xl">{completedJobs > 0 ? `${completedJobs}+` : 'New'}</p>
                   </div>
-                  <div className="bg-[#0b1121]/60 p-5 rounded-3xl border border-white/5 shadow-inner">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                       <i className="fas fa-bolt text-yellow-500/60"></i> Speed
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                       <i className="fas fa-bolt text-yellow-500"></i> Speed
                     </p>
-                    <p className="text-white font-black text-2xl tracking-tighter">Fast</p>
+                    <p className="text-gray-900 font-bold text-xl">Fast</p>
                   </div>
                 </div>
 
                 {/* Primary Actions */}
-                <div className="flex flex-col gap-4 relative z-10">
+                <div className="flex flex-col gap-3">
                   {user ? (
                     <button 
-                      className="w-full bg-[#1754cf] hover:bg-blue-600 text-white font-black py-5 rounded-[1.5rem] transition-all shadow-[0_15px_30px_rgba(23,84,207,0.3)] hover:shadow-[0_20px_40px_rgba(23,84,207,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 text-lg"
+                      className="w-full bg-[#0a58ca] hover:bg-[#084298] text-white font-bold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
                       onClick={() => setShowJobOfferModal(true)}
                     >
-                      Book Professional <i className="fas fa-arrow-right text-sm"></i>
+                      Book Professional <i className="fas fa-arrow-right text-xs"></i>
                     </button>
                   ) : (
                     <Link 
                       to="/login"
-                      className="w-full text-center bg-[#1754cf] hover:bg-blue-600 text-white font-black py-5 rounded-[1.5rem] transition-all shadow-[0_10px_25px_rgba(23,84,207,0.2)] flex items-center justify-center gap-3 text-lg"
+                      className="w-full text-center bg-[#0a58ca] hover:bg-[#084298] text-white font-bold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
                     >
                       Sign In to Hire
                     </Link>
                   )}
 
                   <div className="flex gap-3">
-                    <button className="flex-1 bg-[#1a2232] hover:bg-[#243047] text-white font-bold py-4 rounded-2xl border border-white/5 transition-all flex items-center justify-center gap-2 text-sm shadow-xl active:scale-95">
-                      <i className="far fa-comment-dots text-[#1754cf]"></i> Chat
+                    <button className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl border border-gray-300 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                      <i className="far fa-comment-dots text-gray-400"></i> Chat
                     </button>
-                    <button className="flex-1 bg-[#1a2232] hover:bg-[#243047] text-white font-bold py-4 rounded-2xl border border-white/5 transition-all flex items-center justify-center gap-2 text-sm shadow-xl active:scale-95">
-                      <i className="far fa-share-square text-[#1754cf]"></i> Share
+                    <button className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl border border-gray-300 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                      <i className="far fa-share-square text-gray-400"></i> Share
                     </button>
                   </div>
-                </div>
-
-                <div className="mt-10 pt-8 border-t border-white/5 flex items-center justify-center gap-4 relative z-10">
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-4 border-[#121a2f] bg-slate-800 overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?u=${i+100}`} className="w-full h-full object-cover" alt="" />
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Hired by {completedJobs + 12} clients
-                  </p>
                 </div>
               </div>
 
               {/* Security & Support Card */}
-              <div className="bg-gradient-to-br from-[#1754cf]/15 to-transparent border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl">
-                <div className="absolute -right-8 -bottom-8 text-9xl text-[#1754cf]/5 rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700">
+              <div className="bg-[#f0f9ff] border border-blue-100 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute -right-4 -bottom-4 text-6xl text-[#0a58ca]/5 rotate-12">
                   <i className="fas fa-shield-alt"></i>
                 </div>
-                <h4 className="text-white font-black mb-3 flex items-center gap-3 text-lg">
-                  <i className="fas fa-shield-check text-emerald-500"></i> Quality Assurance
+                <h4 className="text-gray-900 font-bold mb-2 flex items-center gap-2 text-base">
+                  <i className="fas fa-shield-check text-[#0a58ca]"></i> Trust & Safety
                 </h4>
-                <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium">
-                  {displayName.split(' ')[0]} provides professional-grade service backed by our secure Escrow platform. 
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  All payments and communications are securely handled through Hire Mistri platform.
                 </p>
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-[#1754cf]">
-                   <span>Secure Booking</span>
-                   <i className="fas fa-chevron-right"></i>
+                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#0a58ca]">
+                   <span>Secure Escrow</span>
                 </div>
               </div>
 
@@ -561,18 +508,6 @@ export default function WorkerProfile() {
           </div>
         </div>
       </PageContainer>
-
-      {/* Footer minimal spacer */}
-      <footer className="mt-32 pt-16 pb-12 border-t border-white/5 text-center px-6">
-        <div className="flex flex-wrap justify-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-10">
-          <Link to="#" className="hover:text-[#1754cf] transition-colors">Trust Standards</Link>
-          <Link to="#" className="hover:text-[#1754cf] transition-colors">Help Center</Link>
-          <Link to="#" className="hover:text-[#1754cf] transition-colors">Terms of Service</Link>
-        </div>
-        <p className="text-xs text-slate-700 font-bold tracking-[0.3em] uppercase">
-          © 2024 Hire Mistri Masterpiece Series.
-        </p>
-      </footer>
 
       {/* Modals */}
       {showJobOfferModal && (
@@ -587,27 +522,28 @@ export default function WorkerProfile() {
 
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-3xl bg-black/90 transition-all duration-500 animate-in fade-in"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all duration-300 animate-in fade-in"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col items-center">
+          <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center">
             <button
-              className="absolute -top-16 right-0 text-white/40 hover:text-white transition-colors p-3 text-4xl focus:outline-none bg-white/5 rounded-full backdrop-blur-md border border-white/10"
+              className="absolute -top-12 right-0 text-white/70 hover:text-white p-2 text-3xl transition-colors"
               onClick={() => setSelectedImage(null)}
             >
               <i className="fas fa-times"></i>
             </button>
-            <div className="relative rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 bg-black group">
+            <div className="relative rounded-lg overflow-hidden shadow-2xl bg-black">
               <img
-                src={selectedImage.url || 'https://placehold.co/1200'}
+                src={selectedImage.url}
                 alt={selectedImage.caption || 'Expanded portfolio image'}
-                className="max-w-full max-h-[80vh] object-contain"
+                className="max-w-full max-h-[85vh] object-contain"
                 onClick={(e) => e.stopPropagation()}
               />
-              <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col items-center text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-white font-black text-2xl tracking-tight mb-2">{selectedImage.caption || 'Project Showcase'}</p>
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest italic">Professional Verification Confirmed</p>
-              </div>
+              {selectedImage.caption && (
+                <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-center">
+                  <p className="font-semibold">{selectedImage.caption}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
