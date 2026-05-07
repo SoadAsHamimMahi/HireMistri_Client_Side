@@ -599,7 +599,7 @@ export default function WorkerProfile() {
             </button>
             <div className="relative rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 bg-black group">
               <img
-                src={selectedImage.url || 'https://via.placeholder.com/1200'}
+                src={selectedImage.url || 'https://placehold.co/1200'}
                 alt={selectedImage.caption || 'Expanded portfolio image'}
                 className="max-w-full max-h-[80vh] object-contain"
                 onClick={(e) => e.stopPropagation()}

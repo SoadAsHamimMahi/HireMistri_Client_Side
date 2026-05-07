@@ -125,6 +125,9 @@ export default function PostedJobs() {
   const { isDarkMode } = useTheme();
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState('all');
+  // Pagination state
+  const PAGE_SIZE = 9; // items per page
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
   const [workerNames, setWorkerNames] = useState({});
@@ -245,6 +248,10 @@ export default function PostedJobs() {
       return st === fl;
     });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredJobs.length / PAGE_SIZE);
+  const paginatedJobs = filteredJobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
@@ -335,7 +342,7 @@ export default function PostedJobs() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setFilter(tab.id)}
+                onClick={() => { setFilter(tab.id); setCurrentPage(1); }}
                 className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl whitespace-nowrap transition-all duration-300 ${
                   (filter === tab.id || (filter === 'in-progress' && tab.id === 'in progress'))
                     ? 'bg-[#0a58ca] text-white shadow-xl shadow-blue-500/20'
@@ -349,7 +356,7 @@ export default function PostedJobs() {
 
           {/* Job Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredJobs.length === 0 ? (
+            {paginatedJobs.length === 0 ? (
               <div className="col-span-full text-center py-24 bg-white rounded-2xl border border-gray-100 shadow-xl shadow-blue-500/[0.03]">
                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
                    <i className="fas fa-folder-open text-4xl text-[#0a58ca]"></i>
@@ -361,7 +368,7 @@ export default function PostedJobs() {
                  </Link>
               </div>
             ) : (
-              filteredJobs.map(job => {
+              paginatedJobs.map(job => {
                 const jobId = job.mongoId || job.id;
                 const status = String(job.status || 'active').toLowerCase();
                 const offerStatus = (job.offerStatus || 'pending').toLowerCase();
@@ -516,6 +523,35 @@ export default function PostedJobs() {
               })
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all"
+              >
+                <i className="fas fa-chevron-left"></i>
+              </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-12 h-12 rounded-xl font-black transition-all ${currentPage === i + 1 ? 'bg-[#0a58ca] text-white shadow-lg' : 'bg-white border border-gray-200 text-gray-600'}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all"
+              >
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          )}
         </main>
       </PageContainer>
     </div>

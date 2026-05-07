@@ -162,7 +162,7 @@ const PopularWarkers = () => {
                         alt={`Gig ${idx + 1}`}
                         className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                         onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Worker+Portfolio';
+                          e.currentTarget.src = 'https://placehold.co/400x300?text=Worker+Portfolio';
                         }}
                       />
                     </SwiperSlide>

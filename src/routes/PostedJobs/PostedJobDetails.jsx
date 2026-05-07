@@ -199,7 +199,7 @@ export default function PostedJobDetails() {
 
   const images = Array.isArray(job?.images) && job.images.length > 0
     ? job.images
-    : ['https://via.placeholder.com/1200x800?text=No+Image'];
+    : ['https://placehold.co/1200x800?text=No+Image'];
 
   // ---------- helpers ----------
   const timeAgo = (iso) => {
