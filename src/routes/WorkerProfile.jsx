@@ -147,7 +147,7 @@ export default function WorkerProfile() {
   const completedJobs = safeNum(stats.workerCompletedJobs || stats.jobsCompleted || 0);
   const rating = safeNum(profile?.averageRating || stats.averageRating);
   const totalReviews = safeNum(stats.totalReviews || 0);
-  
+
   const rawServices = Array.isArray(profile?.servicesOffered) ? profile.servicesOffered : [];
   const decodedServices = useMemo(() => {
     return rawServices.map(decodeServiceSlug).filter(Boolean);
@@ -155,7 +155,7 @@ export default function WorkerProfile() {
 
   const skills = Array.isArray(profile?.skills) ? profile.skills : [];
   const skillsDisplay = [...new Set([...decodedServices, ...skills])];
-  
+
   const experienceYears = profile?.experienceYears || profile?.workExperience || null;
   const portfolio = Array.isArray(profile?.portfolio) ? profile.portfolio : [];
   const pricing = profile?.pricing || {};
@@ -206,19 +206,19 @@ export default function WorkerProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-20 font-sans selection:bg-[#0a58ca]/20">
-      
+
       {/* 1. Hero / Cover Section */}
       <div className="relative w-full h-[250px] md:h-[300px] bg-gray-200 overflow-hidden">
-        <img 
-          src={profile.profileBanner || 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=2000'} 
+        <img
+          src={profile.profileBanner || 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=2000'}
           className="w-full h-full object-cover opacity-90"
           alt="Profile Background"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-gray-50/40 to-transparent"></div>
-        
+
         {/* Back Button Overlay */}
         <div className="absolute top-6 left-6 lg:left-[8.333%] z-10">
-          <button 
+          <button
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-700 hover:text-[#0a58ca] hover:bg-white transition-all text-sm font-semibold shadow-sm"
             onClick={() => navigate(-1)}
           >
@@ -228,7 +228,7 @@ export default function WorkerProfile() {
       </div>
 
       <PageContainer>
-        
+
         {/* Profile Header Overlay */}
         <div className="relative -mt-24 md:-mt-32 z-20 mb-12">
           <div className="flex flex-col md:flex-row items-end gap-6 md:gap-8 px-2 md:px-4">
@@ -242,7 +242,7 @@ export default function WorkerProfile() {
                   onError={(e) => { e.currentTarget.src = 'https://i.pravatar.cc/400?img=12'; }}
                 />
               </div>
-              
+
               {profile.isAvailable && (
                 <div className="absolute bottom-4 right-4 w-6 h-6 bg-green-500 border-4 border-white rounded-full z-20 shadow-sm" title="Available for work"></div>
               )}
@@ -256,7 +256,7 @@ export default function WorkerProfile() {
                   <i className="fas fa-certificate"></i> Verified
                 </div>
               </div>
-              
+
               <p className="text-lg text-gray-600 font-medium mb-5">
                 {profile.headline || 'Professional Mistri'}
               </p>
@@ -273,7 +273,7 @@ export default function WorkerProfile() {
                     <span className="text-gray-500 text-xs ml-1">({totalReviews})</span>
                   </div>
                 </div>
-                
+
                 <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
 
                 <div className="flex items-center gap-2">
@@ -300,10 +300,10 @@ export default function WorkerProfile() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           {/* Left Column (Main Content) */}
           <div className="w-full lg:w-[65%] flex flex-col gap-8">
-            
+
             {/* 2. Core Expertise Section */}
             <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
               <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function WorkerProfile() {
             {/* 3. Navigation Tabs */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex">
               {['about', 'portfolio', 'reviews'].map((tab) => (
-                <button 
+                <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 py-3.5 px-4 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activeTab === tab ? 'text-[#0a58ca] border-[#0a58ca] bg-blue-50/30' : 'text-gray-500 border-transparent hover:text-gray-800 hover:bg-gray-50'}`}
@@ -335,15 +335,15 @@ export default function WorkerProfile() {
 
             {/* 4. Dynamic Content Sections */}
             <div className="min-h-[400px]">
-              
+
               {/* About Section */}
               {activeTab === 'about' && (
                 <div className="animate-in fade-in duration-500">
                   <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Professional Bio</h2>
                     <p className="text-gray-600 text-base leading-relaxed">
-                      {(profile.bio && profile.bio.trim()) || 
-                       "Professional Mistri with a commitment to excellence. I provide high-quality structural and mechanical solutions with a focus on durability and precision. My approach combines traditional expertise with modern efficiency to ensure your task is handled exactly right."}
+                      {(profile.bio && profile.bio.trim()) ||
+                        "Professional Mistri with a commitment to excellence. I provide high-quality structural and mechanical solutions with a focus on durability and precision. My approach combines traditional expertise with modern efficiency to ensure your task is handled exactly right."}
                     </p>
                   </div>
 
@@ -357,7 +357,7 @@ export default function WorkerProfile() {
                         <p className="text-gray-900 font-bold text-base">Identity Verified</p>
                       </div>
                     </div>
-                    
+
                     <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
                       <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#0a58ca] text-xl shrink-0">
                         <i className="fas fa-layer-group"></i>
@@ -381,8 +381,8 @@ export default function WorkerProfile() {
                         const caption = typeof item === 'object' ? item.caption : '';
                         if (!imgUrl) return null;
                         return (
-                          <div 
-                            key={i} 
+                          <div
+                            key={i}
                             className="group relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer shadow-sm hover:shadow-md transition-all"
                             onClick={() => setSelectedImage({ url: imgUrl, caption })}
                           >
@@ -425,10 +425,10 @@ export default function WorkerProfile() {
           {/* Right Column (Floating Action Panel) */}
           <div className="w-full lg:w-[35%]">
             <div className="sticky top-28 flex flex-col gap-6">
-              
+
               {/* Main Hire Card */}
               <div className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm relative overflow-hidden">
-                
+
                 {/* Price Display */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
@@ -447,13 +447,13 @@ export default function WorkerProfile() {
                 <div className="grid grid-cols-2 gap-3 mb-8">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                       <i className="fas fa-check-circle text-green-500"></i> Jobs Done
+                      <i className="fas fa-check-circle text-green-500"></i> Jobs Done
                     </p>
                     <p className="text-gray-900 font-bold text-xl">{completedJobs > 0 ? `${completedJobs}+` : 'New'}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                       <i className="fas fa-bolt text-yellow-500"></i> Speed
+                      <i className="fas fa-bolt text-yellow-500"></i> Speed
                     </p>
                     <p className="text-gray-900 font-bold text-xl">Fast</p>
                   </div>
@@ -462,14 +462,14 @@ export default function WorkerProfile() {
                 {/* Primary Actions */}
                 <div className="flex flex-col gap-3">
                   {user ? (
-                    <button 
+                    <button
                       className="w-full bg-[#0a58ca] hover:bg-[#084298] text-white font-bold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
                       onClick={() => setShowJobOfferModal(true)}
                     >
                       Book Professional <i className="fas fa-arrow-right text-xs"></i>
                     </button>
                   ) : (
-                    <Link 
+                    <Link
                       to="/login"
                       className="w-full text-center bg-[#0a58ca] hover:bg-[#084298] text-white font-bold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
                     >
@@ -500,7 +500,7 @@ export default function WorkerProfile() {
                   All payments and communications are securely handled through Hire Mistri platform.
                 </p>
                 <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#0a58ca]">
-                   <span>Secure Escrow</span>
+                  <span>Secure Escrow</span>
                 </div>
               </div>
 
@@ -521,7 +521,7 @@ export default function WorkerProfile() {
       )}
 
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all duration-300 animate-in fade-in"
           onClick={() => setSelectedImage(null)}
         >

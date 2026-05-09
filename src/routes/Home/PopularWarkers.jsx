@@ -14,6 +14,13 @@ const PopularWarkers = () => {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const categories = [
+    'All', 'Electrician', 'Plumber', 'Mason (Rajmistri)', 
+    'Carpenter', 'Welder', 'Painter', 'AC Technician', 
+    'Freezer Mechanic', 'Car Mechanic'
+  ];
 
   useEffect(() => {
     let ignore = false;
@@ -22,7 +29,7 @@ const PopularWarkers = () => {
         setLoading(true);
         setError('');
 
-        const response = await fetch(`${API_BASE}/api/browse-workers?limit=9&sortBy=popular`, {
+        const response = await fetch(`${API_BASE}/api/browse-workers?limit=50&sortBy=popular`, {
           headers: { Accept: 'application/json' },
         });
 
@@ -53,7 +60,7 @@ const PopularWarkers = () => {
 
             return {
               id: worker.uid,
-              name: [worker.firstName, worker.lastName].filter(Boolean).join(' ') || 'Worker',
+              name: worker.displayName || [worker.firstName, worker.lastName].filter(Boolean).join(' ') || 'Worker',
               roles: roles,
               rating: worker.stats?.averageRating || 0,
               jobs: worker.stats?.workerCompletedJobs || 0,
@@ -128,6 +135,13 @@ const PopularWarkers = () => {
     );
   }
 
+  const filteredWorkers = workers.filter(worker => {
+    if (activeCategory === 'All') return true;
+    return worker.roles.some(role => role.includes(activeCategory) || activeCategory.includes(role));
+  });
+
+  const displayedWorkers = filteredWorkers.slice(0, 8);
+
   return (
     <section className="py-16 bg-white w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,8 +152,38 @@ const PopularWarkers = () => {
           <p className="text-gray-500 text-sm md:text-base font-medium">Hire from our top-rated, proven professionals ready right now.</p>
         </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {workers.map((worker) => (
+        {/* Category Tabs */}
+        <div className="flex overflow-x-auto gap-8 border-b border-gray-200 mb-8 pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`whitespace-nowrap px-1 pb-3 font-medium text-sm md:text-base transition-all relative ${
+                activeCategory === cat
+                  ? 'text-[#0a58ca] font-semibold'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              {cat}
+              {activeCategory === cat && (
+                <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#0a58ca] rounded-t-full"></div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {displayedWorkers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-gray-100">
+            <div className="relative mb-6">
+              <i className="fas fa-hard-hat text-6xl text-gray-200 animate-bounce"></i>
+              <i className="fas fa-search absolute -bottom-2 -right-4 text-3xl text-gray-400"></i>
+            </div>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">No {activeCategory !== 'All' ? activeCategory : ''} workers available</h3>
+            <p className="text-gray-500 text-sm">Check back later or try selecting a different category.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {displayedWorkers.map((worker) => (
           <div key={worker.id} className="border border-gray-100 rounded-xl p-4 flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
 
             {/* ✅ Gig Image Slider */}
@@ -221,6 +265,7 @@ const PopularWarkers = () => {
           </div>
         ))}
       </div>
+      )}
 
       <style>{`
         .custom-swiper .swiper-button-next,
